@@ -1,0 +1,2581 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dineug/erd-editor/main/json-schema/schema.json",
+  "version": "3.0.0",
+  "settings": {
+    "width": 2000,
+    "height": 2000,
+    "scrollTop": 0,
+    "scrollLeft": -156.0197,
+    "zoomLevel": 1,
+    "show": 431,
+    "database": 16,
+    "databaseName": "SipaCareer",
+    "canvasType": "@dineug/erd-editor/builtin-generator-code",
+    "language": 1,
+    "tableNameCase": 4,
+    "columnNameCase": 2,
+    "bracketType": 1,
+    "relationshipDataTypeSync": true,
+    "relationshipOptimization": false,
+    "columnOrder": [
+      1,
+      2,
+      4,
+      8,
+      16,
+      32,
+      64
+    ],
+    "maxWidthComment": -1,
+    "ignoreSaveSettings": 0
+  },
+  "doc": {
+    "tableIds": [
+      "user",
+      "job",
+      "application",
+      "conversation",
+      "message",
+      "notification",
+      "analytics",
+      "employer_settings",
+      "job_faq",
+      "saved_job"
+    ],
+    "relationshipIds": [
+      "rel_job_company",
+      "rel_app_job",
+      "rel_app_applicant",
+      "rel_conv_job",
+      "rel_msg_conv",
+      "rel_msg_sender",
+      "rel_notif_recipient",
+      "rel_analytics_employer",
+      "rel_es_user",
+      "rel_jf_employer",
+      "rel_jf_job",
+      "rel_sj_grad",
+      "rel_sj_job"
+    ],
+    "indexIds": [],
+    "memoIds": []
+  },
+  "collections": {
+    "tableEntities": {
+      "user": {
+        "id": "user",
+        "name": "User",
+        "comment": "",
+        "columnIds": [
+          "user_id",
+          "user_fullname",
+          "user_email",
+          "user_password",
+          "user_role",
+          "user_avatar",
+          "user_bio",
+          "user_phone",
+          "user_address",
+          "user_website",
+          "user_degree",
+          "user_university",
+          "user_graduation_year",
+          "user_major",
+          "user_verification_status",
+          "user_portfolio",
+          "user_linkedin",
+          "user_github",
+          "user_experiences",
+          "user_internships",
+          "user_education",
+          "user_skills",
+          "user_languages",
+          "user_awards",
+          "user_certifications",
+          "user_projects",
+          "user_job_preferences",
+          "user_resume",
+          "user_company_name",
+          "user_company_description",
+          "user_company_logo",
+          "user_business_permit",
+          "user_is_admin",
+          "user_is_profile_complete",
+          "user_experience_type",
+          "user_created_at",
+          "user_updated_at"
+        ],
+        "seqColumnIds": [
+          "user_id",
+          "user_fullname",
+          "user_email",
+          "user_password",
+          "user_role",
+          "user_avatar",
+          "user_bio",
+          "user_phone",
+          "user_address",
+          "user_website",
+          "user_degree",
+          "user_university",
+          "user_graduation_year",
+          "user_major",
+          "user_tor",
+          "user_verification_status",
+          "user_verification_message",
+          "user_portfolio",
+          "user_linkedin",
+          "user_github",
+          "user_experiences",
+          "user_internships",
+          "user_education",
+          "user_skills",
+          "user_languages",
+          "user_awards",
+          "user_certifications",
+          "user_projects",
+          "user_job_preferences",
+          "user_resume",
+          "user_company_name",
+          "user_company_description",
+          "user_company_logo",
+          "user_business_permit",
+          "user_is_admin",
+          "user_is_profile_complete",
+          "user_experience_type",
+          "user_last_scan_date",
+          "user_created_at",
+          "user_updated_at"
+        ],
+        "ui": {
+          "x": 846.1934,
+          "y": 870.0562,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764837168999,
+          "createAt": 1716812345678
+        }
+      },
+      "job": {
+        "id": "job",
+        "name": "Job",
+        "comment": "",
+        "columnIds": [
+          "job_id",
+          "job_title",
+          "job_description",
+          "job_company",
+          "job_location",
+          "job_type",
+          "job_salary_min",
+          "job_salary_max",
+          "job_is_closed"
+        ],
+        "seqColumnIds": [
+          "job_id",
+          "job_title",
+          "job_description",
+          "job_company",
+          "job_location",
+          "job_type",
+          "job_salary_min",
+          "job_salary_max",
+          "job_is_closed"
+        ],
+        "ui": {
+          "x": 1008.6247,
+          "y": 236.4531,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764836978760,
+          "createAt": 1716812345678
+        }
+      },
+      "application": {
+        "id": "application",
+        "name": "Application",
+        "comment": "",
+        "columnIds": [
+          "app_id",
+          "app_job",
+          "app_applicant",
+          "app_resume",
+          "app_status"
+        ],
+        "seqColumnIds": [
+          "app_id",
+          "app_job",
+          "app_applicant",
+          "app_resume",
+          "app_status"
+        ],
+        "ui": {
+          "x": 1590.9725,
+          "y": 688.4269,
+          "zIndex": 2,
+          "widthName": 62,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764836953776,
+          "createAt": 1716812345678
+        }
+      },
+      "conversation": {
+        "id": "conversation",
+        "name": "Conversation",
+        "comment": "",
+        "columnIds": [
+          "conv_id",
+          "conv_participants",
+          "conv_job",
+          "conv_last_message"
+        ],
+        "seqColumnIds": [
+          "conv_id",
+          "conv_participants",
+          "conv_job",
+          "conv_last_message"
+        ],
+        "ui": {
+          "x": 77.0362,
+          "y": 282.7376,
+          "zIndex": 2,
+          "widthName": 71,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764835539916,
+          "createAt": 1716812345678
+        }
+      },
+      "message": {
+        "id": "message",
+        "name": "Message",
+        "comment": "",
+        "columnIds": [
+          "msg_id",
+          "msg_conversation",
+          "msg_sender",
+          "msg_content",
+          "msg_read"
+        ],
+        "seqColumnIds": [
+          "msg_id",
+          "msg_conversation",
+          "msg_sender",
+          "msg_content",
+          "msg_read"
+        ],
+        "ui": {
+          "x": 85.8462,
+          "y": 597.4615,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764835408486,
+          "createAt": 1716812345678
+        }
+      },
+      "notification": {
+        "id": "notification",
+        "name": "Notification",
+        "comment": "",
+        "columnIds": [
+          "notif_id",
+          "notif_recipient",
+          "notif_type",
+          "notif_title",
+          "notif_message",
+          "notif_related_id",
+          "notif_is_read"
+        ],
+        "seqColumnIds": [
+          "notif_id",
+          "notif_recipient",
+          "notif_type",
+          "notif_title",
+          "notif_message",
+          "notif_related_id",
+          "notif_is_read"
+        ],
+        "ui": {
+          "x": 115.7984,
+          "y": 1209.4001,
+          "zIndex": 2,
+          "widthName": 64,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764835556243,
+          "createAt": 1716812345678
+        }
+      },
+      "analytics": {
+        "id": "analytics",
+        "name": "Analytics",
+        "comment": "",
+        "columnIds": [
+          "analytics_id",
+          "analytics_employer",
+          "analytics_jobs_posted",
+          "analytics_apps_received",
+          "analytics_hired"
+        ],
+        "seqColumnIds": [
+          "analytics_id",
+          "analytics_employer",
+          "analytics_jobs_posted",
+          "analytics_apps_received",
+          "analytics_hired"
+        ],
+        "ui": {
+          "x": 73.2307,
+          "y": 930.077,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764835321900,
+          "createAt": 1716812345678
+        }
+      },
+      "employer_settings": {
+        "id": "employer_settings",
+        "name": "EmployerSettings",
+        "comment": "",
+        "columnIds": [
+          "es_id",
+          "es_user",
+          "es_timezone",
+          "es_business_hours",
+          "es_auto_reply"
+        ],
+        "seqColumnIds": [
+          "es_id",
+          "es_user",
+          "es_timezone",
+          "es_business_hours",
+          "es_auto_reply"
+        ],
+        "ui": {
+          "x": 1561.3426,
+          "y": 1508.1784,
+          "zIndex": 2,
+          "widthName": 94,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764836847761,
+          "createAt": 1716812345678
+        }
+      },
+      "job_faq": {
+        "id": "job_faq",
+        "name": "JobFAQ",
+        "comment": "",
+        "columnIds": [
+          "jf_id",
+          "jf_employer",
+          "jf_job",
+          "jf_question",
+          "jf_answer"
+        ],
+        "seqColumnIds": [
+          "jf_id",
+          "jf_employer",
+          "jf_job",
+          "jf_question",
+          "jf_answer"
+        ],
+        "ui": {
+          "x": 1602.7274,
+          "y": 1228.7906,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764836914762,
+          "createAt": 1716812345678
+        }
+      },
+      "saved_job": {
+        "id": "saved_job",
+        "name": "SavedJob",
+        "comment": "",
+        "columnIds": [
+          "sj_id",
+          "sj_graduate",
+          "sj_job"
+        ],
+        "seqColumnIds": [
+          "sj_id",
+          "sj_graduate",
+          "sj_job"
+        ],
+        "ui": {
+          "x": 1591.6363,
+          "y": 933.1845,
+          "zIndex": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1764836896762,
+          "createAt": 1716812345678
+        }
+      }
+    },
+    "tableColumnEntities": {
+      "user_id": {
+        "id": "user_id",
+        "tableId": "user",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_fullname": {
+        "id": "user_fullname",
+        "tableId": "user",
+        "name": "fullName",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_email": {
+        "id": "user_email",
+        "tableId": "user",
+        "name": "email",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_password": {
+        "id": "user_password",
+        "tableId": "user",
+        "name": "password",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_role": {
+        "id": "user_role",
+        "tableId": "user",
+        "name": "role",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_avatar": {
+        "id": "user_avatar",
+        "tableId": "user",
+        "name": "avatar",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_bio": {
+        "id": "user_bio",
+        "tableId": "user",
+        "name": "bio",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_degree": {
+        "id": "user_degree",
+        "tableId": "user",
+        "name": "degree",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_major": {
+        "id": "user_major",
+        "tableId": "user",
+        "name": "major",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_skills": {
+        "id": "user_skills",
+        "tableId": "user",
+        "name": "skills",
+        "comment": "",
+        "dataType": "Array<String>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 77,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_company_name": {
+        "id": "user_company_name",
+        "tableId": "user",
+        "name": "companyName",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 82,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_phone": {
+        "id": "user_phone",
+        "tableId": "user",
+        "name": "phone",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_address": {
+        "id": "user_address",
+        "tableId": "user",
+        "name": "address",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_website": {
+        "id": "user_website",
+        "tableId": "user",
+        "name": "website",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_university": {
+        "id": "user_university",
+        "tableId": "user",
+        "name": "university",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_graduation_year": {
+        "id": "user_graduation_year",
+        "tableId": "user",
+        "name": "graduationYear",
+        "comment": "",
+        "dataType": "Number",
+        "default": "null",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 82,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_tor": {
+        "id": "user_tor",
+        "tableId": "user",
+        "name": "tor",
+        "comment": "Transcript of Records",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 113,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_verification_status": {
+        "id": "user_verification_status",
+        "tableId": "user",
+        "name": "verificationStatus",
+        "comment": "",
+        "dataType": "String",
+        "default": "pending",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 92,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_verification_message": {
+        "id": "user_verification_message",
+        "tableId": "user",
+        "name": "verificationMessage",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 107,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_portfolio": {
+        "id": "user_portfolio",
+        "tableId": "user",
+        "name": "portfolio",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_linkedin": {
+        "id": "user_linkedin",
+        "tableId": "user",
+        "name": "linkedin",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_github": {
+        "id": "user_github",
+        "tableId": "user",
+        "name": "github",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_experiences": {
+        "id": "user_experiences",
+        "tableId": "user",
+        "name": "experiences",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 64,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_internships": {
+        "id": "user_internships",
+        "tableId": "user",
+        "name": "internships",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_education": {
+        "id": "user_education",
+        "tableId": "user",
+        "name": "education",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_languages": {
+        "id": "user_languages",
+        "tableId": "user",
+        "name": "languages",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_awards": {
+        "id": "user_awards",
+        "tableId": "user",
+        "name": "awards",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_certifications": {
+        "id": "user_certifications",
+        "tableId": "user",
+        "name": "certifications",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 69,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_projects": {
+        "id": "user_projects",
+        "tableId": "user",
+        "name": "projects",
+        "comment": "",
+        "dataType": "Array<Object>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 81,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_job_preferences": {
+        "id": "user_job_preferences",
+        "tableId": "user",
+        "name": "jobPreferences",
+        "comment": "",
+        "dataType": "Object",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 80,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_resume": {
+        "id": "user_resume",
+        "tableId": "user",
+        "name": "resume",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_company_description": {
+        "id": "user_company_description",
+        "tableId": "user",
+        "name": "companyDescription",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 111,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_company_logo": {
+        "id": "user_company_logo",
+        "tableId": "user",
+        "name": "companyLogo",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 77,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_business_permit": {
+        "id": "user_business_permit",
+        "tableId": "user",
+        "name": "businessPermit",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 81,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_is_admin": {
+        "id": "user_is_admin",
+        "tableId": "user",
+        "name": "isAdmin",
+        "comment": "",
+        "dataType": "Boolean",
+        "default": "false",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_is_profile_complete": {
+        "id": "user_is_profile_complete",
+        "tableId": "user",
+        "name": "isProfileComplete",
+        "comment": "",
+        "dataType": "Boolean",
+        "default": "false",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 95,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_experience_type": {
+        "id": "user_experience_type",
+        "tableId": "user",
+        "name": "experienceType",
+        "comment": "",
+        "dataType": "String",
+        "default": "work",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 84,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_last_scan_date": {
+        "id": "user_last_scan_date",
+        "tableId": "user",
+        "name": "lastScanDate",
+        "comment": "",
+        "dataType": "Date",
+        "default": "null",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 70,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_created_at": {
+        "id": "user_created_at",
+        "tableId": "user",
+        "name": "createdAt",
+        "comment": "",
+        "dataType": "Date",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "user_updated_at": {
+        "id": "user_updated_at",
+        "tableId": "user",
+        "name": "updatedAt",
+        "comment": "",
+        "dataType": "Date",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_id": {
+        "id": "job_id",
+        "tableId": "job",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_title": {
+        "id": "job_title",
+        "tableId": "job",
+        "name": "title",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_description": {
+        "id": "job_description",
+        "tableId": "job",
+        "name": "description",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 61,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_company": {
+        "id": "job_company",
+        "tableId": "job",
+        "name": "company",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_location": {
+        "id": "job_location",
+        "tableId": "job",
+        "name": "location",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_type": {
+        "id": "job_type",
+        "tableId": "job",
+        "name": "type",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_salary_min": {
+        "id": "job_salary_min",
+        "tableId": "job",
+        "name": "salaryMin",
+        "comment": "",
+        "dataType": "Number",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_salary_max": {
+        "id": "job_salary_max",
+        "tableId": "job",
+        "name": "salaryMax",
+        "comment": "",
+        "dataType": "Number",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "job_is_closed": {
+        "id": "job_is_closed",
+        "tableId": "job",
+        "name": "isClosed",
+        "comment": "",
+        "dataType": "Boolean",
+        "default": "false",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "app_id": {
+        "id": "app_id",
+        "tableId": "application",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "app_job": {
+        "id": "app_job",
+        "tableId": "application",
+        "name": "job",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "app_applicant": {
+        "id": "app_applicant",
+        "tableId": "application",
+        "name": "applicant",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "app_resume": {
+        "id": "app_resume",
+        "tableId": "application",
+        "name": "resume",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "app_status": {
+        "id": "app_status",
+        "tableId": "application",
+        "name": "status",
+        "comment": "",
+        "dataType": "String",
+        "default": "Applied",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "conv_id": {
+        "id": "conv_id",
+        "tableId": "conversation",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "conv_participants": {
+        "id": "conv_participants",
+        "tableId": "conversation",
+        "name": "participants",
+        "comment": "",
+        "dataType": "Array<ObjectId>",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 64,
+          "widthComment": 60,
+          "widthDataType": 92,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "conv_job": {
+        "id": "conv_job",
+        "tableId": "conversation",
+        "name": "job",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "conv_last_message": {
+        "id": "conv_last_message",
+        "tableId": "conversation",
+        "name": "lastMessage",
+        "comment": "",
+        "dataType": "Object",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 67,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "msg_id": {
+        "id": "msg_id",
+        "tableId": "message",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "msg_conversation": {
+        "id": "msg_conversation",
+        "tableId": "message",
+        "name": "conversationId",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 80,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "msg_sender": {
+        "id": "msg_sender",
+        "tableId": "message",
+        "name": "sender",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "msg_content": {
+        "id": "msg_content",
+        "tableId": "message",
+        "name": "content",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "msg_read": {
+        "id": "msg_read",
+        "tableId": "message",
+        "name": "read",
+        "comment": "",
+        "dataType": "Boolean",
+        "default": "false",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_id": {
+        "id": "notif_id",
+        "tableId": "notification",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_recipient": {
+        "id": "notif_recipient",
+        "tableId": "notification",
+        "name": "recipient",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_type": {
+        "id": "notif_type",
+        "tableId": "notification",
+        "name": "type",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_title": {
+        "id": "notif_title",
+        "tableId": "notification",
+        "name": "title",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_message": {
+        "id": "notif_message",
+        "tableId": "notification",
+        "name": "message",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_related_id": {
+        "id": "notif_related_id",
+        "tableId": "notification",
+        "name": "relatedId",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "notif_is_read": {
+        "id": "notif_is_read",
+        "tableId": "notification",
+        "name": "isRead",
+        "comment": "",
+        "dataType": "Boolean",
+        "default": "false",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "analytics_id": {
+        "id": "analytics_id",
+        "tableId": "analytics",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "analytics_employer": {
+        "id": "analytics_employer",
+        "tableId": "analytics",
+        "name": "employer",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "analytics_jobs_posted": {
+        "id": "analytics_jobs_posted",
+        "tableId": "analytics",
+        "name": "totalJobsPosted",
+        "comment": "",
+        "dataType": "Number",
+        "default": "0",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 85,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "analytics_apps_received": {
+        "id": "analytics_apps_received",
+        "tableId": "analytics",
+        "name": "totalApplicationsReceived",
+        "comment": "",
+        "dataType": "Number",
+        "default": "0",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 138,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "analytics_hired": {
+        "id": "analytics_hired",
+        "tableId": "analytics",
+        "name": "totalHired",
+        "comment": "",
+        "dataType": "Number",
+        "default": "0",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "es_id": {
+        "id": "es_id",
+        "tableId": "employer_settings",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "es_user": {
+        "id": "es_user",
+        "tableId": "employer_settings",
+        "name": "user",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "es_timezone": {
+        "id": "es_timezone",
+        "tableId": "employer_settings",
+        "name": "timezone",
+        "comment": "",
+        "dataType": "String",
+        "default": "UTC",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "es_business_hours": {
+        "id": "es_business_hours",
+        "tableId": "employer_settings",
+        "name": "businessHours",
+        "comment": "",
+        "dataType": "Object",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "es_auto_reply": {
+        "id": "es_auto_reply",
+        "tableId": "employer_settings",
+        "name": "autoReplyMessage",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 102,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "jf_id": {
+        "id": "jf_id",
+        "tableId": "job_faq",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "jf_employer": {
+        "id": "jf_employer",
+        "tableId": "job_faq",
+        "name": "employer",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "jf_job": {
+        "id": "jf_job",
+        "tableId": "job_faq",
+        "name": "job",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "jf_question": {
+        "id": "jf_question",
+        "tableId": "job_faq",
+        "name": "question",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "jf_answer": {
+        "id": "jf_answer",
+        "tableId": "job_faq",
+        "name": "answer",
+        "comment": "",
+        "dataType": "String",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "sj_id": {
+        "id": "sj_id",
+        "tableId": "saved_job",
+        "name": "_id",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 1,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "sj_graduate": {
+        "id": "sj_graduate",
+        "tableId": "saved_job",
+        "name": "graduate",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      },
+      "sj_job": {
+        "id": "sj_job",
+        "tableId": "saved_job",
+        "name": "job",
+        "comment": "",
+        "dataType": "ObjectId",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1764835029857,
+          "createAt": 1764835029857
+        }
+      }
+    },
+    "relationshipEntities": {
+      "rel_job_company": {
+        "id": "rel_job_company",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 1064.6933999999999,
+          "y": 870.0562,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "job",
+          "columnIds": [
+            "job_company"
+          ],
+          "x": 1069.6246999999998,
+          "y": 508.4531,
+          "direction": 8
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_app_job": {
+        "id": "rel_app_job",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "job",
+          "columnIds": [
+            "job_id"
+          ],
+          "x": 1374.6246999999998,
+          "y": 372.4531,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "application",
+          "columnIds": [
+            "app_job"
+          ],
+          "x": 1590.9725,
+          "y": 732.4269,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_app_applicant": {
+        "id": "rel_app_applicant",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 1210.3600666666666,
+          "y": 870.0562,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "application",
+          "columnIds": [
+            "app_applicant"
+          ],
+          "x": 1590.9725,
+          "y": 820.4269,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_conv_job": {
+        "id": "rel_conv_job",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "job",
+          "columnIds": [
+            "job_id"
+          ],
+          "x": 1008.6247,
+          "y": 372.4531,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "conversation",
+          "columnIds": [
+            "conv_job"
+          ],
+          "x": 481.0362,
+          "y": 358.7376,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_msg_conv": {
+        "id": "rel_msg_conv",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "conversation",
+          "columnIds": [
+            "conv_id"
+          ],
+          "x": 279.0362,
+          "y": 434.7376,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "message",
+          "columnIds": [
+            "msg_conversation"
+          ],
+          "x": 278.3462,
+          "y": 597.4615,
+          "direction": 4
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_msg_sender": {
+        "id": "rel_msg_sender",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 919.0267333333333,
+          "y": 870.0562,
+          "direction": 4
+        },
+        "end": {
+          "tableId": "message",
+          "columnIds": [
+            "msg_sender"
+          ],
+          "x": 470.8462,
+          "y": 685.4615,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_notif_recipient": {
+        "id": "rel_notif_recipient",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 846.1934,
+          "y": 1578.0562,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "notification",
+          "columnIds": [
+            "notif_recipient"
+          ],
+          "x": 480.7984,
+          "y": 1321.4001,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_analytics_employer": {
+        "id": "rel_analytics_employer",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 846.1934,
+          "y": 1106.0562,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "analytics",
+          "columnIds": [
+            "analytics_employer"
+          ],
+          "x": 516.2307,
+          "y": 1018.077,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_es_user": {
+        "id": "rel_es_user",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 1283.1934,
+          "y": 1656.7228666666667,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "employer_settings",
+          "columnIds": [
+            "es_user"
+          ],
+          "x": 1561.3426,
+          "y": 1596.1784,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_jf_employer": {
+        "id": "rel_jf_employer",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 1283.1934,
+          "y": 1342.0562,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "job_faq",
+          "columnIds": [
+            "jf_employer"
+          ],
+          "x": 1602.7274,
+          "y": 1360.7906,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_jf_job": {
+        "id": "rel_jf_job",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "job",
+          "columnIds": [
+            "job_id"
+          ],
+          "x": 1313.6246999999998,
+          "y": 508.4531,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "job_faq",
+          "columnIds": [
+            "jf_job"
+          ],
+          "x": 1602.7274,
+          "y": 1272.7906,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_sj_grad": {
+        "id": "rel_sj_grad",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "user",
+          "columnIds": [
+            "user_id"
+          ],
+          "x": 1283.1934,
+          "y": 1027.3895333333332,
+          "direction": 2
+        },
+        "end": {
+          "tableId": "saved_job",
+          "columnIds": [
+            "sj_graduate"
+          ],
+          "x": 1591.6363,
+          "y": 1029.1844999999998,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      },
+      "rel_sj_job": {
+        "id": "rel_sj_job",
+        "identification": false,
+        "relationshipType": 4,
+        "startRelationshipType": 1,
+        "start": {
+          "tableId": "job",
+          "columnIds": [
+            "job_id"
+          ],
+          "x": 1191.6246999999998,
+          "y": 508.4531,
+          "direction": 8
+        },
+        "end": {
+          "tableId": "saved_job",
+          "columnIds": [
+            "sj_job"
+          ],
+          "x": 1591.6363,
+          "y": 965.1845,
+          "direction": 1
+        },
+        "meta": {
+          "updateAt": 1716812345678,
+          "createAt": 1716812345678
+        }
+      }
+    },
+    "indexEntities": {},
+    "indexColumnEntities": {},
+    "memoEntities": {}
+  }
+}
