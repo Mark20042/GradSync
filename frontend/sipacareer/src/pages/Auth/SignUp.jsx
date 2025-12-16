@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Upload,
   Loader,
+  Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Degrees } from "./../../utils/data";
@@ -45,14 +46,62 @@ const ErrorModal = ({ isOpen, onClose, message }) => {
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             Registration Failed
           </h3>
-          <p className="text-gray-600 mb-6">
-            {message}
-          </p>
+          <p className="text-gray-600 mb-6">{message}</p>
           <button
             onClick={onClose}
             className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
           >
             Try Again
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+// Pending Approval Modal Component (for employers)
+const PendingApprovalModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6">
+            <Clock className="w-10 h-10 text-amber-600" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            Registration Submitted!
+          </h3>
+          <p className="text-gray-600 mb-2">
+            Thank you for registering as an employer.
+          </p>
+          <p className="text-gray-600 mb-6">
+            Your account is{" "}
+            <span className="font-semibold text-amber-600">
+              pending admin approval
+            </span>
+            . We will review your business permit and notify you via email once
+            your account is approved.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-4 mb-6 w-full">
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">📧 What happens next?</span>
+              <br />
+              Our team will review your application within 1-2 business days.
+              You'll receive an email notification once approved.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition shadow-lg"
+          >
+            Got it, Back to Home
           </button>
         </div>
       </motion.div>
@@ -79,9 +128,10 @@ const SignUp = () => {
     error: {},
     showPassword: false,
     success: false,
+    pendingApproval: false, // For employer pending approval
     avatarPreview: null,
-    showErrorModal: false, // New state for modal
-    errorMessage: "",      // New state for modal message
+    showErrorModal: false,
+    errorMessage: "",
   });
 
   const handleInputChange = (e) => {
@@ -160,23 +210,32 @@ const SignUp = () => {
     return Object.keys(errors).length === 0;
   };
 
-
-
   const handleBusinessPermitChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const validTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+      const validTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+      ];
       if (!validTypes.includes(file.type)) {
         setFormState((prev) => ({
           ...prev,
-          error: { ...prev.error, businessPermit: "Please upload a PDF or Image file." },
+          error: {
+            ...prev.error,
+            businessPermit: "Please upload a PDF or Image file.",
+          },
         }));
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
         setFormState((prev) => ({
           ...prev,
-          error: { ...prev.error, businessPermit: "File size must be less than 10MB." },
+          error: {
+            ...prev.error,
+            businessPermit: "File size must be less than 10MB.",
+          },
         }));
         return;
       }
@@ -227,7 +286,19 @@ const SignUp = () => {
 
       console.log("Registration successful:", response.data);
 
-      // Extract token and user data from response
+      // Check if employer registration (pending approval)
+      if (response.data.pendingApproval) {
+        console.log("Employer registration pending approval");
+        setFormState((prev) => ({
+          ...prev,
+          loading: false,
+          pendingApproval: true,
+          error: {},
+        }));
+        return; // Don't proceed with login
+      }
+
+      // For graduates: Extract token and user data from response
       const { token, ...userData } = response.data;
 
       if (!token) {
@@ -246,13 +317,9 @@ const SignUp = () => {
         error: {},
       }));
 
-      // Redirect after 2 seconds
+      // Redirect after 2 seconds (only for graduates now)
       setTimeout(() => {
-        if (formData.role === "employer") {
-          navigate("/employer-dashboard");
-        } else {
-          navigate("/setup-profile-grad");
-        }
+        navigate("/setup-profile-grad");
       }, 2000);
     } catch (error) {
       console.error("=== Registration Error ===");
@@ -292,7 +359,7 @@ const SignUp = () => {
       setFormState((prev) => ({
         ...prev,
         loading: false,
-        showErrorModal: true, // Show modal on error
+        showErrorModal: true,
         errorMessage: errorMessage,
         error: {
           submit: errorMessage,
@@ -314,7 +381,8 @@ const SignUp = () => {
             Registration Successful
           </h2>
           <p className="text-gray-600 mb-4">
-            Your documents have been uploaded and verified. Redirecting you now...
+            Your documents have been uploaded and verified. Redirecting you
+            now...
           </p>
           <div className="flex items-center justify-center">
             <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full"></div>
@@ -332,8 +400,16 @@ const SignUp = () => {
       {/* Error Modal */}
       <ErrorModal
         isOpen={formState.showErrorModal}
-        onClose={() => setFormState(prev => ({ ...prev, showErrorModal: false }))}
+        onClose={() =>
+          setFormState((prev) => ({ ...prev, showErrorModal: false }))
+        }
         message={formState.errorMessage}
+      />
+
+      {/* Pending Approval Modal (for employers) */}
+      <PendingApprovalModal
+        isOpen={formState.pendingApproval}
+        onClose={() => navigate("/")}
       />
 
       {/* Back to Home */}
@@ -362,7 +438,10 @@ const SignUp = () => {
           </p>
         </div>
 
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-6" onSubmit={handleSubmit}>
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          onSubmit={handleSubmit}
+        >
           {/* Left Column */}
           <div className="space-y-5">
             {/* Full Name */}
@@ -379,8 +458,8 @@ const SignUp = () => {
                   onChange={handleInputChange}
                   placeholder="Enter your full name"
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border ${formState.error.fullName
-                    ? "border-red-500"
-                    : "border-gray-300"
+                      ? "border-red-500"
+                      : "border-gray-300"
                     } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
                 />
               </div>
@@ -406,7 +485,7 @@ const SignUp = () => {
                   onChange={handleInputChange}
                   placeholder="Enter your email address"
                   className={`w-full pl-10 pr-4 py-3 rounded-lg border ${formState.error.email ? "border-red-500" : "border-gray-300"
-                    } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all `}
                 />
               </div>
               {formState.error.email && (
@@ -431,8 +510,8 @@ const SignUp = () => {
                   onChange={handleInputChange}
                   placeholder="Create a strong password"
                   className={`w-full pl-10 pr-10 py-3 rounded-lg border ${formState.error.password
-                    ? "border-red-500"
-                    : "border-gray-300"
+                      ? "border-red-500"
+                      : "border-gray-300"
                     } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
                 />
                 <button
@@ -471,8 +550,8 @@ const SignUp = () => {
                   type="button"
                   onClick={() => handleRoleChange("graduate")}
                   className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${formData.role === "graduate"
-                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
+                      ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
                     }`}
                 >
                   <GraduationCap className="w-6 h-6" />
@@ -482,8 +561,8 @@ const SignUp = () => {
                   type="button"
                   onClick={() => handleRoleChange("employer")}
                   className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${formData.role === "employer"
-                    ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
+                      ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
                     }`}
                 >
                   <Building2 className="w-6 h-6" />
@@ -504,7 +583,7 @@ const SignUp = () => {
             {/* Avatar Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Profile Picture (Optional)
+                Profile Picture / Company Logo (Optional)
               </label>
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                 {/* Avatar Preview */}
@@ -566,7 +645,9 @@ const SignUp = () => {
                       name="degree"
                       value={formData.degree}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${formState.error.degree ? "border-red-500" : "border-gray-300"
+                      className={`w-full px-4 py-3 rounded-lg border ${formState.error.degree
+                          ? "border-red-500"
+                          : "border-gray-300"
                         } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white`}
                     >
                       <option value="">Choose Degree</option>
@@ -606,8 +687,8 @@ const SignUp = () => {
                         onChange={handleInputChange}
                         placeholder="Enter your company name"
                         className={`w-full pl-10 pr-4 py-3 rounded-lg border ${formState.error.companyName
-                          ? "border-red-500"
-                          : "border-gray-300"
+                            ? "border-red-500"
+                            : "border-gray-300"
                           } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
                       />
                     </div>
@@ -629,9 +710,13 @@ const SignUp = () => {
                         <Upload className="w-6 h-6 text-blue-500" />
                       </div>
                       <span className="text-sm font-medium text-gray-700 text-center">
-                        {formData.businessPermit ? formData.businessPermit.name : "Click to upload Permit"}
+                        {formData.businessPermit
+                          ? formData.businessPermit.name
+                          : "Click to upload Permit"}
                       </span>
-                      <span className="text-xs text-gray-500 mt-1">PDF or Image (Max 10MB)</span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        PDF or Image (Max 10MB)
+                      </span>
                       <input
                         type="file"
                         name="businessPermit"
@@ -683,7 +768,7 @@ const SignUp = () => {
           </div>
         </form>
       </motion.div>
-    </div >
+    </div>
   );
 };
 

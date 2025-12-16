@@ -3,6 +3,9 @@ const router = express.Router();
 const {
     getAnalytics,
     getAllUsers,
+    getPendingEmployers,
+    approveEmployer,
+    rejectEmployer,
     deleteUser,
     updateUser,
     getUserSavedJobs,
@@ -42,6 +45,11 @@ router.post("/users", createUser);
 router.put("/users/:id", updateUser);
 router.delete("/users/:id", deleteUser);
 router.get("/users/:id/saved-jobs", getUserSavedJobs);
+
+// Employer Approval Routes
+router.get("/pending-employers", getPendingEmployers);
+router.put("/employers/:id/approve", approveEmployer);
+router.put("/employers/:id/reject", rejectEmployer);
 
 // Job Routes
 router.get("/jobs", getAllJobs);

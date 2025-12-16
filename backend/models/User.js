@@ -187,6 +187,25 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    // Employer Approval (for employer role only)
+    isApproved: {
+      type: Boolean,
+      default: function () {
+        return this.role !== "employer"; // Graduates are auto-approved, employers need admin approval
+      },
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: function () {
+        return this.role === "employer" ? "pending" : "approved";
+      },
+    },
+    rejectionReason: {
+      type: String,
+      default: "",
+    },
+
     // Add experienceType for frontend tab selection
     experienceType: {
       type: String,

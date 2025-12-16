@@ -12,7 +12,9 @@ import {
   Bell,
   Sparkles,
   HelpCircle,
-  Settings
+
+  Settings,
+  UserCheck
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import NotificationDropdown from "../NotificationDropdown";
@@ -145,6 +147,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
               {[
                 { id: "admin-dashboard", name: "Dashboard", icon: LayoutDashboard },
                 { id: "admin-users", name: "Users", icon: Users },
+                { id: "admin-pending-employers", name: "Pending Employers", icon: UserCheck },
                 { id: "admin-jobs", name: "Jobs", icon: Briefcase },
                 { id: "admin-faqs", name: "FAQs", icon: HelpCircle },
                 { id: "admin-employer-settings", name: "Employer Settings", icon: Settings },

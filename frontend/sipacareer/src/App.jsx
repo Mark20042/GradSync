@@ -33,6 +33,7 @@ import AdminJobs from "./pages/Admin/AdminJobs";
 import AdminReports from "./pages/Admin/AdminReports";
 import AdminFAQs from "./pages/Admin/AdminFAQs";
 import AdminEmployerSettings from "./pages/Admin/AdminEmployerSettings";
+import AdminPendingEmployers from "./pages/Admin/AdminPendingEmployers";
 import MyApplications from "./pages/JobSeeker/MyApplications";
 import CompanyProfileView from "./pages/JobSeeker/CompanyProfileView";
 import ResumeBuilder from "./pages/JobSeeker/ResumeBuilder";
@@ -82,6 +83,7 @@ const App = () => {
           <Route element={<AdminRoute />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-users" element={<AdminUsers />} />
+            <Route path="/admin-pending-employers" element={<AdminPendingEmployers />} />
             <Route path="/admin-jobs" element={<AdminJobs />} />
             <Route path="/admin-reports" element={<AdminReports />} />
             <Route path="/admin-faqs" element={<AdminFAQs />} />

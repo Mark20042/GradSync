@@ -32,12 +32,8 @@ const ErrorModal = ({ isOpen, onClose, message }) => {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            Login Failed
-          </h3>
-          <p className="text-gray-600 mb-6">
-            {message}
-          </p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Login Failed</h3>
+          <p className="text-gray-600 mb-6">{message}</p>
           <button
             onClick={onClose}
             className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
@@ -66,7 +62,7 @@ const Login = () => {
     showPassword: false,
     success: false,
     showErrorModal: false, // New state for modal
-    errorMessage: "",      // New state for modal message
+    errorMessage: "", // New state for modal message
   });
 
   // Validation for password
@@ -150,7 +146,9 @@ const Login = () => {
         }, 1500);
       }
     } catch (error) {
-      const errorMessage = error.response?.data.message || "Login failed. Please check your credentials.";
+      const errorMessage =
+        error.response?.data.message ||
+        "Login failed. Please check your credentials.";
 
       setFormState((prev) => ({
         ...prev,
@@ -199,7 +197,9 @@ const Login = () => {
       {/* Error Modal */}
       <ErrorModal
         isOpen={formState.showErrorModal}
-        onClose={() => setFormState(prev => ({ ...prev, showErrorModal: false }))}
+        onClose={() =>
+          setFormState((prev) => ({ ...prev, showErrorModal: false }))
+        }
         message={formState.errorMessage}
       />
 
@@ -244,8 +244,15 @@ const Login = () => {
                 type="email"
                 name="email"
                 placeholder="Enter your email"
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm sm:text-base ${formState.error.email ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
+                className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm sm:text-base ${
+                  formState.error.email ? "border-red-500" : "border-gray-300"
+                } focus:outline-none focus:ring-2  transition-colors focus:ring-blue-500 focus:border-transparent
+                
+                 autofill:shadow-[inset_0_0_0_2000px_#ffffff] 
+                 autofill:text-fill-slate-900
+                
+                
+                `}
                 value={formData.email}
                 onChange={handleInputChange}
               />
@@ -269,10 +276,11 @@ const Login = () => {
                 type={formState.showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Enter your password"
-                className={`w-full pl-10 pr-12 py-3 rounded-lg border text-sm sm:text-base ${formState.error.password
-                  ? "border-red-500"
-                  : "border-gray-300"
-                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
+                className={`w-full pl-10 pr-12 py-3 rounded-lg border text-sm sm:text-base ${
+                  formState.error.password
+                    ? "border-red-500"
+                    : "border-gray-300"
+                } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
                 value={formData.password}
                 onChange={handleInputChange}
               />

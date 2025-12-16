@@ -155,3 +155,39 @@ exports.scanForMatches = async (req, res) => {
         res.status(500).json({ message: "Failed to scan for matches" });
     }
 };
+
+// @desc    Check specific candidate suitability for employer
+// @route   POST /api/ai/candidate-suitability
+// @access  Private (Employer)
+exports.checkCandidateSuitability = async (req, res) => {
+    try {
+        const { jobId, candidateId } = req.body;
+
+        // 1. Fetch Candidate Profile
+        const user = await User.findById(candidateId).select(
+            "degree major skills experiences education"
+        );
+        if (!user) {
+            return res.status(404).json({ message: "Candidate not found" });
+        }
+
+        // 2. Fetch Job Details
+        const job = await Job.findById(jobId).select(
+            "title description requirements"
+        );
+        if (!job) {
+            return res.status(404).json({ message: "Job not found" });
+        }
+
+        // 3. Call AI Service
+        const { analyzeJobSuitability } = require("../ai_services/ollamaService");
+        const result = await analyzeJobSuitability(user, job);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error("AI Candidate Check Error:", error);
+        res.status(500).json({ message: "Failed to analyze candidate" });
+    }
+};
+
+

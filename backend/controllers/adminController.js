@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Job = require("../models/Job");
 const Application = require("../models/Application");
+const { sendApprovalEmail, sendRejectionEmail } = require("../utils/emailService");
 
 // @desc    Get system analytics
 // @route   GET /api/admin/analytics
@@ -57,6 +58,105 @@ exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find().select("-password").sort({ createdAt: -1 });
         res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all pending employers (awaiting approval)
+// @route   GET /api/admin/pending-employers
+// @access  Private/Admin
+exports.getPendingEmployers = async (req, res) => {
+    try {
+        const pendingEmployers = await User.find({
+            role: "employer",
+            approvalStatus: "pending",
+        })
+            .select("-password")
+            .sort({ createdAt: -1 });
+        res.json(pendingEmployers);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Approve an employer
+// @route   PUT /api/admin/employers/:id/approve
+// @access  Private/Admin
+exports.approveEmployer = async (req, res) => {
+    try {
+        const employer = await User.findById(req.params.id);
+
+        if (!employer) {
+            return res.status(404).json({ message: "Employer not found" });
+        }
+
+        if (employer.role !== "employer") {
+            return res.status(400).json({ message: "User is not an employer" });
+        }
+
+        employer.isApproved = true;
+        employer.approvalStatus = "approved";
+        employer.rejectionReason = "";
+
+        await employer.save();
+
+        // Send approval email notification (async, don't wait)
+        sendApprovalEmail(employer.email, employer.fullName)
+            .catch(err => console.error('Email notification failed:', err.message));
+
+        res.json({
+            message: "Employer approved successfully",
+            employer: {
+                _id: employer._id,
+                fullName: employer.fullName,
+                email: employer.email,
+                companyName: employer.companyName,
+                approvalStatus: employer.approvalStatus,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Reject an employer
+// @route   PUT /api/admin/employers/:id/reject
+// @access  Private/Admin
+exports.rejectEmployer = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const employer = await User.findById(req.params.id);
+
+        if (!employer) {
+            return res.status(404).json({ message: "Employer not found" });
+        }
+
+        if (employer.role !== "employer") {
+            return res.status(400).json({ message: "User is not an employer" });
+        }
+
+        employer.isApproved = false;
+        employer.approvalStatus = "rejected";
+        employer.rejectionReason = reason || "Your application did not meet our requirements.";
+
+        await employer.save();
+
+        // Send rejection email notification (async, don't wait)
+        sendRejectionEmail(employer.email, employer.fullName, employer.rejectionReason)
+            .catch(err => console.error('Email notification failed:', err.message));
+
+        res.json({
+            message: "Employer rejected",
+            employer: {
+                _id: employer._id,
+                fullName: employer.fullName,
+                email: employer.email,
+                companyName: employer.companyName,
+                approvalStatus: employer.approvalStatus,
+                rejectionReason: employer.rejectionReason,
+            },
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -3,7 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Trash2, Search, Shield, Edit, Eye, Plus } from "lucide-react";
+import { Trash2, Search, Shield, Edit, Eye, Plus, X, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "../../components/Admin/AdminModal";
 
@@ -20,6 +20,8 @@ const AdminUsers = () => {
     const [showSavedJobsModal, setShowSavedJobsModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [imageUploading, setImageUploading] = useState(false);
+    const [showPermitModal, setShowPermitModal] = useState(false);
+    const [selectedPermitUrl, setSelectedPermitUrl] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -1304,16 +1306,61 @@ const AdminUsers = () => {
                                         <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{viewingUser.companyDescription || "N/A"}</p>
                                     </div>
                                     <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                        <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Business Permit</h5>
+                                        <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Business Permit</h5>
                                         {viewingUser.businessPermit ? (
-                                            <a
-                                                href={viewingUser.businessPermit}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors font-medium mt-2"
-                                            >
-                                                View Permit Document
-                                            </a>
+                                            <div className="space-y-3">
+                                                {/* Image Preview */}
+                                                {viewingUser.businessPermit.toLowerCase().endsWith('.pdf') ? (
+                                                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                                        <FileText className="w-12 h-12 text-red-500" />
+                                                        <div>
+                                                            <p className="font-medium text-gray-900">PDF Document</p>
+                                                            <p className="text-sm text-gray-500">Click below to view</p>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200"
+                                                        onClick={() => {
+                                                            setSelectedPermitUrl(viewingUser.businessPermit);
+                                                            setShowPermitModal(true);
+                                                        }}
+                                                    >
+                                                        <img
+                                                            src={viewingUser.businessPermit}
+                                                            alt="Business Permit"
+                                                            className="w-full h-48 object-cover"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                            <span className="text-white font-medium flex items-center gap-2">
+                                                                <Eye className="w-5 h-5" />
+                                                                Click to Expand
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {/* Action Buttons */}
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedPermitUrl(viewingUser.businessPermit);
+                                                            setShowPermitModal(true);
+                                                        }}
+                                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors font-medium"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                        View Full Size
+                                                    </button>
+                                                    <a
+                                                        href={viewingUser.businessPermit}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                                                    >
+                                                        Open in New Tab
+                                                    </a>
+                                                </div>
+                                            </div>
                                         ) : (
                                             <p className="text-gray-500 italic">No business permit uploaded</p>
                                         )}
@@ -1540,6 +1587,62 @@ const AdminUsers = () => {
                     </div>
                 )}
             </AdminModal >
+
+            {/* Business Permit Preview Modal */}
+            {showPermitModal && selectedPermitUrl && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                Business Permit Document
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setShowPermitModal(false);
+                                    setSelectedPermitUrl(null);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-4 overflow-auto max-h-[70vh] bg-gray-50">
+                            {selectedPermitUrl.toLowerCase().endsWith('.pdf') ? (
+                                <iframe
+                                    src={selectedPermitUrl}
+                                    className="w-full h-[60vh] border-0 rounded-lg"
+                                    title="Business Permit PDF"
+                                />
+                            ) : (
+                                <img
+                                    src={selectedPermitUrl}
+                                    alt="Business Permit"
+                                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
+                                />
+                            )}
+                        </div>
+                        <div className="flex justify-end gap-3 p-4 border-t bg-white">
+                            <a
+                                href={selectedPermitUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition font-medium"
+                            >
+                                Open in New Tab
+                            </a>
+                            <button
+                                onClick={() => {
+                                    setShowPermitModal(false);
+                                    setSelectedPermitUrl(null);
+                                }}
+                                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </DashboardLayout >
     );
 };

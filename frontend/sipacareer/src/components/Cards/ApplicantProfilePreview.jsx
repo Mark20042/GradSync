@@ -1,4 +1,4 @@
-import { Download, X, User } from "lucide-react";
+import { Download, X, User, Sparkles, BrainCircuit } from "lucide-react";
 
 import { useState } from "react";
 import { getInitials } from "../../utils/helper";
@@ -7,6 +7,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import EmployerSuitabilityModal from "../Modals/EmployerSuitabilityModal";
 
 import StatusBadge from "./../StatusBadge";
 const statusOptions = ["Applied", "In Review", "Rejected", "Accepted"];
@@ -19,8 +20,33 @@ const ApplicantProfilePreview = ({
 }) => {
   const [currentStatus, setCurrentStatus] = useState(selectedApplicant.status);
   const [loading, setLoading] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const handleOpenAiAnalysis = async () => {
+    setShowAiModal(true);
+    // Only fetch if not already fetched to save tokens/time
+    if (!aiAnalysis) {
+      setIsAiLoading(true);
+      try {
+        const response = await axiosInstance.post(API_PATH.AI.CHECK_CANDIDATE_SUITABILITY, {
+          jobId: selectedApplicant.job._id,
+          candidateId: selectedApplicant.applicant._id
+        });
+        setAiAnalysis(response.data);
+      } catch (error) {
+        console.error("Analysis failed:", error);
+        toast.error("Failed to analyze candidate");
+        setShowAiModal(false);
+      } finally {
+        setIsAiLoading(false);
+      }
+    }
+  };
+
 
   const onChangeStatus = async (e) => {
     const newStatus = e.target.value;
@@ -113,6 +139,35 @@ const ApplicantProfilePreview = ({
                 </div>
               </div>
             </div>
+
+            {/* AI Analysis Button Section */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between">
+              <div>
+                <h5 className="font-bold text-indigo-900 flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  AI Suitability Check
+                </h5>
+                <p className="text-xs text-indigo-600/80">Evaluate match with job requirements</p>
+              </div>
+
+              <button
+                onClick={handleOpenAiAnalysis}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2"
+              >
+                <BrainCircuit className="w-4 h-4" />
+                {aiAnalysis ? "View Analysis" : "Run Analysis"}
+              </button>
+            </div>
+
+            {/* AI Modal */}
+            <EmployerSuitabilityModal
+              isOpen={showAiModal}
+              onClose={() => setShowAiModal(false)}
+              loading={isAiLoading}
+              result={aiAnalysis}
+              candidateName={selectedApplicant.applicant.fullName}
+              jobTitle={selectedApplicant.job.title}
+            />
 
             <button
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"

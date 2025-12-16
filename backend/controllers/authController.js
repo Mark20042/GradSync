@@ -1,6 +1,5 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const { verifyDocument } = require("../utils/ocrService");
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -37,7 +36,6 @@ exports.register = async (req, res) => {
     let avatarUrl = "";
     let torUrl = "";
     let businessPermitUrl = "";
-    let verificationResult = { verified: false, message: "No document uploaded" };
 
     if (req.files) {
       if (req.files.avatar) {
@@ -47,29 +45,15 @@ exports.register = async (req, res) => {
       if (req.files.tor) {
         torUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.tor[0].filename
           }`;
-        // Verify TOR - Skipped as requested
-        // verificationResult = await verifyDocument(req.files.tor[0].path, "tor");
-        // console.log("TOR Verification Result:", verificationResult);
-        verificationResult = { verified: true, message: "TOR verification skipped." };
       }
       if (req.files.businessPermit) {
         businessPermitUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.businessPermit[0].filename
           }`;
-        // Verify Business Permit
-        verificationResult = await verifyDocument(req.files.businessPermit[0].path, "businessPermit");
-        console.log("Business Permit Verification Result:", verificationResult);
       }
     }
 
-    // Check verification result BEFORE creating user - DISABLED as requested
-    /*
-    if (!verificationResult.verified && (req.files.tor || req.files.businessPermit)) {
-      cleanupFiles(req.files); // Cleanup if verification fails
-      return res.status(400).json({
-        message: verificationResult.message || "Document verification failed."
-      });
-    }
-    */
+    // Determine approval status based on role
+    const isEmployer = role === "employer";
 
     // Create new user
     const user = await User.create({
@@ -80,14 +64,28 @@ exports.register = async (req, res) => {
       degree,
       companyName,
       avatar: avatarUrl,
-      companyLogo: role === "employer" ? avatarUrl : "", // Set companyLogo if employer
+      companyLogo: isEmployer ? avatarUrl : "",
       tor: torUrl,
       businessPermit: businessPermitUrl,
-      verificationStatus: verificationResult.verified ? "verified" : "pending", // Default to pending if no doc uploaded (though frontend requires it)
-      verificationMessage: verificationResult.message,
+      // Employer-specific approval fields
+      isApproved: !isEmployer, // Graduates auto-approved, employers need approval
+      approvalStatus: isEmployer ? "pending" : "approved",
     });
 
-    // Generate JWT token
+    // For employers, don't issue token - they need admin approval first
+    if (isEmployer) {
+      return res.status(201).json({
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName || "",
+        pendingApproval: true,
+        message: "Registration successful! Your account is pending admin approval. We will notify you via email once approved.",
+      });
+    }
+
+    // For graduates, issue token immediately
     const token = generateToken(user._id);
 
     res.status(201).json({
@@ -102,8 +100,6 @@ exports.register = async (req, res) => {
       companyDescription: user.companyDescription || "",
       resume: user.resume || "",
       isAdmin: user.isAdmin,
-      verificationStatus: user.verificationStatus,
-      verificationMessage: user.verificationMessage,
       token,
     });
   } catch (error) {
@@ -127,6 +123,21 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
+    // Check if employer is approved
+    if (user.role === "employer" && !user.isApproved) {
+      if (user.approvalStatus === "rejected") {
+        return res.status(403).json({
+          message: "Your account has been rejected.",
+          rejectionReason: user.rejectionReason || "No reason provided.",
+          isRejected: true,
+        });
+      }
+      return res.status(403).json({
+        message: "Your account is pending admin approval. We will notify you via email once approved.",
+        pendingApproval: true,
+      });
+    }
+
     // Generate JWT token
     const token = generateToken(user._id);
 
@@ -142,8 +153,8 @@ exports.login = async (req, res) => {
       companyDescription: user.companyDescription || "",
       resume: user.resume || "",
       isAdmin: user.isAdmin,
-      verificationStatus: user.verificationStatus,
-      verificationMessage: user.verificationMessage,
+      isApproved: user.isApproved,
+      approvalStatus: user.approvalStatus,
       token,
     });
   } catch (error) {

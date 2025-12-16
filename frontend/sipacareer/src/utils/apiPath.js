@@ -60,6 +60,7 @@ export const API_PATH = {
     GENERATE_SUMMARY: "/api/ai/summary",
     SCAN_MATCHES: "/api/ai/scan-matches",
     MENTOR: "/api/ai/mentor",
+    CHECK_CANDIDATE_SUITABILITY: "/api/ai/candidate-suitability",
   },
   NOTIFICATIONS: {
     GET_ALL: "/api/notifications",
@@ -88,6 +89,10 @@ export const API_PATH = {
     DELETE_FAQ: (id) => `/api/admin/faqs/${id}`,
     CREATE_EMPLOYER_SETTINGS: "/api/admin/employer-settings",
     UPDATE_EMPLOYER_SETTINGS: (id) => `/api/admin/employer-settings/${id}`,
+    // Employer Approval
+    PENDING_EMPLOYERS: "/api/admin/pending-employers",
+    APPROVE_EMPLOYER: (id) => `/api/admin/employers/${id}/approve`,
+    REJECT_EMPLOYER: (id) => `/api/admin/employers/${id}/reject`,
   },
   EMPLOYER: {
     SETTINGS: "/api/employer/settings",
