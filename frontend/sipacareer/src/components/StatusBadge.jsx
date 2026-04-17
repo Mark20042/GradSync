@@ -1,17 +1,37 @@
+import { CheckCircle, XCircle, Clock, Send, AlertCircle } from "lucide-react";
+
 const StatusBadge = ({ status }) => {
   const statusConfig = {
-    Applied: "bg-gray-300 text-gray-800",
-    "In Review": "bg-yellow-300 text-yellow-800",
-    Accepted: "bg-green-300 text-green-800",
-    Rejected: "bg-red-300 text-red-800",
+    Applied: {
+      color: "bg-blue-50 text-blue-700 border-blue-200",
+      icon: Send,
+    },
+    "In Review": {
+      color: "bg-amber-50 text-amber-700 border-amber-200",
+      icon: Clock,
+    },
+    Accepted: {
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      icon: CheckCircle,
+    },
+    Rejected: {
+      color: "bg-red-50 text-red-700 border-red-200",
+      icon: XCircle,
+    },
+    default: {
+      color: "bg-gray-50 text-gray-700 border-gray-200",
+      icon: AlertCircle,
+    },
   };
+
+  const config = statusConfig[status] || statusConfig.default;
+  const Icon = config.icon;
 
   return (
     <span
-      className={`px-3 py-1 text-sm font-medium rounded ${
-        statusConfig[status] || "bg-gray-100 text-gray-800"
-      }`}
+      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${config.color} shadow-sm transition-all duration-200 hover:shadow-md`}
     >
+      <Icon className="w-3.5 h-3.5" />
       {status}
     </span>
   );

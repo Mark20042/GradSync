@@ -19,6 +19,7 @@ import { API_PATH } from "../../utils/apiPath";
 import Navbar from "./components/Navbar";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
+import MyApplicationsSkeleton from "./components/skeletons/MyApplicationsSkeleton";
 
 const MyApplications = () => {
     const [applications, setApplications] = useState([]);
@@ -83,12 +84,7 @@ const MyApplications = () => {
 
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <Navbar />
-                <LoadingSpinner />
-            </div>
-        );
+        return <MyApplicationsSkeleton />;
     }
 
     return (
@@ -152,11 +148,11 @@ const MyApplications = () => {
                                                     initial={{ opacity: 0, y: 10 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group"
-                                                    onClick={() => navigate(`/job/${app.job._id}`)}
+                                                    onClick={() => app.job && navigate(`/job/${app.job._id}`)}
                                                 >
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-medium text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                                                            {app.job.company?.companyName || app.job.company?.fullName || "Company"}
+                                                            {app.job?.company?.companyName || app.job?.company?.fullName || "Company"}
                                                         </div>
                                                         <span className="text-xs text-gray-400">
                                                             {new Date(app.createdAt).toLocaleDateString()}
@@ -164,21 +160,23 @@ const MyApplications = () => {
                                                     </div>
 
                                                     <h4 className="font-semibold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                                                        {app.job.title}
+                                                        {app.job?.title || "Deleted Job"}
                                                     </h4>
                                                     <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-                                                        {app.job.company?.companyName || app.job.company?.fullName || "Company"}
+                                                        {app.job?.company?.companyName || app.job?.company?.fullName || "Company"}
                                                     </p>
 
                                                     <div className="flex items-center gap-2 text-xs text-gray-500">
                                                         <MapPin className="w-3 h-3" />
-                                                        <span className="line-clamp-1">{app.job.location}</span>
+                                                        <span className="line-clamp-1">{app.job?.location || "Unknown Location"}</span>
                                                     </div>
 
                                                     <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-                                                        <span className={`text-xs px-2 py-1 rounded-md font-medium ${getStatusColor(status)} bg-opacity-10`}>
-                                                            {app.job.type}
-                                                        </span>
+                                                        {app.job?.type && (
+                                                            <span className={`text-xs px-2 py-1 rounded-md font-medium ${getStatusColor(status)} bg-opacity-10`}>
+                                                                {app.job.type}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             ))

@@ -4,6 +4,8 @@ import { Search, ArrowRight, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./../../../context/AuthContext";
 import HeroCards from "./HeroCards";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import jobportalAnimation from "../../../assets/animations/jobportal.json";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -15,16 +17,16 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-16 md:py-24 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-16 px-2 md:py-24 mb-8 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-100/50 to-blue-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 -z-10"></div>
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-100/40 to-purple-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 -z-10"></div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+      <div className="container mx-auto px-8 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
 
           {/* Left Content */}
-          <div className="flex-1 text-center lg:text-left max-w-xl">
+          <div className="flex-3 text-center lg:text-left max-w-5xl">
             {/* <motion.div
               variants={fadeUp}
               initial="hidden"
@@ -43,7 +45,7 @@ const Hero = () => {
               whileInView="show"
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]"
+              className="text-2xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]"
             >
               Launch Your Career with{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
@@ -129,8 +131,26 @@ const Hero = () => {
             </motion.div>
           </div>
 
-          {/* Right Content - Cards Stack */}
-          <HeroCards />
+          {/* Right Content - Lottie Animation */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="flex-2 flex justify-center lg:justify-end"
+          >
+            <div className="w-full max-w-full lg:w-[650px] xl:w-[670px]">
+              <DotLottieReact
+                data={jobportalAnimation}
+                loop
+                autoplay
+                style={{ width: "100%", height: "auto" }}
+              />
+            </div>
+          </motion.div>
+
+          {/* Original HeroCards - Commented out for now */}
+          {/* <HeroCards /> */}
 
         </div>
       </div>

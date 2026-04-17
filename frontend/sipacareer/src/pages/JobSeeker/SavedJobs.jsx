@@ -6,6 +6,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import JobCard from "../../components/Cards/JobCard";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import SavedJobsSkeleton from "./components/skeletons/SavedJobsSkeleton";
 
 import Navbar from "./components/Navbar";
 
@@ -54,12 +55,7 @@ const SavedJobs = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <LoadingSpinner />
-      </div>
-    );
+    return <SavedJobsSkeleton />;
   }
 
   return (

@@ -11,9 +11,9 @@ import {
     Briefcase,
     ExternalLink,
     CheckCircle,
-
 } from "lucide-react";
 import { motion } from "framer-motion";
+import CompanyProfileSkeleton from "./components/skeletons/CompanyProfileSkeleton";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import Navbar from "./components/Navbar";
@@ -55,14 +55,7 @@ const CompanyProfileView = () => {
 
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col">
-                <Navbar />
-                <div className="flex-1 flex items-center justify-center">
-                    <Loader className="w-8 h-8 animate-spin text-blue-600" />
-                </div>
-            </div>
-        );
+        return <CompanyProfileSkeleton />;
     }
 
     if (error || !company) {

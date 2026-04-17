@@ -6,6 +6,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import AIMentorChatSkeleton from "./components/skeletons/AIMentorChatSkeleton";
 
 const AIMentorChat = () => {
     const { user } = useAuth();
@@ -163,16 +164,7 @@ const AIMentorChat = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="flex justify-start"
                             >
-                                <div className="flex items-end gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 flex items-center justify-center">
-                                        <Bot className="w-4 h-4 text-white" />
-                                    </div>
-                                    <div className="bg-white px-5 py-4 rounded-2xl rounded-bl-sm shadow-sm border border-gray-100 flex items-center gap-1.5">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-75"></span>
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></span>
-                                    </div>
-                                </div>
+                                <AIMentorChatSkeleton />
                             </motion.div>
                         )}
                         <div ref={messagesEndRef} />

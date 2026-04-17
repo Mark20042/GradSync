@@ -29,7 +29,11 @@ const notificationRoutes = require("./routes/notificationRoutes");
 
 // --- CORS Config ---
 const corsOptions = {
-  origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5174",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
@@ -63,7 +67,9 @@ io.on("connection", (socket) => {
     async ({ conversationId, senderId, recipientId, content }) => {
       try {
         const User = require("./models/User");
-        const { createNotification } = require("./controllers/notificationController");
+        const {
+          createNotification,
+        } = require("./controllers/notificationController");
 
         // 3. Save the new message to the database
         const newMessage = new Message({
@@ -84,7 +90,7 @@ io.on("connection", (socket) => {
 
         // 5. Populate sender info before emitting
         const populatedMessage = await Message.findById(
-          savedMessage._id
+          savedMessage._id,
         ).populate("sender", "fullName avatar");
 
         // 6. Create notification for the recipient
@@ -94,7 +100,7 @@ io.on("connection", (socket) => {
           "MESSAGE",
           "New Message",
           `${sender.fullName || "Someone"} sent you a message`,
-          conversationId
+          conversationId,
         );
 
         // 7. Emit the message *only* to the recipient's room
@@ -102,13 +108,18 @@ io.on("connection", (socket) => {
 
         // 8. Check for Auto-Reply (Employer Auto-Pilot)
         const { checkAndSendAutoReply } = require("./utils/autoReplyHelper");
-        await checkAndSendAutoReply(recipientId, senderId, content, conversationId, io);
-
+        await checkAndSendAutoReply(
+          recipientId,
+          senderId,
+          content,
+          conversationId,
+          io,
+        );
       } catch (error) {
         console.error("Error handling message:", error);
         socket.emit("messageError", { message: "Could not send message" });
       }
-    }
+    },
   );
 
   // Handle disconnection
@@ -131,6 +142,17 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 
+const assessmentRoutes = require("./routes/assessmentRoutes");
+const interviewRoutes = require("./routes/interviewRoutes");
+const interviewQuestionRoutes = require("./routes/interviewQuestionRoutes");
+const interviewRoleRoutes = require("./routes/interviewRoleRoutes");
+
+// --- Assessment & Interview Routes ---
+app.use("/api/assessments", assessmentRoutes);
+app.use("/api/interviews", interviewRoutes);
+app.use("/api/interview-questions", interviewQuestionRoutes);
+app.use("/api/interview-roles", interviewRoleRoutes);
+
 // --- AI Routes ---
 app.use("/api/ai", aiRoutes);
 
@@ -141,8 +163,6 @@ app.use("/api/employer", employerRoutes);
 // --- Admin Routes ---
 const adminRoutes = require("./routes/adminRoutes");
 app.use("/api/admin", adminRoutes);
-
-
 
 // --- Serve Static Assets (Uploads) ---
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {}));

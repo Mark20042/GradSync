@@ -3,7 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Trash2, Search, Shield, Edit, Eye, Plus, X, FileText } from "lucide-react";
+import { Trash2, Search, Shield, Edit, Eye, Plus, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "../../components/Admin/AdminModal";
 
@@ -246,13 +246,27 @@ const AdminUsers = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5">
-                                        {user.isAdmin ? (
-                                            <span className="flex items-center gap-1.5 text-emerald-600 text-xs font-bold uppercase tracking-wide bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
-                                                <Shield className="w-3.5 h-3.5" /> Admin
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400 text-sm font-medium">User</span>
-                                        )}
+                                        <div className="flex flex-col gap-1.5">
+                                            {user.isAdmin ? (
+                                                <span className="flex items-center gap-1.5 text-emerald-600 text-xs font-bold uppercase tracking-wide bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100 w-fit">
+                                                    <Shield className="w-3.5 h-3.5" /> Admin
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm font-medium">User</span>
+                                            )}
+                                            {!user.isAdmin && (
+                                                <span className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border text-xs font-bold uppercase tracking-wide w-fit ${user.verified 
+                                                    ? "bg-green-50 text-green-600 border-green-100" 
+                                                    : "bg-amber-50 text-amber-600 border-amber-100"
+                                                }`}>
+                                                    {user.verified ? (
+                                                        <><CheckCircle className="w-3.5 h-3.5" /> Verified</>
+                                                    ) : (
+                                                        <><AlertCircle className="w-3.5 h-3.5" /> Unverified</>
+                                                    )}
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-5 text-gray-500 text-sm font-medium">
                                         {new Date(user.createdAt).toLocaleDateString()}
@@ -382,6 +396,21 @@ const AdminUsers = () => {
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     />
                                 </div>
+                                {!editingUser.isAdmin && (
+                                    <div className="col-span-2 flex items-center gap-2 pt-2">
+                                        <input
+                                            type="checkbox"
+                                            id="manual-verify"
+                                            checked={editingUser.verified || false}
+                                            onChange={(e) => setEditingUser({ ...editingUser, verified: e.target.checked })}
+                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <label htmlFor="manual-verify" className="text-sm font-bold text-gray-900">
+                                            Manually Verified
+                                        </label>
+                                        <p className="text-xs text-gray-500 ml-2">(Bypasses automated OCR check)</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

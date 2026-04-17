@@ -5,6 +5,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { API_PATH } from "../utils/apiPath";
 import { useAuth } from "../context/AuthContext";
 import moment from "moment";
+import NotificationListSkeleton from "../pages/JobSeeker/components/skeletons/NotificationListSkeleton";
 
 const NotificationDropdown = ({ onClose }) => {
     const navigate = useNavigate();
@@ -88,8 +89,8 @@ const NotificationDropdown = ({ onClose }) => {
                             key={type}
                             onClick={() => setFilter(type)}
                             className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${filter === type
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-gray-500 hover:bg-gray-50"
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-gray-500 hover:bg-gray-50"
                                 }`}
                         >
                             {type === "ALL" ? "All" : type === "MESSAGE" ? "Messages" : "Applicants"}
@@ -102,8 +103,8 @@ const NotificationDropdown = ({ onClose }) => {
                             key={type}
                             onClick={() => setFilter(type)}
                             className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${filter === type
-                                    ? "bg-blue-50 text-blue-600"
-                                    : "text-gray-500 hover:bg-gray-50"
+                                ? "bg-blue-50 text-blue-600"
+                                : "text-gray-500 hover:bg-gray-50"
                                 }`}
                         >
                             {type === "ALL" ? "All" : type === "MESSAGE" ? "Messages" : "Jobs"}
@@ -115,7 +116,7 @@ const NotificationDropdown = ({ onClose }) => {
             {/* List */}
             <div className="max-h-[400px] overflow-y-auto">
                 {loading ? (
-                    <div className="p-8 text-center text-gray-500">Loading...</div>
+                    <NotificationListSkeleton />
                 ) : filteredNotifications.length === 0 ? (
                     <div className="p-8 text-center text-gray-500 flex flex-col items-center">
                         <Bell className="w-8 h-8 text-gray-300 mb-2" />
@@ -132,12 +133,12 @@ const NotificationDropdown = ({ onClose }) => {
                             <div className="flex gap-3">
                                 <div
                                     className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notification.type === "MESSAGE"
-                                            ? "bg-green-100 text-green-600"
-                                            : notification.type === "MATCH"
-                                                ? "bg-purple-100 text-purple-600"
-                                                : notification.type === "APPLICATION"
-                                                    ? "bg-blue-100 text-blue-600"
-                                                    : "bg-gray-100 text-gray-600"
+                                        ? "bg-green-100 text-green-600"
+                                        : notification.type === "MATCH"
+                                            ? "bg-purple-100 text-purple-600"
+                                            : notification.type === "APPLICATION"
+                                                ? "bg-blue-100 text-blue-600"
+                                                : "bg-gray-100 text-gray-600"
                                         }`}
                                 >
                                     {notification.type === "MESSAGE" ? (

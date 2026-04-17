@@ -15,9 +15,18 @@ import { validateEmail } from "./../../utils/helper";
 import axiosInstance from "./../../utils/axiosInstance";
 import { API_PATH } from "./../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import loginAnimation from "../../assets/animations/Login.json";
+import welcomeBirdieAnimation from "../../assets/animations/welcomebirdie.json";
 
 // Error Modal Component
-const ErrorModal = ({ isOpen, onClose, message }) => {
+const ErrorModal = ({
+  isOpen,
+  onClose,
+  message,
+  isUnverified,
+  onVerifyNav,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -29,17 +38,40 @@ const ErrorModal = ({ isOpen, onClose, message }) => {
         className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative"
       >
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Login Failed</h3>
-          <p className="text-gray-600 mb-6">{message}</p>
-          <button
-            onClick={onClose}
-            className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
+          <div
+            className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isUnverified ? "bg-amber-100" : "bg-red-100"}`}
           >
-            Try Again
-          </button>
+            <AlertCircle
+              className={`w-8 h-8 ${isUnverified ? "text-amber-600" : "text-red-600"}`}
+            />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            {isUnverified ? "Verification Required" : "Login Failed"}
+          </h3>
+          <p className="text-gray-600 mb-6">{message}</p>
+          {isUnverified ? (
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={onClose}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onVerifyNav}
+                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+              >
+                Re-upload Docs
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold hover:bg-red-700 transition"
+            >
+              Try Again
+            </button>
+          )}
         </div>
       </motion.div>
     </div>
@@ -63,6 +95,7 @@ const Login = () => {
     success: false,
     showErrorModal: false, // New state for modal
     errorMessage: "", // New state for modal message
+    isUnverified: false,
   });
 
   // Validation for password
@@ -127,7 +160,7 @@ const Login = () => {
         success: true,
       }));
 
-      const { token, role, isAdmin } = response.data;
+      const { token, role, isAdmin, isProfileComplete } = response.data;
 
       if (token) {
         login(response.data, token);
@@ -140,21 +173,25 @@ const Login = () => {
             redirectPath = "/admin-dashboard";
           } else if (role === "employer") {
             redirectPath = "/employer-dashboard";
+          } else if (role === "graduate" && !isProfileComplete) {
+            redirectPath = "/setup-profile-grad";
           }
 
           window.location.href = redirectPath;
-        }, 1500);
+        }, 2850);
       }
     } catch (error) {
       const errorMessage =
         error.response?.data.message ||
         "Login failed. Please check your credentials.";
+      const isUnverified = error.response?.data?.isUnverified || false;
 
       setFormState((prev) => ({
         ...prev,
         loading: false,
         showErrorModal: true, // Show modal
         errorMessage: errorMessage,
+        isUnverified,
         error: {
           submit: errorMessage,
         },
@@ -165,13 +202,21 @@ const Login = () => {
   if (formState.success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6">
-        {/* Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full text-center max-w-md mt-16 sm:mt-0"
+          className="w-full text-center max-w-md mt-16 sm:mt-0"
         >
-          <CheckCircle className="w-16 h-16 text-green-500 mb-4 mx-auto" />
+          {/* Birdie Animation */}
+          <div className="w-72 h-72 mb-4 mx-auto flex items-center justify-center">
+            <DotLottieReact
+              data={welcomeBirdieAnimation}
+              loop
+              autoplay
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
+
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Welcome Back!
           </h2>
@@ -180,9 +225,9 @@ const Login = () => {
           </p>
 
           {/* Loader centered */}
-          <div className="flex items-center justify-center">
+          {/* <div className="flex items-center justify-center">
             <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-          </div>
+          </div> */}
 
           <p className="text-sm text-gray-500 mt-2">
             Redirecting to your dashboard...
@@ -193,151 +238,168 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 relative">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 relative">
       {/* Error Modal */}
       <ErrorModal
         isOpen={formState.showErrorModal}
         onClose={() =>
-          setFormState((prev) => ({ ...prev, showErrorModal: false }))
+          setFormState((prev) => ({
+            ...prev,
+            showErrorModal: false,
+            isUnverified: false,
+          }))
         }
         message={formState.errorMessage}
+        isUnverified={formState.isUnverified}
+        onVerifyNav={() => navigate("/signup")}
       />
 
       {/* Back to Home */}
       <button
         type="button"
         onClick={() => navigate("/")}
-        className="absolute top-4 left-4 flex items-center text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition"
+        className="absolute top-4 left-4 flex items-center text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition z-10"
       >
         <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
         Back to Home
       </button>
 
-      {/* Card */}
+      {/* Main Container - Two Column Layout */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-md mt-16 sm:mt-0"
+        className="w-full max-w-6xl flex flex-col md:flex-row items-center gap-8 md:gap-12 mt-16 sm:mt-0"
       >
-        {/* Title */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Welcome Back
-          </h2>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Sign in to your{" "}
-            <span className="text-blue-600 font-semibold">SipaCareer</span>{" "}
-            account
-          </p>
+        {/* Left Side - Lottie Animation */}
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
+            <DotLottieReact
+              data={loginAnimation}
+              loop
+              autoplay
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm sm:text-base ${
-                  formState.error.email ? "border-red-500" : "border-gray-300"
-                } focus:outline-none focus:ring-2  transition-colors focus:ring-blue-500 focus:border-transparent
-                
-                 autofill:shadow-[inset_0_0_0_2000px_#ffffff] 
-                 autofill:text-fill-slate-900
-                
-                
-                `}
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </div>
-            {formState.error.email && (
-              <p className="text-red-500 flex items-center gap-1 text-sm mt-1">
-                <AlertCircle className="w-4 h-4" />
-                {formState.error.email}
-              </p>
-            )}
+        {/* Right Side - Login Form */}
+        <div className="w-full md:w-1/2">
+          {/* Title */}
+          <div className="text-center md:text-left mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Sign in to your{" "}
+              <span className="text-blue-600 font-semibold">SipaCareer</span>{" "}
+              account
+            </p>
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type={formState.showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter your password"
-                className={`w-full pl-10 pr-12 py-3 rounded-lg border text-sm sm:text-base ${
-                  formState.error.password
-                    ? "border-red-500"
-                    : "border-gray-300"
-                } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
-                value={formData.password}
-                onChange={handleInputChange}
-              />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm sm:text-base ${
+                    formState.error.email ? "border-red-500" : "border-gray-300"
+                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent
+                  autofill:shadow-[inset_0_0_0_2000px_#ffffff] 
+                  autofill:text-fill-slate-900`}
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </div>
+              {formState.error.email && (
+                <p className="text-red-500 flex items-center gap-1 text-sm mt-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {formState.error.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={formState.showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg border text-sm sm:text-base ${
+                    formState.error.password
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      showPassword: !prev.showPassword,
+                      showErrorModal: false,
+                    }))
+                  }
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {formState.showPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {formState.error.password && (
+                <p className="text-red-500 flex items-center text-sm mt-1">
+                  <AlertCircle className="mr-1 w-4 h-4" />
+                  {formState.error.password}
+                </p>
+              )}
+            </div>
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={formState.loading}
+              className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-70 text-sm sm:text-base"
+            >
+              {formState.loading ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <span>Sign In</span>
+              )}
+            </button>
+
+            {/* Create Account */}
+            <p className="text-center text-sm sm:text-base text-gray-600 mt-6">
+              Don't have an account?{" "}
               <button
                 type="button"
-                onClick={() =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    showPassword: !prev.showPassword,
-                    showErrorModal: false, // Close modal on password toggle
-                  }))
-                }
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={() => navigate("/signup")}
+                className="text-blue-600 font-medium hover:underline"
               >
-                {formState.showPassword ? (
-                  <Eye className="w-5 h-5" />
-                ) : (
-                  <EyeOff className="w-5 h-5" />
-                )}
+                Create Account
               </button>
-            </div>
-            {formState.error.password && (
-              <p className="text-red-500 flex items-center text-sm mt-1">
-                <AlertCircle className="mr-1 w-4 h-4" />
-                {formState.error.password}
-              </p>
-            )}
-          </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={formState.loading}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-70 text-sm sm:text-base"
-          >
-            {formState.loading ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                <span>Signing In...</span>
-              </>
-            ) : (
-              <span>Sign In</span>
-            )}
-          </button>
-
-          {/* Create Account */}
-          <p className="text-center text-sm sm:text-base text-gray-600 mt-6">
-            Don’t have an account?{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/signup")}
-              className="text-blue-600 font-medium hover:underline"
-            >
-              Create Account
-            </button>
-          </p>
-        </form>
+            </p>
+          </form>
+        </div>
       </motion.div>
     </div>
   );

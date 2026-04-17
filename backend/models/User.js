@@ -187,23 +187,10 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    // Employer Approval (for employer role only)
-    isApproved: {
+    // Document Verification (OCR-based, for both roles)
+    verified: {
       type: Boolean,
-      default: function () {
-        return this.role !== "employer"; // Graduates are auto-approved, employers need admin approval
-      },
-    },
-    approvalStatus: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: function () {
-        return this.role === "employer" ? "pending" : "approved";
-      },
-    },
-    rejectionReason: {
-      type: String,
-      default: "",
+      default: false,
     },
 
     // Add experienceType for frontend tab selection
@@ -212,8 +199,30 @@ const userSchema = new mongoose.Schema(
       enum: ["work", "internship"],
       default: "work",
     },
+
+    // Tracks if a graduate has completed their profile setup
+    isProfileComplete: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Verified Skills (Assessments)
+    verifiedSkills: [
+      {
+        skill: { type: String, required: true },
+        assessmentTitle: { type: String, default: "" }, // Added assessment title
+        level: {
+          type: String,
+          enum: ["Entry", "Mid", "Senior", "Expert"],
+          default: "Entry",
+        },
+        earnedAt: { type: Date, default: Date.now },
+        badgeIcon: { type: String, default: "" }, // URL or icon name
+        score: { type: Number, default: 0 }, // Added score for ranking
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.model("User", userSchema);

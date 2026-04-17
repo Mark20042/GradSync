@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import ResumeBuilderSkeleton from "./components/skeletons/ResumeBuilderSkeleton";
 import { pdf } from "@react-pdf/renderer";
 import ResumePDF from "./ResumePDF";
 
@@ -71,7 +71,7 @@ const ResumeBuilder = () => {
             setSaving(false);
         }
     };
-    if (loading) return <LoadingSpinner />;
+    if (loading) return <ResumeBuilderSkeleton />;
 
     if (!user) {
         return (

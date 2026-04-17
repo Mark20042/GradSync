@@ -12,9 +12,8 @@ import {
   Bell,
   Sparkles,
   HelpCircle,
-
   Settings,
-  UserCheck
+  BarChart3,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import NotificationDropdown from "../NotificationDropdown";
@@ -22,7 +21,7 @@ import NotificationDropdown from "../NotificationDropdown";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { API_PATH } from "../../utils/apiPath";
-import { NAVIGATION_MENU } from "../../utils/data";
+import { EMPLOYER_MENU, JOB_SEEKER_MENU } from "../../utils/data";
 import ProfileDropdpwn from "./ProfileDropdpwn";
 
 const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
@@ -31,14 +30,16 @@ const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   return (
     <button
       onClick={() => onClick(item.id)}
-      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${active
-        ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
-        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
+        active
+          ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      }`}
     >
       <Icon
-        className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-600" : "text-gray-500"
-          }`}
+        className={`w-5 h-5 flex-shrink-0 ${
+          active ? "text-blue-600" : "text-gray-500"
+        }`}
       />
       {!isCollapsed && <span className="ml-3 truncate">{item.name}</span>}
     </button>
@@ -81,7 +82,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
     };
   }, [profileDropdownOpen, notificationOpen]);
 
-
   const handleNavigation = (itemId) => {
     setActiveNavItem(itemId);
     navigate(`/${itemId}`);
@@ -101,12 +101,13 @@ const DashboardLayout = ({ activeMenu, children }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 transform
-      ${isMobile
-            ? sidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-            : "translate-x-0"
-          }
+      ${
+        isMobile
+          ? sidebarOpen
+            ? "translate-x-0"
+            : "-translate-x-full"
+          : "translate-x-0"
+      }
       ${sidebarCollapsed ? "w-16" : "w-64"}
       bg-white border-r border-gray-200`}
       >
@@ -130,27 +131,65 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
         {/* Navigation */}
         <nav className="p-4 space-y-2">
-          {/* Regular Navigation - Hide for admins */}
-          {!user?.isAdmin && NAVIGATION_MENU.map((item) => (
-            <NavigationItem
-              key={item.id}
-              item={item}
-              active={activeNavItem === item.id}
-              onClick={handleNavigation}
-              isCollapsed={sidebarCollapsed}
-            />
-          ))}
+          {/* Employer Navigation - Only if NOT admin */}
+          {!user?.isAdmin &&
+            user?.role === "employer" &&
+            EMPLOYER_MENU.map((item) => (
+              <NavigationItem
+                key={item.id}
+                item={item}
+                active={activeNavItem === item.id}
+                onClick={handleNavigation}
+                isCollapsed={sidebarCollapsed}
+              />
+            ))}
+
+          {/* Job Seeker Navigation - Only if NOT admin */}
+          {!user?.isAdmin &&
+            user?.role === "graduate" &&
+            JOB_SEEKER_MENU.map((item) => (
+              <NavigationItem
+                key={item.id}
+                item={item}
+                active={activeNavItem === item.id}
+                onClick={handleNavigation}
+                isCollapsed={sidebarCollapsed}
+              />
+            ))}
 
           {/* Admin Navigation */}
           {user?.isAdmin && (
             <>
               {[
-                { id: "admin-dashboard", name: "Dashboard", icon: LayoutDashboard },
+                {
+                  id: "admin-dashboard",
+                  name: "Dashboard",
+                  icon: LayoutDashboard,
+                },
                 { id: "admin-users", name: "Users", icon: Users },
-                { id: "admin-pending-employers", name: "Pending Employers", icon: UserCheck },
+
                 { id: "admin-jobs", name: "Jobs", icon: Briefcase },
+                {
+                  id: "admin-assessments",
+                  name: "Assessments",
+                  icon: Sparkles,
+                },
+                {
+                  id: "admin-interview-questions",
+                  name: "Interview Qs",
+                  icon: HelpCircle,
+                },
+                {
+                  id: "admin-interview-scores",
+                  name: "Interview Scores",
+                  icon: BarChart3,
+                },
                 { id: "admin-faqs", name: "FAQs", icon: HelpCircle },
-                { id: "admin-employer-settings", name: "Employer Settings", icon: Settings },
+                {
+                  id: "admin-employer-settings",
+                  name: "Employer Settings",
+                  icon: Settings,
+                },
                 { id: "admin-reports", name: "Reports", icon: FileSpreadsheet },
               ].map((item) => (
                 <NavigationItem
@@ -217,8 +256,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
           </div>
 
           <div className="flex items-center space-x-3">
-
-
             {/* Notification Bell */}
             <div className="relative">
               <button
@@ -233,11 +270,15 @@ const DashboardLayout = ({ activeMenu, children }) => {
                   <Bell className="w-5 h-5" />
                   {/* Optional: Add badge if unread count > 0 */}
                 </div>
-                <span className="hidden md:inline font-medium text-sm">Notifications</span>
+                <span className="hidden md:inline font-medium text-sm">
+                  Notifications
+                </span>
               </button>
               {notificationOpen && (
                 <div onClick={(e) => e.stopPropagation()}>
-                  <NotificationDropdown onClose={() => setNotificationOpen(false)} />
+                  <NotificationDropdown
+                    onClose={() => setNotificationOpen(false)}
+                  />
                 </div>
               )}
             </div>

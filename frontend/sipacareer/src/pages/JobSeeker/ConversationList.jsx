@@ -8,6 +8,7 @@ import { MessageCircleDashed, Building2, ArrowLeft, User, MessageSquare, Briefca
 import moment from "moment";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
+import ConversationListSkeleton from "./components/skeletons/ConversationListSkeleton";
 
 const ConversationList = () => {
   const { user } = useAuth();
@@ -88,14 +89,7 @@ const ConversationList = () => {
   const filteredConversations = conversations.filter(convo => convo.recipient?.role === 'employer');
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC]">
-        <Navbar />
-        <div className="pt-20 flex justify-center">
-          <LoadingSpinner />
-        </div>
-      </div>
-    );
+    return <ConversationListSkeleton />;
   }
 
   return (

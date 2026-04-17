@@ -9,6 +9,8 @@ const { createNotification } = require("./notificationController");
  */
 exports.getMessages = async (req, res) => {
   try {
+    const { conversationId } = req.params;
+
     const messages = await Message.find({
       conversationId: req.params.conversationId,
     })
@@ -47,14 +49,14 @@ exports.sendMessage = async (req, res) => {
           sentAt: Date.now(),
         },
       },
-      { new: true }
+      { new: true },
     )
       .populate("participants", "fullName role")
       .populate("job"); // Populate job to check for job-specific settings
 
     // 3. Create Notification for the recipient
     const recipient = conversation.participants.find(
-      (p) => p._id.toString() !== senderId.toString()
+      (p) => p._id.toString() !== senderId.toString(),
     );
 
     if (recipient) {
@@ -63,12 +65,12 @@ exports.sendMessage = async (req, res) => {
         "MESSAGE",
         "New Message",
         `You have a new message from ${req.user.fullName || "a user"}`,
-        conversationId
+        conversationId,
       );
 
       // --- AUTO-REPLY LOGIC ---
       // Check if recipient is an employer
-      if (recipient.role === 'employer') {
+      if (recipient.role === "employer") {
         const JobFAQ = require("../models/JobFAQ");
         const EmployerSettings = require("../models/EmployerSettings");
 
@@ -79,15 +81,19 @@ exports.sendMessage = async (req, res) => {
         const faqs = await JobFAQ.find({ employer: recipient._id });
         const lowerContent = content.toLowerCase();
 
-        console.log(`[AutoReply] Checking message: "${content}" from sender ${senderId} to employer ${recipient._id}`);
-        console.log(`[AutoReply] Found ${faqs.length} total FAQs for this employer.`);
+        console.log(
+          `[AutoReply] Checking message: "${content}" from sender ${senderId} to employer ${recipient._id}`,
+        );
+        console.log(
+          `[AutoReply] Found ${faqs.length} total FAQs for this employer.`,
+        );
 
         // Find a matching FAQ
         // We prioritize job-specific FAQs if they exist and match the current job
         let matchedFAQ = null;
 
         // Filter FAQs relevant to this context (Global or Specific Job)
-        const relevantFaqs = faqs.filter(faq => {
+        const relevantFaqs = faqs.filter((faq) => {
           // 1. Global FAQ (no job assigned) -> Always relevant
           if (!faq.job) return true;
 
@@ -107,13 +113,20 @@ exports.sendMessage = async (req, res) => {
           return false;
         });
 
-        console.log(`[AutoReply] Found ${relevantFaqs.length} relevant FAQs after filtering.`);
+        console.log(
+          `[AutoReply] Found ${relevantFaqs.length} relevant FAQs after filtering.`,
+        );
 
         for (const faq of relevantFaqs) {
-          console.log(`[AutoReply] Checking FAQ: "${faq.question}" (Job: ${faq.job || 'Global'})`);
+          console.log(
+            `[AutoReply] Checking FAQ: "${faq.question}" (Job: ${faq.job || "Global"})`,
+          );
 
           // Check if message matches the FAQ question
-          if (lowerContent === faq.question.toLowerCase() || lowerContent.includes(faq.question.toLowerCase())) {
+          if (
+            lowerContent === faq.question.toLowerCase() ||
+            lowerContent.includes(faq.question.toLowerCase())
+          ) {
             console.log(`[AutoReply] MATCH FOUND! FAQ: "${faq.question}"`);
             matchedFAQ = faq;
             break;
@@ -140,11 +153,21 @@ exports.sendMessage = async (req, res) => {
         // 2. Check for "Out of Office" / Business Hours (Lower Priority)
         // Only if NO FAQ was matched
         if (!autoReplySent) {
-          const settings = await EmployerSettings.findOne({ user: recipient._id });
+          const settings = await EmployerSettings.findOne({
+            user: recipient._id,
+          });
 
           if (settings && settings.businessHours) {
             const now = new Date();
-            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const days = [
+              "sunday",
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday",
+            ];
             const currentDay = days[now.getDay()];
             const daySettings = settings.businessHours[currentDay];
 
@@ -155,12 +178,19 @@ exports.sendMessage = async (req, res) => {
               const currentMinute = now.getMinutes();
               const currentTimeValue = currentHour * 60 + currentMinute;
 
-              const [startHour, startMinute] = daySettings.start.split(':').map(Number);
-              const [endHour, endMinute] = daySettings.end.split(':').map(Number);
+              const [startHour, startMinute] = daySettings.start
+                .split(":")
+                .map(Number);
+              const [endHour, endMinute] = daySettings.end
+                .split(":")
+                .map(Number);
               const startTimeValue = startHour * 60 + startMinute;
               const endTimeValue = endHour * 60 + endMinute;
 
-              if (currentTimeValue >= startTimeValue && currentTimeValue < endTimeValue) {
+              if (
+                currentTimeValue >= startTimeValue &&
+                currentTimeValue < endTimeValue
+              ) {
                 isOffline = false;
               }
             }
@@ -202,7 +232,7 @@ exports.sendMessage = async (req, res) => {
     // 4. Return the populated message
     const populatedMessage = await Message.findById(newMessage._id).populate(
       "sender",
-      "fullName avatar"
+      "fullName avatar",
     );
 
     res.status(201).json(populatedMessage);

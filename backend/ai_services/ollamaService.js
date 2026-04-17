@@ -5,9 +5,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // Initialize the model
-// Using llama3.1:8b for best quality reasoning and accuracy
+// Using llama3.1:8b for best quality reasoning and accuracy deepseek-r1:8b
 const model = new ChatOllama({
-  model: "llama3.1:8b", // Best balance of quality and speed
+  model: "qwen2.5:3b", // Best balance of quality and speed
   temperature: 0.5, // Low temperature for consistent JSON output
   baseUrl: "http://127.0.0.1:11434", // Default Ollama URL
 });
@@ -169,4 +169,94 @@ const generateAISummary = async (userProfile) => {
   }
 };
 
-module.exports = { analyzeJobSuitability, generateAISummary };
+/**
+ * Evaluate a candidate's interview answer against the ideal answer using Ollama (RAG-style).
+ * @param {string} questionText - The interview question
+ * @param {string} idealAnswer - The admin-provided reference/ideal answer
+ * @param {string} candidateAnswer - The candidate's STT transcript
+ * @returns {Promise<{score: number, feedback: string}>}
+ */
+const evaluateInterviewAnswer = async (questionText, idealAnswer, candidateAnswer) => {
+  if (!questionText || !candidateAnswer) {
+    throw new Error("Question text and candidate answer are required.");
+  }
+
+  const template = `
+    You are a strict but fair professional interview evaluator. You must evaluate a candidate's spoken answer against a reference (ideal) answer.
+
+    INTERVIEW QUESTION:
+    "{questionText}"
+
+    REFERENCE ANSWER (ideal response provided by the hiring team):
+    "{idealAnswer}"
+
+    CANDIDATE'S ANSWER (transcribed from speech):
+    "{candidateAnswer}"
+
+    EVALUATION CRITERIA (score each 0-25, total = sum):
+    1. RELEVANCE & ACCURACY (0-25): Does the answer address the question? Are the facts/concepts correct compared to the reference?
+    2. KEY CONCEPTS COVERAGE (0-25): How many key points from the reference answer did the candidate cover? 
+    3. DEPTH & DETAIL (0-25): Did the candidate provide sufficient explanation, examples, or elaboration?
+    4. COMMUNICATION CLARITY (0-25): Was the response well-structured, coherent, and professionally articulated?
+
+    STRICT SCORING RULES:
+    - Score 85-100: Covers 90%+ of reference answer key points with additional insights. Exceptional communication.
+    - Score 70-84: Covers 70-89% of key points. Good structure and communication.
+    - Score 50-69: Covers 40-69% of key points. Adequate but lacks depth.
+    - Score 25-49: Covers less than 40%. Vague, off-topic, or missing critical concepts.
+    - Score 0-24: Mostly irrelevant, incoherent, or extremely brief.
+
+    IMPORTANT: Be strict and fair. An average candidate should score around 50-60.
+    If the candidate's answer is blank or just filler words, score 0-10.
+
+    Return ONLY a valid JSON object:
+    {{
+      "score": 55,
+      "feedback": "Your 2-3 sentence constructive feedback here. Mention what was done well and what was missed compared to the ideal answer."
+    }}
+    
+    Do not include markdown, code blocks, or extra text. Just raw JSON.
+  `;
+
+  const prompt = new PromptTemplate({
+    template: template,
+    inputVariables: ["questionText", "idealAnswer", "candidateAnswer"],
+  });
+
+  try {
+    const input = await prompt.format({
+      questionText: questionText,
+      idealAnswer: idealAnswer || "No reference answer provided. Evaluate based on general interview best practices.",
+      candidateAnswer: candidateAnswer,
+    });
+
+    console.log("Sending interview evaluation prompt to Ollama...");
+    const response = await model.invoke(input);
+    const content = response.content || response;
+
+    // Parse JSON from response
+    const firstBrace = content.indexOf("{");
+    const lastBrace = content.lastIndexOf("}");
+
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      const jsonStr = content.substring(firstBrace, lastBrace + 1);
+      const result = JSON.parse(jsonStr);
+
+      // Ensure score is within bounds
+      result.score = Math.max(0, Math.min(100, Math.round(result.score || 0)));
+      result.feedback = result.feedback || "No feedback generated.";
+
+      return result;
+    } else {
+      throw new Error("No JSON object found in Ollama response");
+    }
+  } catch (error) {
+    console.error("Error evaluating interview answer:", error);
+    throw new Error(
+      "Failed to evaluate interview answer. Ensure Ollama is running and you have pulled the model (ollama pull qwen2.5:3b)."
+    );
+  }
+};
+
+module.exports = { analyzeJobSuitability, generateAISummary, evaluateInterviewAnswer };
+

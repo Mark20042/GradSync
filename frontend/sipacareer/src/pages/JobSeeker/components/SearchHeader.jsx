@@ -1,47 +1,48 @@
 import { MapPin, Search } from "lucide-react";
 
-const SearchHeader = ({ filters, handleFilterChange, onSearch }) => {
+const SearchHeader = ({
+  filters,
+  handleFilterChange,
+  onSearch,
+}) => {
   return (
-    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl shadow-gray-200 border border-white/20 p-4 lg:p-8 mb-6 lg:mb-8">
-      <div className="flex flex-col lg:gap-6">
-        <div className="text-center lg:text-left">
-          <h1 className="text-2xl lg:text-2xl font-semibold text-gray-900 mb-2">
-            Find Your Dream Job
-          </h1>
-          <p className="text-gray-600 text-sm lg:text-base">
-            Discover opportunities that match your passion
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-30">
+        <div className="flex flex-col md:flex-row gap-4">
           {/* Keyword Input */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-[1]" />
+          <div className="flex-[2] relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-blue-200 z-10 group-focus-within:text-white transition-colors duration-300">
+              <Search className="h-5 w-5" />
+            </div>
             <input
               type="text"
-              placeholder="Job title, company, or keywords"
-              className="w-full pl-12 pr-4 py-2 lg:py-2.5 border border-gray-200 rounded-xl outline-0 text-base bg-white/50 backdrop-blur-sm"
+              placeholder="Job title, keywords, or company..."
+              className="w-full pl-14 pr-4 py-4 border border-white/20 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/70 focus:bg-white/20 focus:border-white/40 transition-all duration-300"
               value={filters.keyword}
               onChange={(e) => handleFilterChange("keyword", e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onSearch()}
             />
           </div>
 
           {/* Location Input */}
-          <div className="relative min-w-0 lg:min-w-[200px]">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-[1]" />
+          <div className="flex-[1.5] relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-blue-200 z-10 group-focus-within:text-white transition-colors duration-300">
+              <MapPin className="h-5 w-5" />
+            </div>
             <input
               type="text"
-              placeholder="Location"
-              className="w-full pl-12 pr-4 py-2 lg:py-2.5 border border-gray-200 rounded-xl outline-0 text-base bg-white/50 backdrop-blur-sm"
+              placeholder="City, state, or zip code"
+              className="w-full pl-14 pr-4 py-4 border border-white/20 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/70 focus:bg-white/20 focus:border-white/40 transition-all duration-300"
               value={filters.location}
               onChange={(e) => handleFilterChange("location", e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onSearch()}
             />
           </div>
 
           {/* Search Button */}
           <button
-            onClick={onSearch} // ✅ run fetch
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 lg:px-10 py-3 lg:py-2.5 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-semibold text-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            onClick={onSearch}
+            className="md:w-auto w-full px-8 py-4 bg-white text-indigo-700 rounded-xl hover:bg-blue-50 transition-all duration-300 font-bold text-base shadow-lg shadow-indigo-900/20 hover:shadow-xl hover:-translate-y-0.5 whitespace-nowrap"
           >
             Search Jobs
           </button>

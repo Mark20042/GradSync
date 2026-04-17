@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import SearchImg from "../../../assets/images/search.png";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import hiringAnimation from "../../../assets/animations/hiring-process.json";
 
 const About = () => {
   return (
@@ -67,13 +68,13 @@ const About = () => {
               and secure communication, SipaCareer ensures{" "}
               <span className="font-semibold">faster hiring</span>, stronger{" "}
               <span className="font-semibold">career growth</span>, and reliable{" "}
-              <span className="font-semibold">data privacy</span>. It’s more
-              than just a job portal—it’s a smarter and safer gateway to
+              <span className="font-semibold">data privacy</span>. It's more
+              than just a job portal—it's a smarter and safer gateway to
               opportunities.
             </motion.p>
           </div>
 
-          {/* Right Image */}
+          {/* Right Lottie Animation */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -81,11 +82,14 @@ const About = () => {
             viewport={{ once: false, amount: 0.3 }}
             className="flex justify-center"
           >
-            <img
-              src={SearchImg}
-              alt="SipaCareer Platform"
-              className="w-full max-w-xs sm:max-w-sm md:max-w-md"
-            />
+            <div className="w-full max-w-5xl md:max-w-2xl lg:max-w-3xl xl:max-w-6xl mr-30">
+              <DotLottieReact
+                data={hiringAnimation}
+                loop
+                autoplay
+                style={{ width: "140%", height: "auto" }}
+              />
+            </div>
           </motion.div>
         </div>
       </div>

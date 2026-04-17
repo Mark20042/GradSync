@@ -156,7 +156,7 @@ const ApplicationViewer = () => {
                     {/* Applications List */}
                     <div className="p-6">
                       <div className="space-y-4">
-                        {applications.map((application) => (
+                        {applications.filter((app) => app.applicant).map((application) => (
                           <div
                             key={application._id}
                             className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"

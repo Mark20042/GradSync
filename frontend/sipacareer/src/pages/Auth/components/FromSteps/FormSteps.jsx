@@ -1,4 +1,3 @@
-// components/FormSteps/FormSteps.js
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import BasicInfoStep from "./BasicInfoStep";

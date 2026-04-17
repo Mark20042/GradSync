@@ -17,6 +17,7 @@ exports.createJob = async (req, res) => {
     });
 
     await job.save();
+
     res.status(201).json(job);
   } catch (error) {
     console.error("Job creation error:", error);
@@ -29,45 +30,43 @@ exports.getJobs = async (req, res) => {
   const { keyword, location, type, minSalary, maxSalary, userId, category } =
     req.query;
 
-  const query = {
-    isClosed: false,
-    ...(keyword && { title: { $regex: keyword, $options: "i" } }),
-    ...(location && { location: { $regex: location, $options: "i" } }),
-    ...(category && { category }),
-    ...(type && { type }),
-    ...(req.query.company && { company: req.query.company }),
-  };
-
-  const andConditions = [];
-  if (minSalary && !isNaN(minSalary)) {
-    // Show jobs where the job's max salary is at least the user's min
-    andConditions.push({ salaryMax: { $gte: Number(minSalary) } });
-  }
-  if (maxSalary && !isNaN(maxSalary)) {
-    // Show jobs where the job's min salary is at most the user's max
-    andConditions.push({ salaryMin: { $lte: Number(maxSalary) } });
-  }
-  if (andConditions.length > 0) {
-    query.$and = andConditions;
-  }
-
   try {
+    const query = {
+      isClosed: false,
+      ...(keyword && { title: { $regex: keyword, $options: "i" } }),
+      ...(location && { location: { $regex: location, $options: "i" } }),
+      ...(category && { category }),
+      ...(type && { type }),
+      ...(req.query.company && { company: req.query.company }),
+    };
+
+    const andConditions = [];
+    if (minSalary && !isNaN(minSalary)) {
+      // Show jobs where the job's max salary is at least the user's min
+      andConditions.push({ salaryMax: { $gte: Number(minSalary) } });
+    }
+    if (maxSalary && !isNaN(maxSalary)) {
+      // Show jobs where the job's min salary is at most the user's max
+      andConditions.push({ salaryMin: { $lte: Number(maxSalary) } });
+    }
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
     const jobs = await Job.find(query).populate(
       "company",
-      "fullName companyName companyLogo"
+      "fullName companyName companyLogo",
     );
 
     let saveJobIds = [];
     let appliedJobStatusMap = {};
 
     if (userId) {
-      const savedJobs = await SavedJob.find({ graduate: userId }).select(
-        "job"
-      );
+      const savedJobs = await SavedJob.find({ graduate: userId }).select("job");
       saveJobIds = savedJobs.map((s) => String(s.job));
 
       const applications = await Application.find({ applicant: userId }).select(
-        "job status"
+        "job status",
       );
       applications.forEach((app) => {
         appliedJobStatusMap[String(app.job)] = app.status;
@@ -85,6 +84,7 @@ exports.getJobs = async (req, res) => {
 
     res.json(jobsWithExtras);
   } catch (error) {
+    console.error("Error in getJobs:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -114,7 +114,7 @@ exports.getJobsEmployer = async (req, res) => {
           ...job,
           applicationCount,
         };
-      })
+      }),
     );
     res.status(200).json(jobsWithApplicationCounts);
   } catch (error) {
@@ -128,10 +128,11 @@ exports.getJobById = async (req, res) => {
     const { userId } = req.query;
 
     let applicationStatus = null;
+    let isSaved = false;
 
     const job = await Job.findById(req.params.id).populate(
       "company",
-      "fullName companyName companyLogo"
+      "fullName companyName companyLogo",
     );
 
     if (userId) {
@@ -143,9 +144,20 @@ exports.getJobById = async (req, res) => {
       if (application) {
         applicationStatus = application.status;
       }
+
+      const savedJob = await SavedJob.findOne({
+        job: req.params.id,
+        graduate: userId,
+      });
+
+      if (savedJob) {
+        isSaved = true;
+      }
     }
 
-    res.status(200).json({ ...job.toObject(), applicationStatus });
+    const jobData = { ...job.toObject(), applicationStatus, isSaved };
+
+    res.status(200).json(jobData);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -166,6 +178,7 @@ exports.updateJob = async (req, res) => {
     Object.assign(job, req.body);
 
     const updated = await job.save();
+
     res.status(200).json(updated);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -186,6 +199,7 @@ exports.deleteJob = async (req, res) => {
     }
 
     await job.deleteOne();
+
     res.status(200).json({ message: "Job deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -207,6 +221,7 @@ exports.toggleCloseJob = async (req, res) => {
 
     job.isClosed = !job.isClosed;
     await job.save();
+
     res.json({ message: "Job marked as closed" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

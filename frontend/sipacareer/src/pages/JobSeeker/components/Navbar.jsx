@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Bookmark, Bell, MessageCircle, Users } from "lucide-react";
+import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -63,10 +63,20 @@ const Navbar = () => {
                     <button
                       className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
                       onClick={() => navigate("/ai-mentor")}
-                      title="AI Career Mentor"
+                      title="AI Career Coach"
                     >
                       <Sparkles className="w-5 h-5 text-blue-600" />
-                      AI Mentor
+                      Career Coach
+                    </button>
+
+                    {/* Skill Center */}
+                    <button
+                      className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                      onClick={() => navigate("/skill-center")}
+                      title="Skill Center"
+                    >
+                      <Award className="w-5 h-5 text-yellow-500" />
+                      Skills
                     </button>
 
                     {/* My Applications */}
@@ -188,10 +198,16 @@ const Navbar = () => {
       <div className="md:hidden border-t border-gray-100 bg-white overflow-x-auto">
         <div className="flex items-center justify-around p-2">
           {user?.role === "graduate" && (
-            <button onClick={() => navigate("/ai-mentor")} className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600">
-              <Sparkles className="w-5 h-5" />
-              <span className="text-[10px] mt-1">Mentor</span>
-            </button>
+            <>
+              <button onClick={() => navigate("/ai-mentor")} className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-[10px] mt-1">Coach</span>
+              </button>
+              <button onClick={() => navigate("/skill-center")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
+                <Award className="w-5 h-5" />
+                <span className="text-[10px] mt-1">Skills</span>
+              </button>
+            </>
           )}
           <button onClick={() => navigate("/messages")} className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600">
             <MessageCircle className="w-5 h-5" />

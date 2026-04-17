@@ -102,7 +102,7 @@ exports.getApplicationById = async (req, res) => {
       .populate("job", " title company")
       .populate(
         "applicant",
-        "fullName degree email avatar bio resume skills experiences internships education projects portfolio linkedin phone address awards certifications languages"
+        "fullName degree email avatar bio resume skills verifiedSkills experiences internships education projects portfolio linkedin phone address awards certifications languages"
       );
 
     if (!app) {

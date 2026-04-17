@@ -33,23 +33,26 @@ import AdminJobs from "./pages/Admin/AdminJobs";
 import AdminReports from "./pages/Admin/AdminReports";
 import AdminFAQs from "./pages/Admin/AdminFAQs";
 import AdminEmployerSettings from "./pages/Admin/AdminEmployerSettings";
-import AdminPendingEmployers from "./pages/Admin/AdminPendingEmployers";
+
 import MyApplications from "./pages/JobSeeker/MyApplications";
 import CompanyProfileView from "./pages/JobSeeker/CompanyProfileView";
 import ResumeBuilder from "./pages/JobSeeker/ResumeBuilder";
-
-
+import SkillCenter from "./pages/JobSeeker/SkillCenter";
+import InterviewRoom from "./pages/Interview/InterviewRoom";
+import InterviewResults from "./pages/Interview/InterviewResults";
+import AdminAssessmentManager from "./pages/Admin/AdminAssessmentManager";
+import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
+import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
+import Quiz from "./pages/JobSeeker/Quiz";
 
 const App = () => {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-
 
           {/* Protected Routes for Graduates */}
           <Route element={<ProtectedRoute requiredRole="graduate" />}>
@@ -64,7 +67,10 @@ const App = () => {
             <Route path="/messages/:conversationId" element={<Messages />} />
             <Route path="/company/:id" element={<CompanyProfileView />} />
             <Route path="/resume-builder" element={<ResumeBuilder />} />
-
+            <Route path="/skill-center" element={<SkillCenter />} />
+            <Route path="/quiz" element={<Quiz />} />
+            <Route path="/interview-room" element={<InterviewRoom />} />
+            <Route path="/interview-results" element={<InterviewResults />} />
           </Route>
 
           {/* Protected Routes for Employers */}
@@ -83,11 +89,26 @@ const App = () => {
           <Route element={<AdminRoute />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin-users" element={<AdminUsers />} />
-            <Route path="/admin-pending-employers" element={<AdminPendingEmployers />} />
+
             <Route path="/admin-jobs" element={<AdminJobs />} />
             <Route path="/admin-reports" element={<AdminReports />} />
             <Route path="/admin-faqs" element={<AdminFAQs />} />
-            <Route path="/admin-employer-settings" element={<AdminEmployerSettings />} />
+            <Route
+              path="/admin-employer-settings"
+              element={<AdminEmployerSettings />}
+            />
+            <Route
+              path="/admin-assessments"
+              element={<AdminAssessmentManager />}
+            />
+            <Route
+              path="/admin-interview-questions"
+              element={<AdminInterviewQuestions />}
+            />
+            <Route
+              path="/admin-interview-scores"
+              element={<AdminInterviewScores />}
+            />
           </Route>
 
           {/* catch all route */}

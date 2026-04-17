@@ -1,5 +1,11 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const path = require("path");
+const { verifyDocument } = require("../utils/ocrService");
+const {
+  sendVerificationSuccessEmail,
+  sendVerificationFailedEmail,
+} = require("../utils/emailService");
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -9,26 +15,29 @@ const generateToken = (id) => {
 };
 
 // @desc    Register a new user
-// @desc    Register a new user
 exports.register = async (req, res) => {
   const fs = require("fs");
 
   // Helper to cleanup files
   const cleanupFiles = (files) => {
     if (!files) return;
-    if (files.avatar) fs.unlinkSync(files.avatar[0].path);
-    if (files.tor) fs.unlinkSync(files.tor[0].path);
-    if (files.businessPermit) fs.unlinkSync(files.businessPermit[0].path);
+    try {
+      if (files.avatar && files.avatar[0]) fs.unlinkSync(files.avatar[0].path);
+      if (files.tor && files.tor[0]) fs.unlinkSync(files.tor[0].path);
+      if (files.businessPermit && files.businessPermit[0])
+        fs.unlinkSync(files.businessPermit[0].path);
+    } catch (err) {
+      console.error("File cleanup error:", err.message);
+    }
   };
 
   try {
-    const { fullName, email, password, role, degree, companyName, avatar } =
-      req.body;
+    const { fullName, email, password, role, degree, companyName } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      cleanupFiles(req.files); // Cleanup if user exists
+      cleanupFiles(req.files);
       return res.status(400).json({ message: "User already exists" });
     }
 
@@ -39,23 +48,19 @@ exports.register = async (req, res) => {
 
     if (req.files) {
       if (req.files.avatar) {
-        avatarUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.avatar[0].filename
-          }`;
+        avatarUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.avatar[0].filename}`;
       }
       if (req.files.tor) {
-        torUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.tor[0].filename
-          }`;
+        torUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.tor[0].filename}`;
       }
       if (req.files.businessPermit) {
-        businessPermitUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.businessPermit[0].filename
-          }`;
+        businessPermitUrl = `${req.protocol}://${req.get("host")}/uploads/${req.files.businessPermit[0].filename}`;
       }
     }
 
-    // Determine approval status based on role
     const isEmployer = role === "employer";
 
-    // Create new user
+    // Create new user (initially unverified)
     const user = await User.create({
       fullName,
       email,
@@ -67,43 +72,81 @@ exports.register = async (req, res) => {
       companyLogo: isEmployer ? avatarUrl : "",
       tor: torUrl,
       businessPermit: businessPermitUrl,
-      // Employer-specific approval fields
-      isApproved: !isEmployer, // Graduates auto-approved, employers need approval
-      approvalStatus: isEmployer ? "pending" : "approved",
+      verified: false,
+      verificationStatus: "pending",
+      verificationMessage: "Your document is currently being reviewed.",
     });
 
-    // For employers, don't issue token - they need admin approval first
-    if (isEmployer) {
-      return res.status(201).json({
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        companyName: user.companyName || "",
-        pendingApproval: true,
-        message: "Registration successful! Your account is pending admin approval. We will notify you via email once approved.",
-      });
-    }
+    // Run OCR asynchronously in the background so the user doesn't wait
+    const runBackgroundVerification = async () => {
+      try {
+        let ocrResult = { verified: false, message: "No document uploaded." };
 
-    // For graduates, issue token immediately
-    const token = generateToken(user._id);
+        if (isEmployer && req.files && req.files.businessPermit) {
+          const filePath = req.files.businessPermit[0].path;
+          console.log(
+            `🔍 Running OCR verification in background on Business Permit for ${fullName}...`,
+          );
+          ocrResult = await verifyDocument(filePath, "businessPermit");
+        } else if (!isEmployer && req.files && req.files.tor) {
+          const filePath = req.files.tor[0].path;
+          console.log(
+            `🔍 Running OCR verification in background on TOR for ${fullName}...`,
+          );
+          ocrResult = await verifyDocument(filePath, "tor");
+        }
 
+        console.log(`📄 OCR Result for ${fullName}:`, ocrResult);
+
+        if (ocrResult.verified) {
+          // Update user status to verified
+          user.verified = true;
+          user.verificationStatus = "verified";
+          user.verificationMessage = ocrResult.message;
+          await user.save();
+
+          sendVerificationSuccessEmail(
+            user.email,
+            user.fullName,
+            user.role,
+          ).catch((err) =>
+            console.error("Email notification failed:", err.message),
+          );
+        } else {
+          // Document failed OCR, delete the user and uploaded files
+          console.log(`🗑️ OCR Failed. Deleting unverified user: ${user.email}`);
+          await User.findByIdAndDelete(user._id);
+          if (req.files) cleanupFiles(req.files);
+
+          sendVerificationFailedEmail(
+            user.email,
+            user.fullName,
+            user.role,
+          ).catch((err) =>
+            console.error("Failed email notification error:", err.message),
+          );
+        }
+      } catch (err) {
+        console.error("Background verification error:", err.message);
+      }
+    };
+
+    // Kick off verification without awaiting it
+    runBackgroundVerification();
+
+    // Immediately respond to the client so they aren't waiting for the OCR
     res.status(201).json({
       _id: user._id,
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      avatar: user.avatar,
-      degree: user.degree,
-      companyName: user.companyName || "",
-      companyLogo: user.companyLogo || "",
-      companyDescription: user.companyDescription || "",
-      resume: user.resume || "",
-      isAdmin: user.isAdmin,
-      token,
+      verified: false,
+      verificationPending: true,
+      message:
+        "Registration successful. Please wait for an email to get verified.",
     });
   } catch (error) {
-    if (req.files) cleanupFiles(req.files); // Cleanup on server error
+    if (req.files) cleanupFiles(req.files);
     res.status(500).json({ message: error.message });
   }
 };
@@ -123,23 +166,23 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Check if employer is approved
-    if (user.role === "employer" && !user.isApproved) {
-      if (user.approvalStatus === "rejected") {
-        return res.status(403).json({
-          message: "Your account has been rejected.",
-          rejectionReason: user.rejectionReason || "No reason provided.",
-          isRejected: true,
-        });
-      }
+    // Check if user is verified (applies to both graduates and employers, but not admins)
+    if (!user.verified && !user.isAdmin) {
       return res.status(403).json({
-        message: "Your account is pending admin approval. We will notify you via email once approved.",
-        pendingApproval: true,
+        message:
+          "Your account is not yet verified. Please upload a valid document to complete verification.",
+        isUnverified: true,
       });
     }
 
     // Generate JWT token
     const token = generateToken(user._id);
+
+    // Automatically check if a graduate has completed their profile (i.e. they inputted their university)
+    const isProfileComplete =
+      user.role === "graduate"
+        ? !!(user.university && user.university.trim() !== "")
+        : user.isProfileComplete || true;
 
     res.status(200).json({
       _id: user._id,
@@ -153,8 +196,8 @@ exports.login = async (req, res) => {
       companyDescription: user.companyDescription || "",
       resume: user.resume || "",
       isAdmin: user.isAdmin,
-      isApproved: user.isApproved,
-      approvalStatus: user.approvalStatus,
+      verified: user.verified,
+      isProfileComplete,
       token,
     });
   } catch (error) {
@@ -239,7 +282,7 @@ exports.setupProfileGrad = async (req, res) => {
         jobPreferences,
         isProfileComplete: true,
       },
-      { new: true }
+      { new: true },
     ).select("-password");
 
     res.status(200).json(user);

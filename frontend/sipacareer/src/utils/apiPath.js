@@ -89,15 +89,24 @@ export const API_PATH = {
     DELETE_FAQ: (id) => `/api/admin/faqs/${id}`,
     CREATE_EMPLOYER_SETTINGS: "/api/admin/employer-settings",
     UPDATE_EMPLOYER_SETTINGS: (id) => `/api/admin/employer-settings/${id}`,
-    // Employer Approval
-    PENDING_EMPLOYERS: "/api/admin/pending-employers",
-    APPROVE_EMPLOYER: (id) => `/api/admin/employers/${id}/approve`,
-    REJECT_EMPLOYER: (id) => `/api/admin/employers/${id}/reject`,
   },
   EMPLOYER: {
     SETTINGS: "/api/employer/settings",
     FAQS: "/api/employer/faqs",
     FAQ_ID: (id) => `/api/employer/faqs/${id}`,
     GET_PUBLIC_FAQS: (employerId) => `/api/employer/${employerId}/public-faqs`,
+  },
+  INTERVIEW: {
+    GET_ROLES: "/api/interview-roles",
+    GET_ALL_QUESTIONS: "/api/interview-roles/all-questions",
+    GET_ROLE_BY_ID: (id) => `/api/interview-roles/${id}`,
+    MANAGE_QUESTIONS: (roleId) => `/api/interview-roles/${roleId}/questions`,
+    MANAGE_QUESTION_BY_ID: (roleId, questionId) => `/api/interview-roles/${roleId}/questions/${questionId}`,
+    EVALUATE: "/api/interviews/evaluate",
+    GET_USER_INTERVIEWS: "/api/interviews/user",
+    GET_GRADUATE_INTERVIEWS: (userId) => `/api/interviews/graduate/${userId}`,
+    GET_ALL_SCORES: "/api/interviews/all-scores",
+    GET_INTERVIEW_BY_ID: (id) => `/api/interviews/${id}`,
+    DELETE_INTERVIEW: (id) => `/api/interviews/${id}`,
   },
 };

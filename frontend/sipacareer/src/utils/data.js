@@ -96,6 +96,67 @@ export const NAVIGATION_MENU = [
   },
 ];
 
+export const EMPLOYER_MENU = [
+  {
+    id: "employer-dashboard",
+    name: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    id: "post-job",
+    name: "Post Job",
+    icon: Plus,
+  },
+  {
+    id: "manage-jobs",
+    name: "Manage Jobs",
+    icon: Briefcase,
+  },
+  {
+    id: "employer-messages",
+    name: "Messages",
+    icon: MessageCircle,
+  },
+  {
+    id: "company-profile",
+    name: "Company Profile",
+    icon: Building2,
+  },
+];
+
+export const JOB_SEEKER_MENU = [
+  {
+    id: "find-jobs",
+    name: "Find Jobs",
+    icon: Search,
+  },
+  {
+    id: "my-applications",
+    name: "My Applications",
+    icon: Briefcase,
+  },
+  {
+    id: "skill-center",
+    name: "Skill Center",
+    icon: Award,
+  },
+  {
+    id: "resume-builder",
+    name: "Resume Builder",
+    icon: FileText,
+  },
+  {
+    id: "messages",
+    name: "Messages",
+    icon: MessageCircle,
+  },
+  {
+    id: "profile",
+    name: "My Profile",
+    icon: Users,
+  },
+];
+
 export const CATEGORIES = [
   {
     value: "Engineering",

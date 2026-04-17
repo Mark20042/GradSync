@@ -1,47 +1,11 @@
 // components/FormSteps/BasicInfoStep.js
 import React from "react";
-import { GraduationCap, Calendar, Award, MapPin, Sparkles, Loader2 } from "lucide-react";
-import axiosInstance from "../../../../utils/axiosInstance";
-import { API_PATH } from "../../../../utils/apiPath";
-import toast from "react-hot-toast";
-import { useState } from "react";
+import { GraduationCap, Calendar, Award, MapPin } from "lucide-react";
 
-const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-
+const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGenerateSummary = async () => {
-    setIsGenerating(true);
-    try {
-      // Construct a prompt context from available data
-      const promptContext = {
-        fullName: userData?.fullName || formData.fullName || "",
-        university: formData.university || "",
-        degree: formData.degree || "",
-        major: formData.major || "",
-        graduationYear: formData.graduationYear || "",
-        skills: formData.skills || [], // Assuming skills might be in formData if revisiting step
-        experiences: formData.experiences || [],
-      };
-
-      const response = await axiosInstance.post(API_PATH.AI.GENERATE_SUMMARY, {
-        userData: promptContext,
-      });
-
-      if (response.data && response.data.summary) {
-        setFormData((prev) => ({ ...prev, bio: response.data.summary }));
-        toast.success("Bio generated successfully!");
-      }
-    } catch (error) {
-      console.error("Error generating bio:", error);
-      toast.error("Failed to generate bio. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   return (
@@ -59,8 +23,9 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) =>
             placeholder="Your university"
             value={formData.university}
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.university ? "border-red-500" : "border-gray-300"
-              }`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              validationErrors.university ? "border-red-500" : "border-gray-300"
+            }`}
             required
           />
         </div>
@@ -87,8 +52,23 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) =>
               required
             >
               <option value="">Month</option>
-              {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((month) => (
-                <option key={month} value={month}>{month}</option>
+              {[
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+              ].map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
               ))}
             </select>
           </div>
@@ -101,10 +81,11 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) =>
               max="2030"
               value={formData.graduationYear}
               onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.graduationYear
-                ? "border-red-500"
-                : "border-gray-300"
-                }`}
+              className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                validationErrors.graduationYear
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
               required
             />
           </div>
@@ -129,8 +110,9 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) =>
             placeholder="e.g. Bachelor of Science in Computer Science"
             value={formData.degree}
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.degree ? "border-red-500" : "border-gray-300"
-              }`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              validationErrors.degree ? "border-red-500" : "border-gray-300"
+            }`}
             required
           />
         </div>
@@ -188,39 +170,6 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors, userData }) =>
             className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
-      </div>
-
-      {/* Bio */}
-      <div className="md:col-span-2">
-        <label className="block text-sm font-medium text-gray-700 mb-2 flex justify-between items-center">
-          <span>Bio (Optional)</span>
-          <button
-            type="button"
-            onClick={handleGenerateSummary}
-            disabled={isGenerating}
-            className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-700 disabled:opacity-50 transition-colors"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3 h-3" />
-                Generate with AI
-              </>
-            )}
-          </button>
-        </label>
-        <textarea
-          name="bio"
-          placeholder="Tell employers about yourself, your passions, and career goals..."
-          value={formData.bio}
-          onChange={handleChange}
-          rows={4}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
       </div>
     </div>
   );

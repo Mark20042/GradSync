@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import { Send, ArrowLeft, MessageCircleDashed, Building2, Briefcase } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
+import MessageListSkeleton from "./components/skeletons/MessageListSkeleton";
 
 const getCalendarDate = (date) => {
   return moment(date).calendar(null, {
@@ -218,9 +219,7 @@ const Messages = () => {
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-gray-50/50 to-white">
             {loading ? (
-              <div className="flex justify-center pt-20">
-                <TypingIndicator />
-              </div>
+              <MessageListSkeleton />
             ) : processedMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
                 <MessageCircleDashed className="w-16 h-16 text-gray-300 mb-4" />

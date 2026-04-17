@@ -300,6 +300,7 @@ exports.updateUser = async (req, res) => {
             user.phone = req.body.phone || user.phone;
             user.address = req.body.address || user.address;
             user.website = req.body.website || user.website;
+            user.verified = req.body.verified !== undefined ? req.body.verified : user.verified;
 
             // Graduate Specific
             if (user.role === 'graduate') {
