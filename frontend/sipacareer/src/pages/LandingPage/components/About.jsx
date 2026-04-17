@@ -16,7 +16,7 @@ const About = () => {
           className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-12 md:mb-16 text-center px-2"
         >
           All You Need to Know About{" "}
-          <span className="text-purple-600">SipaCareer</span>
+          <span className="text-purple-600">GradSync</span>
         </motion.h1>
 
         {/* Content (Responsive Grid) */}
@@ -30,7 +30,7 @@ const About = () => {
               viewport={{ once: false, amount: 0.3 }}
               className="text-lg sm:text-xl text-gray-700 leading-relaxed mb-6 sm:mb-8 text-justify md:text-left"
             >
-              <span className="font-semibold">SipaCareer</span> is an{" "}
+              <span className="font-semibold">GradSync</span> is an{" "}
               <span className="text-purple-600 font-semibold">
                 automated job portal
               </span>{" "}
@@ -55,7 +55,7 @@ const About = () => {
               viewport={{ once: false, amount: 0.3 }}
               className="text-lg sm:text-xl text-gray-700 leading-relaxed text-justify md:text-left"
             >
-              What makes SipaCareer unique is its{" "}
+              What makes GradSync unique is its{" "}
               <span className="font-semibold text-green-600">
                 skill-based matching system
               </span>{" "}
@@ -65,7 +65,7 @@ const About = () => {
               </span>{" "}
               that foster smooth collaboration between job seekers and
               companies. With features like a resume builder, portfolio uploads,
-              and secure communication, SipaCareer ensures{" "}
+              and secure communication, GradSync ensures{" "}
               <span className="font-semibold">faster hiring</span>, stronger{" "}
               <span className="font-semibold">career growth</span>, and reliable{" "}
               <span className="font-semibold">data privacy</span>. It's more

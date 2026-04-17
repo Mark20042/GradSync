@@ -50,7 +50,7 @@ const Navbar = () => {
             <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
               <Briefcase className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg text-gray-900">Sipacareer</span>
+            <span className="font-bold text-lg text-gray-900">GradSync</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -27,7 +27,7 @@ const Features = () => {
             </span>
           </h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-            SipaCareer bridges fresh graduates and employers with smart features
+            GradSync bridges fresh graduates and employers with smart features
             — from skill-based job matching to real-time recruitment tools.
           </p>
         </motion.div>

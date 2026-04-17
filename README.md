@@ -1,75 +1,94 @@
-# GradSync
+# <p align="center">🎓 GradSync</p>
 
-GradSync is a modern, AI-powered career development platform designed to bridge the gap between graduates and employers. It features advanced AI mock interviews, automated skill assessment systems, and professional profile management tools.
+<p align="center">
+  <strong>Bridging the Gap Between Graduates and Employers with AI.</strong>
+</p>
 
-## 🌟 Core Features
-
-- ** AI Mock Interviewer**: A real-time, interactive interview environment with native voice-to-text (STT) and text-to-speech (TTS) capabilities powered by the Web Speech API.
-- ** Automated Verification**: Background OCR-based document verification for graduates (Transcript of Records) and employers (Business Permits) ensuring platform integrity.
-- ** Skill Verification Center**: Standardized assessments that allow job seekers to earn "Verified Badges" (Entry, Mid, Senior, Expert) to showcase their proficiency.
-- ** Admin Control Panel**: Extensive dashboard for administrators to manage job roles, interview questions, and monitor all candidate evaluation results.
-- ** Employer Portal**: Specialized view for employers to browse verified talent, review applicant profiles, and see detailed AI interview breakdowns.
-- ** Professional Resume Builder**: Dynamic resume generation tool allowing users to build and export professional career documents.
-- ** AI Mentor Chat**: Interactive AI-powered guidance system to assist users with career queries and preparation tips.
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Framework**: [React 19](https://react.dev/) with [Vite](https://vitejs.dev/)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (Modular & Utility-first)
-- **Speech Intelligence**: Native [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) (Speech-to-Text & Text-to-Speech)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/), [GSAP](https://gsap.com/), and [Lottie](https://airbnb.io/lottie/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Real-time**: [Socket.io](https://socket.io/)
-- **3D Graphics**: [Three.js](https://threejs.org/) (React Three Fiber)
-- **Data Visualization**: [Recharts](https://recharts.org/)
-
-### Backend
-
-- **Runtime**: [Node.js](https://nodejs.org/) & [Express.js](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) (MERN Architecture)
-- **OCR Engine**: [Tesseract.js](https://tesseract.projectnaptha.com/) & [pdf-parse](https://www.npmjs.com/package/pdf-parse)
-- **Authentication**: JWT (JSON Web Tokens)
-- **AI Engine**: [Ollama](https://ollama.com/) (Local Large Language Model integration via LangChain)
-
-## 🏗️ Architecture
-
-The project follows a decoupled, modular architecture:
-
-### 1. Frontend (`/frontend/sipacareer`)
-
-- **Component-Based Architecture**: UI is split into reusable atoms and complex page-level components.
-- **State Management**: React Hooks and Context API.
-- **Service Layer**: Centralized API utilities using `axiosInstance` for clean backend communication.
-
-### 2. Backend (`/backend`)
-
-- **RESTful API**: Stateless controllers managing business logic.
-- **OCR Service**: Dedicated utility for scanning and verifying verification documents using Tesseract and PDF parsing logic.
-- **AI Orchestration**: Integration with Ollama via LangChain to process interview transcripts and generate structured suites of feedback.
-
-### 3. AI Service Layer
-
-- **Local AI Processing**: Uses Ollama (Qwen2.5 / Llama models) for low-latency, private, and cost-effective AI evaluations.
-- **Structured Scoring**: Converts raw audio transcripts into professional feedback and numerical scores.
-
-## 🚀 Getting Started
-
-1. **Prerequisites**: Ensure you have [Node.js](https://nodejs.org/) and [Ollama](https://ollama.com/) installed.
-2. **Backend**:
-   ```bash
-   cd backend
-   npm install
-   npm start
-   ```
-3. **Frontend**:
-   ```bash
-   cd frontend/sipacareer
-   npm install
-   npm run dev
-   ```
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node" />
+  <img src="https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white" alt="Ollama" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+</p>
 
 ---
 
-_Built with ❤️ by MARK JOSEPH POTOT_
+## 🚀 Overview
+
+**GradSync** is a premium, AI-powered career development ecosystem designed to streamline the transition from academic life to professional careers. By combining local AI intelligence with modern web technologies, GradSync provides a secure and efficient platform for automated skill verification, interactive mock interviews, and high-performance recruitment.
+
+## ✨ Core Features
+
+### 🛡️ Secure Verification
+- **Automated Document OCR**: High-speed verification of Transcripts (TOR) and Business Permits using `Tesseract.js`.
+- **Verified Badges**: Earn verifiable skill rankings (Entry to Expert) through standardized testing.
+
+### 🤖 AI-Driven Preparation
+- **Mock Interview Room**: Real-time evaluation of candidate responses using native Web STT/TTS and local Ollama models.
+- **AI Career Mentor**: A 24/7 AI-powered coach offering personalized career guidance and preparation strategies.
+
+### 💼 Professional Tools
+- **Dynamic Resume Builder**: Professional PDF generation with automated summary crafting based on user skills and history.
+- **Smart Matching**: AI-calculated job suitability scores to help graduates find their perfect career fit.
+
+---
+
+## 🛠️ Technology Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 19, Vite, Tailwind CSS, Framer Motion, GSAP, Lucide Icons |
+| **Backend** | Node.js (Express), MongoDB (Mongoose), JWT, Socket.io |
+| **AI/ML Engine** | Ollama (Local LLM), Tesseract.js (OCR), PDF-Parse |
+| **Connectivity** | Web Speech API (STT/TTS), WebRTC (Live Preview) |
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User((User)) -->|HTTPS/WS| FE[Frontend - React/Vite]
+    FE -->|REST API| BE[Backend - Express]
+    BE -->|Query| DB[(MongoDB)]
+    BE -->|Evaluation| AI[Ollama AI Service]
+    BE -->|Document Scan| OCR[OCR Engine - Tesseract]
+    FE -->|Native Speech| Browser[Web Speech API]
+```
+
+---
+
+## 🏁 Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [Ollama](https://ollama.com/) (Running with `qwen2.5:3b` or `llama3.1` model)
+- [MongoDB](https://www.mongodb.com/) (Local or Atlas)
+
+### 1. Backend Setup
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 2. Frontend Setup
+```bash
+cd frontend/sipacareer
+npm install
+npm run dev
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <i>Developed with expertise for the next generation of professionals.</i><br>
+  <strong>BY MARK JOSEPH POTOT</strong>
+</p>

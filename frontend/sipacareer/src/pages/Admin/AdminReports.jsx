@@ -167,7 +167,7 @@ const AdminReports = () => {
                     XLSX.utils.book_append_sheet(wb, empSettingsWs, "Employer Settings");
                 }
 
-                XLSX.writeFile(wb, `SipaCareer_Full_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+                XLSX.writeFile(wb, `GradSync_Full_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
                 toast.success("Full system report downloaded");
                 setLoading(false);
                 return;

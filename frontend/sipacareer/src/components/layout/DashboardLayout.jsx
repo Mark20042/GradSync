@@ -119,7 +119,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 <Briefcase className="h-5 w-5 text-white" />
               </div>
               <span className="text-gray-900 font-bold text-xl">
-                SipaCareer
+                GradSync
               </span>
             </Link>
           ) : (

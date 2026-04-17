@@ -17,10 +17,9 @@ const Hero = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 via-white to-blue-50/30 py-16 px-2 md:py-24 mb-8 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-slate-50 via-white to-slate-50 py-16 px-2 md:py-24 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-100/50 to-blue-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-100/40 to-purple-100/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 -z-10"></div>
 
       <div className="container mx-auto px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
@@ -49,7 +48,7 @@ const Hero = () => {
             >
               Launch Your Career with{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                SipaCareer
+                GradSync
               </span>
             </motion.h1>
 

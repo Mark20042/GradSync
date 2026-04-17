@@ -359,7 +359,7 @@ const SignUp = () => {
         >
           <div className="text-center lg:text-left mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Create Your SipaCareer Account
+              Create Your GradSync Account
             </h2>
             <p className="text-gray-600">
               Fueling your first step — bridging bright graduates with top

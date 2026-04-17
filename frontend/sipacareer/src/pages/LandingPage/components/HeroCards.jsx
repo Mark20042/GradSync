@@ -102,7 +102,7 @@ const HeroCards = () => {
                             <h3 className="font-bold text-gray-900 text-lg">Vulcanizer</h3>
                             <p className="text-gray-500 text-sm flex items-center gap-1 mt-0.5">
                                 <Building2 className="w-4 h-4" />
-                                SipaCareer
+                                GradSync
                             </p>
                         </div>
                     </div>

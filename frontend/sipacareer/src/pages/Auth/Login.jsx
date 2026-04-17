@@ -292,7 +292,7 @@ const Login = () => {
             </h2>
             <p className="text-gray-600 text-sm sm:text-base">
               Sign in to your{" "}
-              <span className="text-blue-600 font-semibold">SipaCareer</span>{" "}
+              <span className="text-blue-600 font-semibold">GradSync</span>{" "}
               account
             </p>
           </div>

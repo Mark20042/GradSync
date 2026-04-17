@@ -22,7 +22,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <Briefcase className="w-6 h-6 text-white" />
-            <span className="text-xl font-bold">SipaCareer</span>
+            <span className="text-xl font-bold">GradSync</span>
           </div>
 
           {/* Desktop Navigation */}
