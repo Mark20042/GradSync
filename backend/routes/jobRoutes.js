@@ -7,6 +7,7 @@ const {
   deleteJob,
   toggleCloseJob,
   getJobsEmployer,
+  getRecommendedJobs,
 } = require("../controllers/jobController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -14,6 +15,7 @@ const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 router.route("/").post(protect, createJob).get(getJobs);
+router.route("/recommended").get(protect, getRecommendedJobs);
 router.route("/get-jobs-employer").get(protect, getJobsEmployer);
 router
   .route("/:id")

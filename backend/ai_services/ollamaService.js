@@ -5,10 +5,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // Initialize the model
-// Using llama3.1:8b for best quality reasoning and accuracy deepseek-r1:8b
 const model = new ChatOllama({
-  model: "qwen2.5:3b", // Best balance of quality and speed
-  temperature: 0.5, // Low temperature for consistent JSON output
+  model: "qwen2.5:7b", // Using Qwen 2.5 7B for much stronger reasoning
+  temperature: 1.0, // Very low temperature for highly consistent, logical JSON output
   baseUrl: "http://127.0.0.1:11434", // Default Ollama URL
 });
 
@@ -18,7 +17,7 @@ const analyzeJobSuitability = async (userProfile, jobDetails) => {
   }
 
   const template = `
-    You are an extremely strict HR AI evaluator. Analyze the candidate's suitability for this job position.
+    You are an extremely strict, objective HR AI evaluator. Your task is to calculate a precise suitability score for a candidate.
 
     Candidate Profile:
     - Degree: {degree}
@@ -31,42 +30,38 @@ const analyzeJobSuitability = async (userProfile, jobDetails) => {
     - Description: {jobDescription}
     - Requirements: {jobRequirements}
 
-    VERY STRICT SCORING RULES (follow exactly):
+    CRITICAL INSTRUCTION: You MUST calculate the score using this EXACT objective rubric (Max 100 points):
     
-    Score 85-100 (Excellent Match):
-    - Candidate has 90%+ of required skills listed in job requirements
-    - Degree and major directly align with the job field
-    - Has 2+ years relevant experience in similar role
-    - Only give this score if candidate is near-perfect fit
-    
-    Score 70-84 (Good Match):
-    - Candidate has 70-89% of required skills
-    - Degree is related but not perfectly aligned
-    - Has some relevant experience (internship or 1 year)
-    
-    Score 50-69 (Moderate Match):
-    - Candidate has 40-69% of required skills
-    - Degree is somewhat related to the field
-    - Limited or no direct experience
-    
-    Score 25-49 (Weak Match):
-    - Candidate has less than 40% of required skills
-    - Degree is unrelated to job field
-    - No relevant experience
-    
-    Score 0-24 (Poor Match):
-    - Candidate lacks most essential qualifications
-    - Complete mismatch between profile and job
+    1. Skills Match (Max 40 points): 
+       - Compare Candidate Skills to Job Requirements. 
+       - Calculate the exact ratio. (e.g., matching 2 out of 5 required skills = 16 points).
+       - Subtract points if core required skills are missing.
+       
+    2. Experience Match (Max 30 points): 
+       - 0 points: No relevant experience.
+       - 15 points: Internship or academic project experience only.
+       - 30 points: Meets or exceeds the exact years of professional experience requested.
+       
+    3. Education Match (Max 30 points):
+       - 0 points: Degree/Major is completely unrelated to the job field.
+       - 15 points: Degree is somewhat related (e.g., Math degree for Software job).
+       - 30 points: Degree/Major exactly matches the job's core field (e.g., CS for Software job).
 
-    IMPORTANT: Be harsh. Most fresh graduates without exact skill matches should score 40-65.
-    Do NOT inflate scores. An average candidate should score around 50.
+    Calculate the sum of these 3 categories. This is the FINAL SCORE. DO NOT inflate scores. Fresh graduates with no experience will naturally cap at around 70 points maximum.
 
-    Return ONLY a valid JSON object:
+    Match Levels based on final score:
+    - Score 85-100: Excellent
+    - Score 70-84: Good
+    - Score 50-69: Moderate
+    - Score 25-49: Weak
+    - Score 0-24: Poor
+
+    Return ONLY a valid JSON object with NO markdown formatting, asterisks, or extra text. Format MUST precisely match this structure but FILL IN your own calculated values:
     {{
-      "analysis": "Your 2-3 sentence analysis here...",
-      "score": 52,
-      "matchLevel": "Moderate",
-      "recommendations": ["Specific skill to learn", "Course to take", "Experience to gain"]
+      "analysis": "A VERY SHORT 1-2 sentence summary explaining the fit based on skills, education, and experience. CRITICAL: DO NOT mention math or point systems.",
+      "score": <Calculate the exact sum of the 3 point categories as an integer>,
+      "matchLevel": "<Insert the calculated match level>",
+      "recommendations": ["A specific required skill to learn", "An actionable project idea building relevant experience"]
     }}
     
     Do not include markdown, code blocks, or extra text. Just raw JSON.
@@ -116,7 +111,7 @@ const analyzeJobSuitability = async (userProfile, jobDetails) => {
   } catch (error) {
     console.error("Error analyzing suitability:", error);
     throw new Error(
-      "Failed to analyze suitability. Ensure Ollama is running and you have pulled the model (ollama pull qwen2.5:3b)."
+      "Failed to analyze suitability. Ensure Ollama is running and you have pulled the model (ollama pull qwen2.5:3b).",
     );
   }
 };
@@ -176,7 +171,11 @@ const generateAISummary = async (userProfile) => {
  * @param {string} candidateAnswer - The candidate's STT transcript
  * @returns {Promise<{score: number, feedback: string}>}
  */
-const evaluateInterviewAnswer = async (questionText, idealAnswer, candidateAnswer) => {
+const evaluateInterviewAnswer = async (
+  questionText,
+  idealAnswer,
+  candidateAnswer,
+) => {
   if (!questionText || !candidateAnswer) {
     throw new Error("Question text and candidate answer are required.");
   }
@@ -226,7 +225,9 @@ const evaluateInterviewAnswer = async (questionText, idealAnswer, candidateAnswe
   try {
     const input = await prompt.format({
       questionText: questionText,
-      idealAnswer: idealAnswer || "No reference answer provided. Evaluate based on general interview best practices.",
+      idealAnswer:
+        idealAnswer ||
+        "No reference answer provided. Evaluate based on general interview best practices.",
       candidateAnswer: candidateAnswer,
     });
 
@@ -253,10 +254,13 @@ const evaluateInterviewAnswer = async (questionText, idealAnswer, candidateAnswe
   } catch (error) {
     console.error("Error evaluating interview answer:", error);
     throw new Error(
-      "Failed to evaluate interview answer. Ensure Ollama is running and you have pulled the model (ollama pull qwen2.5:3b)."
+      "Failed to evaluate interview answer. Ensure Ollama is running and you have pulled the model (ollama pull qwen2.5:3b).",
     );
   }
 };
 
-module.exports = { analyzeJobSuitability, generateAISummary, evaluateInterviewAnswer };
-
+module.exports = {
+  analyzeJobSuitability,
+  generateAISummary,
+  evaluateInterviewAnswer,
+};

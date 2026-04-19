@@ -65,7 +65,7 @@ const JobCard = ({ job, onClick, onToggleSave, onApply, saved, hideApply, public
           )}
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors leading-tight truncate pr-2">
+            <h3 className="font-bold text-gray-900 text-lg group-hover:text-blue-600 transition-colors leading-tight line-clamp-2 break-words pr-2">
               {job?.title}
             </h3>
             <p className="text-gray-500 text-sm flex items-center gap-1.5 mt-1 font-medium truncate">

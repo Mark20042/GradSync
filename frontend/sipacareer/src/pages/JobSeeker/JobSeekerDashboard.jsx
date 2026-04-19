@@ -1,5 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Filter, Grid, List, X, Briefcase, DollarSign, FolderOpen, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Grid,
+  List,
+  X,
+  Briefcase,
+  DollarSign,
+  FolderOpen,
+  ChevronDown,
+} from "lucide-react";
 
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
@@ -13,8 +23,17 @@ import JobCard, { JobCardSkeleton } from "../../components/Cards/JobCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { CATEGORIES, JOB_TYPES } from "../../utils/data";
 import SalaryRangeSlider from "../../components/Input/SalaryRangeSlider";
+import RecommendedJobs from "./components/RecommendedJobs";
 
-const FilterDropdown = ({ label, icon: Icon, active, children, isOpen, onToggle, onClose }) => {
+const FilterDropdown = ({
+  label,
+  icon: Icon,
+  active,
+  children,
+  isOpen,
+  onToggle,
+  onClose,
+}) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -37,11 +56,13 @@ const FilterDropdown = ({ label, icon: Icon, active, children, isOpen, onToggle,
       <button
         onClick={onToggle}
         className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${active || isOpen
-          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200"
+          ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200 font-bold"
           : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
           }`}
       >
-        <Icon className={`w-3.5 h-3.5 ${active || isOpen ? "text-white" : "text-gray-500 group-hover:text-gray-900"}`} />
+        <Icon
+          className={`w-3.5 h-3.5 ${active || isOpen ? "text-white" : "text-gray-500 group-hover:text-gray-900"}`}
+        />
         <span>{label}</span>
         <ChevronDown
           className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""} ${active || isOpen ? "text-white/80" : "text-gray-400"}`}
@@ -69,7 +90,9 @@ const JobSeekerDashboard = () => {
   const { user } = useAuth();
 
   const [jobs, setJobs] = useState([]);
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recommendedLoading, setRecommendedLoading] = useState(true);
   const [viewMode, setViewMode] = useState("grid");
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [error, setError] = useState(null);
@@ -117,7 +140,7 @@ const JobSeekerDashboard = () => {
       if (user) params.append("userId", user?._id);
 
       const response = await axiosInstance.get(
-        `${API_PATH.JOBS.GET_ALL_JOBS}?${params.toString()}`
+        `${API_PATH.JOBS.GET_ALL_JOBS}?${params.toString()}`,
       );
 
       const jobsData = Array.isArray(response.data) ? response.data : [];
@@ -150,7 +173,7 @@ const JobSeekerDashboard = () => {
           value !== "" &&
           value !== false &&
           value !== null &&
-          value !== undefined
+          value !== undefined,
       );
 
       if (hasFilters) {
@@ -173,6 +196,25 @@ const JobSeekerDashboard = () => {
       [section]: !prev[section],
     }));
   };
+
+  const fetchRecommendedJobs = async () => {
+    try {
+      if (!user) return;
+      setRecommendedLoading(true);
+      const response = await axiosInstance.get(
+        API_PATH.JOBS.GET_RECOMMENDED_JOBS,
+      );
+      setRecommendedJobs(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("Error fetching recommended jobs:", err);
+    } finally {
+      setRecommendedLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecommendedJobs();
+  }, [user]);
 
   const clearAllFilters = () => {
     setFilters({
@@ -231,7 +273,7 @@ const JobSeekerDashboard = () => {
             <div className="p-5 border-t border-gray-100 bg-gray-50">
               <button
                 onClick={() => setShowMobileFilter(false)}
-                className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition"
+                className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-200"
               >
                 Show Results
               </button>
@@ -270,44 +312,46 @@ const JobSeekerDashboard = () => {
     }
   };
 
-
   const activeFilterCount =
     (filters.type ? 1 : 0) +
     (filters.category ? 1 : 0) +
     (filters.minSalary || filters.maxSalary ? 1 : 0);
 
-
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <Navbar />
 
-      {/* Simplified Hero Section */}
-      <div className="bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Premium Hero Section */}
+      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 pt-32 pb-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Abstract Background Patterns */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/20 rounded-full mix-blend-overlay filter blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-overlay filter blur-[100px] translate-x-1/2 translate-y-1/2"></div>
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/10 rounded-full mix-blend-overlay filter blur-[100px] -translate-x-1/2 -translate-y-1/2 animate-pulse"
+            style={{ animationDuration: "8s" }}
+          ></div>
+          <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/30 rounded-full mix-blend-overlay filter blur-[120px] translate-x-1/2 translate-y-1/2"></div>
         </div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+        <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col gap-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-md">
               Build Your Professional Future
             </h1>
-            <p className="text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-              Access exclusive opportunities from top companies worldwide and take the next step in your career.
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed font-medium">
+              Access exclusive opportunities from top companies worldwide and
+              take the next step in your career.
             </p>
           </motion.div>
 
-          {/* New Simplified Search Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            className="w-full"
           >
             <SearchHeader
               filters={filters}
@@ -318,221 +362,251 @@ const JobSeekerDashboard = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-12 relative z-20">
+      <div className="w-full xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-12 relative z-20">
+        <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+          <RecommendedJobs
+            recommendedJobs={recommendedJobs}
+            loading={recommendedLoading}
+            toggleSaveJob={toggleSaveJob}
+            applyToJob={applyToJob}
+          />
 
-        {/* Unified Results & Filter Header */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-sm border border-white/50 p-4 mb-6 transition-all duration-300">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-
-            {/* Left Side: Count & Filters */}
-            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <p className="text-gray-500 font-medium whitespace-nowrap text-sm pl-1">
-                Showing <span className="text-gray-900 font-bold text-base">{jobs.length}</span> jobs
-              </p>
-
-              <div className="h-8 w-px bg-gray-200 hidden sm:block mx-2"></div>
-
-              {/* Desktop Filters Toolbar */}
-              <div className="hidden lg:flex items-center gap-2">
-                {/* Job Type Dropdown */}
-                <FilterDropdown
-                  label={filters.type || "Job Type"}
-                  icon={Briefcase}
-                  active={!!filters.type}
-                  isOpen={activeDropdown === 'jobType'}
-                  onToggle={() => toggleDropdown('jobType')}
-                  onClose={() => setActiveDropdown(null)}
-                >
-                  <div className="p-1">
-                    {JOB_TYPES.map((type) => (
-                      <button
-                        key={type.value}
-                        onClick={() => {
-                          handleFilterChange("type", filters.type === type.value ? "" : type.value);
-                          setActiveDropdown(null);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${filters.type === type.value
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                          }`}
-                      >
-                        {type.label}
-                      </button>
-                    ))}
+          {/* All Jobs Section */}
+          <div
+            className={`w-full ${!recommendedLoading && recommendedJobs.length > 0 ? "xl:w-2/3" : "w-full"} flex flex-col bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] 2xl:h-[860px] overflow-hidden`}
+          >
+            <div className="p-4 border-b border-gray-100 bg-white rounded-t-2xl sticky top-0 z-30 flex flex-row items-center justify-between gap-4 flex-wrap xl:flex-nowrap">
+              {/* Left Side: Title and Count */}
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 border border-blue-200 bg-blue-50 rounded-lg hidden sm:block">
+                    <Search className="w-4 h-4 text-blue-600" />
                   </div>
-                </FilterDropdown>
+                  <h2 className="text-lg font-bold text-gray-900 whitespace-nowrap">
+                    All Jobs
+                  </h2>
+                </div>
 
-                {/* Category Dropdown */}
-                <FilterDropdown
-                  label={filters.category || "Category"}
-                  icon={FolderOpen}
-                  active={!!filters.category}
-                  isOpen={activeDropdown === 'category'}
-                  onToggle={() => toggleDropdown('category')}
-                  onClose={() => setActiveDropdown(null)}
-                >
-                  <div className="max-h-64 overflow-y-auto p-1 custom-scrollbar">
-                    {CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.value}
-                        onClick={() => {
-                          handleFilterChange("category", filters.category === cat.value ? "" : cat.value);
-                          setActiveDropdown(null);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${filters.category === cat.value
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                          }`}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
-                  </div>
-                </FilterDropdown>
+                <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
 
-                {/* Salary Dropdown */}
-                <FilterDropdown
-                  label={filters.minSalary || filters.maxSalary ? "Salary Set" : "Salary"}
-                  icon={DollarSign}
-                  active={!!filters.minSalary || !!filters.maxSalary}
-                  isOpen={activeDropdown === 'salary'}
-                  onToggle={() => toggleDropdown('salary')}
-                  onClose={() => setActiveDropdown(null)}
-                >
-                  <div className="p-3">
-                    <SalaryRangeSlider filters={filters} handleFilterChange={handleFilterChange} />
-                    <div className="mt-4 flex justify-end pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => setActiveDropdown(null)}
-                        className="text-xs bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 active:scale-95 transition-all shadow-lg shadow-gray-200"
-                      >
-                        Apply Filter
-                      </button>
-                    </div>
-                  </div>
-                </FilterDropdown>
+                <p className="text-gray-500 font-medium whitespace-nowrap text-sm">
+                  Showing{" "}
+                  <span className="text-gray-900 font-bold text-base">
+                    {jobs.length}
+                  </span>{" "}
+                  jobs
+                </p>
+              </div>
 
-                {/* Clear All Button */}
-                {activeFilterCount > 0 && (
-                  <button
-                    onClick={clearAllFilters}
-                    className="ml-2 text-xs text-red-500 font-semibold hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-full transition-all border border-transparent hover:border-red-100"
+              {/* Right Side: Filters and View Toggles */}
+              <div className="flex flex-row items-center justify-end gap-3 shrink-0">
+                {/* Desktop Filters Toolbar */}
+                <div className="hidden xl:flex items-center gap-2">
+                  <FilterDropdown
+                    label={filters.type || "Job Type"}
+                    icon={Briefcase}
+                    active={!!filters.type}
+                    isOpen={activeDropdown === "jobType"}
+                    onToggle={() => toggleDropdown("jobType")}
+                    onClose={() => setActiveDropdown(null)}
                   >
-                    Reset
+                    <div className="p-1">
+                      {JOB_TYPES.map((type) => (
+                        <button
+                          key={type.value}
+                          onClick={() => {
+                            handleFilterChange(
+                              "type",
+                              filters.type === type.value ? "" : type.value,
+                            );
+                            setActiveDropdown(null);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${filters.type === type.value
+                            ? "bg-blue-50 text-blue-700 font-bold"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                        >
+                          {type.label}
+                        </button>
+                      ))}
+                    </div>
+                  </FilterDropdown>
+
+                  <FilterDropdown
+                    label={filters.category || "Category"}
+                    icon={FolderOpen}
+                    active={!!filters.category}
+                    isOpen={activeDropdown === "category"}
+                    onToggle={() => toggleDropdown("category")}
+                    onClose={() => setActiveDropdown(null)}
+                  >
+                    <div className="max-h-64 overflow-y-auto p-1 custom-scrollbar">
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.value}
+                          onClick={() => {
+                            handleFilterChange(
+                              "category",
+                              filters.category === cat.value ? "" : cat.value,
+                            );
+                            setActiveDropdown(null);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${filters.category === cat.value
+                            ? "bg-blue-50 text-blue-700 font-bold"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </FilterDropdown>
+
+                  <FilterDropdown
+                    label={
+                      filters.minSalary || filters.maxSalary
+                        ? "Salary Set"
+                        : "Salary"
+                    }
+                    icon={DollarSign}
+                    active={!!filters.minSalary || !!filters.maxSalary}
+                    isOpen={activeDropdown === "salary"}
+                    onToggle={() => toggleDropdown("salary")}
+                    onClose={() => setActiveDropdown(null)}
+                  >
+                    <div className="p-3">
+                      <SalaryRangeSlider
+                        filters={filters}
+                        handleFilterChange={handleFilterChange}
+                      />
+                      <div className="mt-4 flex justify-end pt-3 border-t border-gray-100">
+                        <button
+                          onClick={() => setActiveDropdown(null)}
+                          className="text-xs bg-gray-900 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 active:scale-95 transition-all shadow-lg shadow-gray-200"
+                        >
+                          Apply Filter
+                        </button>
+                      </div>
+                    </div>
+                  </FilterDropdown>
+
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="ml-2 text-xs text-red-500 font-semibold hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-full transition-all border border-transparent hover:border-red-100"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 w-auto justify-end shrink-0">
+                  <button
+                    className="lg:hidden flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 px-4 py-2.5 rounded-full font-medium text-gray-700 transition-all text-sm shadow-sm"
+                    onClick={() => setShowMobileFilter(true)}
+                  >
+                    <Filter className="w-4 h-4" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                      <span className="bg-blue-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
+                        {activeFilterCount}
+                      </span>
+                    )}
                   </button>
-                )}
+
+                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <button
+                      className={`p-2 rounded-md transition-all ${viewMode === "grid"
+                        ? "bg-white text-blue-600 shadow-sm font-bold"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      onClick={() => setViewMode("grid")}
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`p-2 rounded-md transition-all ${viewMode === "list"
+                        ? "bg-white text-blue-600 shadow-sm font-bold"
+                        : "text-gray-500 hover:text-gray-700"
+                        }`}
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Right Side: View Mode & Mobile Controls */}
-            <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-end">
-              {/* Mobile Filter Button */}
-              <button
-                className="lg:hidden flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 px-4 py-2.5 rounded-full font-medium text-gray-700 transition-all text-sm shadow-sm"
-                onClick={() => setShowMobileFilter(true)}
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="bg-blue-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full shadow-sm">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-
-              <div className="flex bg-gray-100 p-1 rounded-lg">
-                <button
-                  className={`p-2 rounded-md transition-all ${viewMode === "grid"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  onClick={() => setViewMode("grid")}
+            <div className="flex-1 p-5 bg-gray-50/30 rounded-b-2xl overflow-y-auto custom-scrollbar">
+              {loading ? (
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 gap-6"
+                      : "space-y-4"
+                  }
                 >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-md transition-all ${viewMode === "list"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                    }`}
+                  {[...Array(6)].map((_, i) => (
+                    <JobCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : jobs.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-20"
                 >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
+                  <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-blue-100">
+                    <Search className="w-10 h-10 text-blue-500" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    No jobs found
+                  </h3>
+                  <p className="text-gray-500 mb-8 max-w-md mx-auto">
+                    We couldn't find any jobs matching your search. Try
+                    adjusting your filters or search for something else.
+                  </p>
+                  <button
+                    onClick={clearAllFilters}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all"
+                  >
+                    Clear All Filters
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ staggerChildren: 0.1 }}
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 gap-6"
+                      : "space-y-4"
+                  }
+                >
+                  {jobs.map((job, index) => (
+                    <motion.div
+                      key={job._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <JobCard
+                        job={job}
+                        onClick={() => navigate(`/job/${job._id}`)}
+                        onToggleSave={() => toggleSaveJob(job._id, job.isSaved)}
+                        onApply={() => applyToJob(job._id)}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Job Grid */}
-        {loading ? (
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                : "space-y-4"
-            }
-          >
-            {[...Array(6)].map((_, i) => (
-              <JobCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : jobs.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20 bg-white rounded-2xl border border-gray-200"
-          >
-            <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-blue-500" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              No jobs found
-            </h3>
-            <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              We couldn't find any jobs matching your search. Try adjusting your filters or search for something else.
-            </p>
-            <button
-              onClick={clearAllFilters}
-              className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
-            >
-              Clear All Filters
-            </button>
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ staggerChildren: 0.1 }}
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 gap-6"
-                : "space-y-4"
-            }
-          >
-            {jobs.map((job, index) => (
-              <motion.div
-                key={job._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                // whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className="h-full"
-              >
-                <JobCard
-                  job={job}
-                  onClick={() => navigate(`/job/${job._id}`)}
-                  onToggleSave={() => toggleSaveJob(job._id, job.isSaved)}
-                  onApply={() => applyToJob(job._id)}
-                  className="h-full"
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
       </div>
 
-      {/* Mobile Filter */}
       <MobileFilterOverlay />
     </div>
   );

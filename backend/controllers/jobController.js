@@ -89,6 +89,131 @@ exports.getJobs = async (req, res) => {
   }
 };
 
+//@desc    Get recommended jobs for the graduate
+exports.getRecommendedJobs = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const userSkills = user.skills?.map((s) => s.toLowerCase()) || [];
+    const preferredLocation =
+      user.jobPreferences?.preferredLocation?.toLowerCase() ||
+      user.address?.toLowerCase() ||
+      "";
+
+    // Fetch all active jobs
+    const jobs = await Job.find({ isClosed: false }).populate(
+      "company",
+      "fullName companyName companyLogo",
+    );
+
+    // Fetch saved jobs and application statuses
+    const savedJobs = await SavedJob.find({ graduate: userId }).select("job");
+    const saveJobIds = savedJobs.map((s) => String(s.job));
+
+    const applications = await Application.find({ applicant: userId }).select(
+      "job status",
+    );
+    let appliedJobStatusMap = {};
+    applications.forEach((app) => {
+      appliedJobStatusMap[String(app.job)] = app.status;
+    });
+
+    let scoredJobs = jobs.map((job) => {
+      let score = 0;
+      let matchReasons = [];
+
+      // Skill & Requirement match (+1 point each)
+      const jobSkills = job.skills?.map((s) => s.toLowerCase()) || [];
+      const jobRequirements = job.requirements
+        ? job.requirements.toLowerCase()
+        : "";
+
+      let skillMatchCount = 0;
+
+      // 1. Check against explicit job skills array (if it exists)
+      jobSkills.forEach((skill) => {
+        if (userSkills.includes(skill)) {
+          score += 1;
+          skillMatchCount++;
+        }
+      });
+
+      // 2. Check if the user's skills are mentioned in the job's text requirements
+      userSkills.forEach((userSkill) => {
+        if (
+          !jobSkills.includes(userSkill) &&
+          jobRequirements.includes(userSkill)
+        ) {
+          score += 1;
+          skillMatchCount++;
+        }
+      });
+
+      if (skillMatchCount > 0) matchReasons.push("Matches your skills");
+
+      // Location match (+2 points)
+      if (
+        preferredLocation &&
+        job.location &&
+        job.location.toLowerCase().includes(preferredLocation)
+      ) {
+        score += 2;
+        matchReasons.push("Near you");
+      }
+
+      // Title/Category match (+2 points)
+      const userJobTitle =
+        user.jobPreferences?.desiredJobTitle?.toLowerCase() ||
+        user.major?.toLowerCase() ||
+        "";
+      if (
+        userJobTitle &&
+        job.title &&
+        job.title.toLowerCase().includes(userJobTitle)
+      ) {
+        score += 2;
+        matchReasons.push("Matches your profile");
+      }
+
+      let primaryReason =
+        matchReasons.length > 0
+          ? matchReasons[matchReasons.length - 1]
+          : "Recommended";
+      if (matchReasons.includes("Near you")) {
+        primaryReason = "Near you"; // Prioritize Location
+      } else if (matchReasons.includes("Matches your skills")) {
+        primaryReason = "Matches your skills";
+      }
+
+      const jobIdStr = String(job._id);
+      return {
+        ...job.toObject(),
+        matchScore: score,
+        matchReason: primaryReason,
+        isSaved: saveJobIds.includes(jobIdStr),
+        applicationStatus: appliedJobStatusMap[jobIdStr] || null,
+      };
+    });
+
+    // Filter jobs that have at least some match (score > 0)
+    scoredJobs = scoredJobs.filter((job) => job.matchScore > 0);
+
+    // Sort by descending score
+    scoredJobs.sort((a, b) => b.matchScore - a.matchScore);
+
+    // Return the top 6 recommended jobs
+    res.status(200).json(scoredJobs.slice(0, 6));
+  } catch (error) {
+    console.error("Error in getRecommendedJobs:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 //@desc    Get jobs posted by the logged-in employer
 exports.getJobsEmployer = async (req, res) => {
   try {

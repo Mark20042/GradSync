@@ -5,24 +5,28 @@ const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
 
 // Initialize Llama 3 model
 const chatModel = new ChatOllama({
-    baseUrl: "http://localhost:11434", // Default Ollama URL
-    model: "qwen2.5:3b", // Balanced speed and performance
-    temperature: 0.7,
+  baseUrl: "http://localhost:11434", // Default Ollama URL
+  model: "qwen2.5:3b", // Balanced speed and performance
+  temperature: 0.7,
 });
 
 exports.askMentor = async (req, res) => {
-    try {
-        const { referenceJobId, question } = req.body;
-        const userId = req.user._id;
+  try {
+    const { referenceJobId, question } = req.body;
+    const userId = req.user._id;
 
-        // 1. Fetch Context
-        const user = await User.findById(userId).select("skills experiences education degree major");
-        let jobContext = "";
+    // 1. Fetch Context
+    const user = await User.findById(userId).select(
+      "skills experiences education degree major",
+    );
+    let jobContext = "";
 
-        if (referenceJobId) {
-            const job = await Job.findById(referenceJobId).select("title description requirements skills company");
-            if (job) {
-                jobContext = `
+    if (referenceJobId) {
+      const job = await Job.findById(referenceJobId).select(
+        "title description requirements skills company",
+      );
+      if (job) {
+        jobContext = `
         CONTEXT: The user is asking about a specific job:
         Title: ${job.title}
         Company: ${job.company?.companyName || "Unknown"}
@@ -30,18 +34,18 @@ exports.askMentor = async (req, res) => {
         Requirements: ${job.requirements}
         Required Skills: ${job.skills?.join(", ")}
         `;
-            }
-        }
+      }
+    }
 
-        const userContext = `
+    const userContext = `
     USER PROFILE:
     Degree: ${user.degree} in ${user.major}
     Skills: ${user.skills?.join(", ")}
-    Experience: ${user.experiences?.map(e => `${e.title} at ${e.company}`).join(", ")}
+    Experience: ${user.experiences?.map((e) => `${e.title} at ${e.company}`).join(", ")}
     `;
 
-        // 2. Construct Prompt
-        const systemPrompt = `You are an expert AI Career Mentor. Your goal is to provide helpful, encouraging, and actionable career advice to a job seeker.
+    // 2. Construct Prompt
+    const systemPrompt = `You are an expert AI Career Mentor. Your goal is to provide helpful, encouraging, and actionable career advice to a job seeker.
     
     ${userContext}
 
@@ -50,20 +54,23 @@ exports.askMentor = async (req, res) => {
     Analyze the user's profile against the job context (if provided). 
     If the user asks about the job, explain how their skills match or what they might be missing.
     If no job is provided, give general career advice based on their profile.
-    Keep responses concise, professional, and supportive.`;
+    Keep responses concise, professional, and supportive.
+    CRITICAL INSTRUCTION: Do NOT use any Markdown formatting in your response. Do not use asterisks (*) for bold/italics, and do not use hash symbols (#) for headers. Use plain paragraph text and standard numbered or bulleted lists (using dash - or numbers).`;
 
-        // 3. Call AI
-        const messages = [
-            new SystemMessage(systemPrompt),
-            new HumanMessage(question),
-        ];
+    // 3. Call AI
+    const messages = [
+      new SystemMessage(systemPrompt),
+      new HumanMessage(question),
+    ];
 
-        const response = await chatModel.invoke(messages);
+    const response = await chatModel.invoke(messages);
 
-        res.status(200).json({ answer: response.content });
+    // Clean markdown characters (* and #) from the AI response just in case it ignores the prompt
+    const cleanedAnswer = response.content.replace(/[*#]/g, "");
 
-    } catch (error) {
-        console.error("AI Mentor Error:", error);
-        res.status(500).json({ message: "Failed to get mentor response" });
-    }
+    res.status(200).json({ answer: cleanedAnswer });
+  } catch (error) {
+    console.error("AI Mentor Error:", error);
+    res.status(500).json({ message: "Failed to get mentor response" });
+  }
 };

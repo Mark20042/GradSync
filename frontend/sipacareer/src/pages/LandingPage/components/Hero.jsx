@@ -23,7 +23,6 @@ const Hero = () => {
 
       <div className="container mx-auto px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
-
           {/* Left Content */}
           <div className="flex-3 text-center lg:text-left max-w-5xl">
             {/* <motion.div
@@ -46,9 +45,9 @@ const Hero = () => {
               transition={{ duration: 0.8, delay: 0.1 }}
               className="text-2xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]"
             >
-              Launch Your Career with{" "}
+              Success is closer than you think with {"  "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                GradSync
+                GradSync.
               </span>
             </motion.h1>
 
@@ -60,7 +59,8 @@ const Hero = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="mt-6 text-lg text-gray-500 max-w-md mx-auto lg:mx-0 leading-relaxed"
             >
-              Connect fresh graduates with top employers. Your dream job is just a click away.
+              Connect fresh graduates with top employers. Your dream job is just
+              a click away.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -77,9 +77,12 @@ const Hero = () => {
                   if (isAuthenticated && user?.role === "graduate") {
                     navigate("/find-jobs");
                   } else {
-                    const jobsSection = document.getElementById('jobs-section');
+                    const jobsSection = document.getElementById("jobs-section");
                     if (jobsSection) {
-                      jobsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      jobsSection.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
                     }
                   }
                 }}
@@ -94,7 +97,7 @@ const Hero = () => {
                   navigate(
                     isAuthenticated && user?.role === "employer"
                       ? "/employer-dashboard"
-                      : "/login"
+                      : "/login",
                   )
                 }
                 className="w-full sm:w-auto flex items-center justify-center gap-2  text-blue-600 px-8 py-4 rounded-2xl shadow-xl shadow-gray-600/20 font-semibold"
@@ -150,7 +153,6 @@ const Hero = () => {
 
           {/* Original HeroCards - Commented out for now */}
           {/* <HeroCards /> */}
-
         </div>
       </div>
     </section>

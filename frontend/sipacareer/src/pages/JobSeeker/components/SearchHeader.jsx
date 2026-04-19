@@ -11,13 +11,13 @@ const SearchHeader = ({
         <div className="flex flex-col md:flex-row gap-4">
           {/* Keyword Input */}
           <div className="flex-[2] relative group">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-blue-200 z-10 group-focus-within:text-white transition-colors duration-300">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/70 z-10 group-focus-within:text-white transition-colors duration-300">
               <Search className="h-5 w-5" />
             </div>
             <input
               type="text"
               placeholder="Job title, keywords, or company..."
-              className="w-full pl-14 pr-4 py-4 border border-white/20 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/70 focus:bg-white/20 focus:border-white/40 transition-all duration-300"
+              className="w-full pl-14 pr-4 py-4 border border-white/30 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:bg-white/25 focus:border-white/60 transition-all duration-300 shadow-inner"
               value={filters.keyword}
               onChange={(e) => handleFilterChange("keyword", e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onSearch()}
@@ -26,13 +26,13 @@ const SearchHeader = ({
 
           {/* Location Input */}
           <div className="flex-[1.5] relative group">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-blue-200 z-10 group-focus-within:text-white transition-colors duration-300">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 text-white/70 z-10 group-focus-within:text-white transition-colors duration-300">
               <MapPin className="h-5 w-5" />
             </div>
             <input
               type="text"
               placeholder="City, state, or zip code"
-              className="w-full pl-14 pr-4 py-4 border border-white/20 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-sm text-white placeholder-blue-200/70 focus:bg-white/20 focus:border-white/40 transition-all duration-300"
+              className="w-full pl-14 pr-4 py-4 border border-white/30 rounded-xl outline-none text-base font-medium bg-white/10 backdrop-blur-md text-white placeholder-white/70 focus:bg-white/25 focus:border-white/60 transition-all duration-300 shadow-inner"
               value={filters.location}
               onChange={(e) => handleFilterChange("location", e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onSearch()}

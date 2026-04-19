@@ -18,14 +18,13 @@ export const API_PATH = {
     GET_ALL_EMPLOYERS: "/api/users/employers",
   },
 
-
-
   DASHBOARD: {
     OVERVIEW: `/api/analytics/overview`,
   },
 
   JOBS: {
     GET_ALL_JOBS: "/api/jobs",
+    GET_RECOMMENDED_JOBS: "/api/jobs/recommended",
     GET_JOB_BY_ID: (id) => `/api/jobs/${id}`,
     POST_JOB: "/api/jobs",
     GET_JOBS_EMPLOYER: "/api/jobs/get-jobs-employer",
@@ -101,7 +100,8 @@ export const API_PATH = {
     GET_ALL_QUESTIONS: "/api/interview-roles/all-questions",
     GET_ROLE_BY_ID: (id) => `/api/interview-roles/${id}`,
     MANAGE_QUESTIONS: (roleId) => `/api/interview-roles/${roleId}/questions`,
-    MANAGE_QUESTION_BY_ID: (roleId, questionId) => `/api/interview-roles/${roleId}/questions/${questionId}`,
+    MANAGE_QUESTION_BY_ID: (roleId, questionId) =>
+      `/api/interview-roles/${roleId}/questions/${questionId}`,
     EVALUATE: "/api/interviews/evaluate",
     GET_USER_INTERVIEWS: "/api/interviews/user",
     GET_GRADUATE_INTERVIEWS: (userId) => `/api/interviews/graduate/${userId}`,
