@@ -1,0 +1,48 @@
+{
+  "name": "gradsync-backend",
+  "version": "1.0.0",
+  "description": "GradSync Platform — Feature-Based Modular Backend (TypeScript)",
+  "main": "dist/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "gradsync",
+    "career",
+    "ai",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^1.0.6",
+    "@langchain/ollama": "^1.0.1",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.2",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.5",
+    "pdf-parse": "^2.4.5",
+    "socket.io": "^4.8.3",
+    "tesseract.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^22.15.3",
+    "@types/nodemailer": "^8.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
