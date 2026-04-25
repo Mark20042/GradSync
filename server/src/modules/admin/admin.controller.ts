@@ -7,10 +7,7 @@ import JobFAQ from "../../shared/models/JobFAQ.model.js";
 import EmployerSettings from "../../shared/models/EmployerSettings.model.js";
 import SavedJob from "../../shared/models/SavedJob.model.js";
 import { env } from "../../shared/config/environment.js";
-import {
-  sendApprovalEmail,
-  sendRejectionEmail,
-} from "../../shared/utils/email.service.js";
+
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
