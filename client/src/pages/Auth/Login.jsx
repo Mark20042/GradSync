@@ -1,0 +1,350 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  ArrowLeft,
+  Loader,
+  CheckCircle,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { validateEmail } from "./../../utils/helper";
+import axiosInstance from "./../../utils/axiosInstance";
+import { API_PATH } from "./../../utils/apiPath";
+import { useAuth } from "../../context/AuthContext";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import loginAnimation from "../../assets/animations/Login.json";
+import welcomeBirdieAnimation from "../../assets/animations/welcomebirdie.json";
+import ErrorModalLogin from "./components/ErrorModalLogin";
+
+const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
+
+  const [formState, setFormState] = useState({
+    loading: false,
+    error: {},
+    showPassword: false,
+    success: false,
+    showErrorModal: false, // New state for modal
+    errorMessage: "", // New state for modal message
+    isUnverified: false,
+  });
+
+  // Validation for password
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error message when typing
+    if (formState.error[name]) {
+      setFormState((prev) => ({
+        ...prev,
+        error: {
+          ...prev.error,
+          [name]: "",
+        },
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {
+      email: validateEmail(formData.email),
+      password: validatePassword(formData.password),
+    };
+
+    Object.keys(errors).forEach((key) => {
+      if (!errors[key]) delete errors[key];
+    });
+
+    setFormState((prev) => ({
+      ...prev,
+      error: errors,
+    }));
+
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setFormState((prev) => ({ ...prev, loading: true, error: {} }));
+
+    try {
+      const response = await axiosInstance.post(API_PATH.AUTH.LOGIN, {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      setFormState((prev) => ({
+        ...prev,
+        loading: false,
+        success: true,
+      }));
+
+      const { token, role, isAdmin, isProfileComplete } = response.data;
+
+      if (token) {
+        login(response.data, token);
+
+        //Redirect based on admin status and role
+        setTimeout(() => {
+          let redirectPath = "/find-jobs"; // default for graduates
+
+          if (isAdmin) {
+            redirectPath = "/admin-dashboard";
+          } else if (role === "employer") {
+            redirectPath = "/employer-dashboard";
+          } else if (role === "graduate" && !isProfileComplete) {
+            redirectPath = "/setup-profile-grad";
+          }
+
+          window.location.href = redirectPath;
+        }, 2850);
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data.message ||
+        "Login failed. Please check your credentials.";
+      const isUnverified = error.response?.data?.isUnverified || false;
+
+      setFormState((prev) => ({
+        ...prev,
+        loading: false,
+        showErrorModal: true, // Show modal
+        errorMessage: errorMessage,
+        isUnverified,
+        error: {
+          submit: errorMessage,
+        },
+      }));
+    }
+  };
+
+  if (formState.success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full text-center max-w-md mt-16 sm:mt-0"
+        >
+          {/* Birdie Animation */}
+          <div className="w-72 h-72 mb-4 mx-auto flex items-center justify-center">
+            <DotLottieReact
+              data={welcomeBirdieAnimation}
+              loop
+              autoplay
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
+
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Welcome Back!
+          </h2>
+          <p className="text-gray-600 mb-4">
+            You have been successfully logged in.
+          </p>
+
+          {/* Loader centered */}
+          {/* <div className="flex items-center justify-center">
+            <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+          </div> */}
+
+          <p className="text-sm text-gray-500 mt-2">
+            Redirecting to your dashboard...
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 relative">
+      {/* Error Modal */}
+      <ErrorModalLogin
+        isOpen={formState.showErrorModal}
+        onClose={() =>
+          setFormState((prev) => ({
+            ...prev,
+            showErrorModal: false,
+            isUnverified: false,
+          }))
+        }
+        message={formState.errorMessage}
+        isUnverified={formState.isUnverified}
+        onVerifyNav={() => navigate("/signup")}
+      />
+
+      {/* Back to Home */}
+      <button
+        type="button"
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 flex items-center text-lg sm:text-xl font-semibold text-gray-800 hover:text-blue-600 transition z-10"
+      >
+        <ArrowLeft className="w-6 h-6 sm:w-7 sm:h-7 mr-2" />
+        Back to Home
+      </button>
+
+      {/* Main Container - Two Column Layout */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-6xl flex flex-col md:flex-row items-center gap-8 md:gap-12 mt-16 sm:mt-0"
+      >
+        {/* Left Side - Lottie Animation */}
+        <div className="w-full md:w-1/2 flex justify-center">
+          <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
+            <DotLottieReact
+              data={loginAnimation}
+              loop
+              autoplay
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
+        </div>
+
+        {/* Right Side - Login Form */}
+        <div className="w-full md:w-1/2">
+          {/* Title */}
+          <div className="text-center md:text-left mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              Welcome Back
+            </h2>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Sign in to your{" "}
+              <span className="text-blue-600 font-semibold">GradSync</span>{" "}
+              account
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg border text-sm sm:text-base ${
+                    formState.error.email ? "border-red-500" : "border-gray-300"
+                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent
+                  autofill:shadow-[inset_0_0_0_2000px_#ffffff] 
+                  autofill:text-fill-slate-900`}
+                  value={formData.email}
+                  onChange={handleInputChange}
+                />
+              </div>
+              {formState.error.email && (
+                <p className="text-red-500 flex items-center gap-1 text-sm mt-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {formState.error.email}
+                </p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={formState.showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg border text-sm sm:text-base ${
+                    formState.error.password
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  } focus:outline-none focus:ring-2 transition-colors focus:ring-blue-500 focus:border-transparent`}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      showPassword: !prev.showPassword,
+                      showErrorModal: false,
+                    }))
+                  }
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {formState.showPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              {formState.error.password && (
+                <p className="text-red-500 flex items-center text-sm mt-1">
+                  <AlertCircle className="mr-1 w-4 h-4" />
+                  {formState.error.password}
+                </p>
+              )}
+            </div>
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={formState.loading}
+              className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-70 text-sm sm:text-base"
+            >
+              {formState.loading ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <span>Sign In</span>
+              )}
+            </button>
+
+            {/* Create Account */}
+            <p className="text-center text-sm sm:text-base text-gray-600 mt-6">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/signup")}
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Create Account
+              </button>
+            </p>
+          </form>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default Login;
