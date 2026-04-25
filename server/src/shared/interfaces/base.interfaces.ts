@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { Document, Types } from 'mongoose';
+import type { Request, Response, NextFunction } from "express";
+import type { Document, Types } from "mongoose";
 
 // ─── User Interface (shared across modules) ────────────────────────────
 
@@ -50,7 +50,7 @@ export interface IProject {
 export interface IVerifiedSkill {
   skill: string;
   assessmentTitle?: string;
-  level?: 'Entry' | 'Mid' | 'Senior' | 'Expert';
+  level?: "Entry" | "Mid" | "Senior" | "Expert";
   earnedAt?: Date;
   badgeIcon?: string;
   score?: number;
@@ -60,14 +60,14 @@ export interface IJobPreferences {
   desiredJobTitle?: string;
   industry?: string;
   preferredLocation?: string;
-  jobType?: 'Full-time' | 'Part-time' | 'Contract' | 'Internship' | 'Remote';
+  jobType?: "Full-time" | "Part-time" | "Contract" | "Internship" | "Remote";
   salaryExpectation?: number;
   relocation?: boolean;
 }
 
 export interface ILanguage {
   language?: string;
-  proficiency?: 'Basic' | 'Conversational' | 'Fluent' | 'Native';
+  proficiency?: "Basic" | "Conversational" | "Fluent" | "Native";
 }
 
 /** Core User document interface (mirrors Mongoose schema) */
@@ -76,7 +76,7 @@ export interface IUser extends Document {
   fullName: string;
   email: string;
   password: string;
-  role: 'graduate' | 'employer';
+  role: "graduate" | "employer";
 
   // Personal
   avatar?: string;
@@ -93,9 +93,10 @@ export interface IUser extends Document {
 
   // Verification
   tor?: string;
+  verificationStatus?: "pending" | "verified" | "failed";
   verificationMessage?: string;
   verified?: boolean;
-  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  approvalStatus?: "pending" | "approved" | "rejected";
   rejectionReason?: string;
 
   // Professional links
@@ -127,7 +128,7 @@ export interface IUser extends Document {
   // Admin
   isAdmin?: boolean;
   isProfileComplete?: boolean;
-  experienceType?: 'work' | 'internship';
+  experienceType?: "work" | "internship";
 
   // Timestamps
   lastScanDate?: Date;
@@ -148,6 +149,9 @@ export interface IJob extends Document {
   category?: string;
   skills?: string[];
   salary?: number;
+  salaryMin?: number;
+  salaryMax?: number;
+  autoReplyMessage?: string;
   isClosed?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

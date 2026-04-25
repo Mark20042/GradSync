@@ -1,24 +1,24 @@
-import mongoose, { Schema } from 'mongoose';
-import type { IJob } from '../interfaces/base.interfaces.js';
+import mongoose, { Schema } from "mongoose";
+import type { IJob } from "../interfaces/base.interfaces.js";
 
 const jobSchema = new Schema<IJob>(
   {
     title: {
       type: String,
-      required: [true, 'Job title is required'],
+      required: [true, "Job title is required"],
       trim: true,
     },
     description: {
       type: String,
-      required: [true, 'Job description is required'],
+      required: [true, "Job description is required"],
     },
     requirements: {
       type: String,
-      required: [true, 'Job requirements are required'],
+      required: [true, "Job requirements are required"],
     },
     company: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     location: String,
@@ -26,13 +26,16 @@ const jobSchema = new Schema<IJob>(
     category: String,
     skills: [String],
     salary: Number,
+    salaryMin: Number,
+    salaryMax: Number,
+    autoReplyMessage: String,
     isClosed: {
       type: Boolean,
       default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Job = mongoose.model<IJob>('Job', jobSchema);
+const Job = mongoose.model<IJob>("Job", jobSchema);
 export default Job;

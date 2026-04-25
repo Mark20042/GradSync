@@ -433,7 +433,7 @@ export const createUser = async (req: any, res: Response) => {
     }
     const user = await User.create(userData);
     const resp = user.toObject();
-    delete resp.password;
+    delete (resp as { password?: string }).password;
     res.status(201).json(resp);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
