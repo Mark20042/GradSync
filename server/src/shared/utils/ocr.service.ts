@@ -1,6 +1,6 @@
 import Tesseract from 'tesseract.js';
 import fs from 'fs';
-import { PDFParse } from 'pdf-parse';
+import pdf from 'pdf-parse';
 import path from 'path';
 
 interface OCRResult {
@@ -17,8 +17,7 @@ export const verifyDocument = async (filePath: string, type: 'tor' | 'businessPe
 
     if (fileExtension === '.pdf') {
       const dataBuffer = fs.readFileSync(filePath);
-      const parser = new PDFParse({ data: dataBuffer });
-      const data = await parser.getText();
+      const data = await pdf(dataBuffer);
       text = data.text;
     } else if (['.jpg', '.jpeg', '.png', '.bmp'].includes(fileExtension)) {
       const { data: { text: ocrText } } = await Tesseract.recognize(filePath, 'eng');
