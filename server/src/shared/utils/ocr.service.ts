@@ -1,7 +1,10 @@
 import Tesseract from 'tesseract.js';
 import fs from 'fs';
-import pdf from 'pdf-parse';
+import { createRequire } from 'module';
 import path from 'path';
+
+const _require = createRequire(import.meta.url);
+const pdf = _require('pdf-parse') as (dataBuffer: Buffer) => Promise<{ text: string }>;
 
 interface OCRResult {
   verified: boolean;
