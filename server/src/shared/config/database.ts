@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 import { env } from './environment.js';
 
-/**
- * Establishes connection to MongoDB using Mongoose.
- * Logs connection status and exits the process on failure.
- */
+
 export const connectDB = async (): Promise<void> => {
   try {
     const conn = await mongoose.connect(env.MONGO_URI);

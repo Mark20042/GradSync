@@ -7,6 +7,8 @@ import InterviewRole from '../../shared/models/InterviewRole.model.js';
 import InterviewQuestion from '../../shared/models/InterviewQuestion.model.js';
 import { getOllamaService } from '../ai/services/ollama.service.js';
 import { sendInterviewResultEmail } from '../../shared/utils/email.service.js';
+import { interviewGraph } from '../ai/workflows/interview-agent.workflow.js';
+import { HumanMessage } from '@langchain/core/messages';
 
 const router = Router();
 
@@ -159,6 +161,129 @@ router.delete('/:id', protect as any, admin as any, async (req, res) => {
     if (!(await Interview.findByIdAndDelete(req.params.id))) { res.status(404).json({ message: 'Not found' }); return; }
     res.status(200).json({ message: 'Deleted' });
   } catch (e) { res.status(500).json({ message: 'Server error' }); }
+});
+
+// ─── Real-Time Conversational AI Endpoint ──────────────────────────────────
+router.post('/chat', protect as any, async (req: any, res: Response) => {
+  try {
+    const { thread_id, roleName, message } = req.body;
+    const candidateId = req.user._id;
+
+    if (!thread_id) {
+      res.status(400).json({ message: 'thread_id is required' });
+      return;
+    }
+
+    const config = { configurable: { thread_id } };
+
+    // 1. Initialization (Start of interview)
+    if (!message) {
+      const role = await InterviewRole.findOne({ roleName });
+      if (!role) {
+        res.status(404).json({ message: 'Role not found' });
+        return;
+      }
+      
+      const mappedQuestions = role.questions.map((q: any) => ({
+        questionId: String(q._id),
+        text: q.questionText,
+        idealAnswer: q.idealAnswer || ''
+      }));
+
+      // Add 3 structural prep questions tailored for fresh graduates
+      const introQuestions = [
+        {
+          questionId: "intro_1",
+          text: `Hello! I'm your GradSync AI Interviewer. To start, how do you plan to handle the responsibilities of the ${roleName} role as a fresh graduate?`,
+          idealAnswer: `The candidate should confidently explain their readiness and motivation for the ${roleName} role.`
+        },
+        {
+          questionId: "intro_2",
+          text: `What specific skills or software have you learned during your studies that will directly help you succeed as a ${roleName}?`,
+          idealAnswer: `The candidate should highlight relevant academic projects, software, or coursework that align with the ${roleName}.`
+        },
+        {
+          questionId: "intro_3",
+          text: `Transitioning into a professional ${roleName} environment can be challenging. How will you stay organized and continuously improve your skills on the job?`,
+          idealAnswer: `The candidate should discuss adaptive strategies, problem-solving, and a willingness to learn continuously.`
+        }
+      ];
+
+      mappedQuestions.unshift(...introQuestions);
+
+      const result: any = await interviewGraph.invoke({ 
+         roleName: roleName,
+         questions: mappedQuestions,
+         messages: [] 
+      }, config);
+      
+      const lastMessage = result.messages[result.messages.length - 1];
+      res.json({ aiMessage: lastMessage.content, isFinished: result.isFinished });
+      return;
+    }
+
+    // 2. Ongoing Conversation (Candidate submits an answer)
+    console.log(`🎤 Processing candidate answer via LangGraph for thread: ${thread_id}`);
+    const result: any = await interviewGraph.invoke({ 
+        messages: [new HumanMessage(message)] 
+    }, config);
+
+    // 3. Check if the interview just finished
+    if (result.isFinished && result.evaluations && result.evaluations.length > 0) {
+       console.log(`✅ Interview finished! Saving to database...`);
+       
+       const evals = result.evaluations.map((e: any) => {
+          const evalCopy = { ...e };
+          // MongoDB will throw a CastError if we pass a custom string to an ObjectId field
+          if (evalCopy.questionId && String(evalCopy.questionId).startsWith('intro')) {
+             delete evalCopy.questionId;
+          }
+          return evalCopy;
+       });
+
+       const totalScore = evals.reduce((sum: number, ev: any) => sum + ev.score, 0);
+       const avgScore = evals.length > 0 ? Math.round(totalScore / evals.length) : 0;
+
+       // Use existing OllamaService to generate a cohesive summary based on the parsed answers
+       const ollama = getOllamaService();
+       const summaryRes = await ollama.evaluateFullInterview(
+          roleName,
+          evals.map((e: any) => ({
+             questionId: e.questionId,
+             questionText: e.questionText,
+             candidateAnswer: e.candidateAnswer,
+             idealAnswer: e.idealAnswer
+          }))
+       );
+
+       await Interview.create({
+          candidateId,
+          roleName,
+          status: 'evaluated',
+          answers: evals,
+          aiScore: avgScore,
+          aiFeedback: {
+             overallScore: avgScore,
+             totalQuestions: evals.length,
+             summary: summaryRes.summary,
+             strengths: summaryRes.strengths,
+             areasForImprovement: summaryRes.areasForImprovement
+          }
+       });
+
+       // We could trigger the email here as well:
+       await sendInterviewResultEmail(req.user.email, req.user.fullName, roleName, avgScore, summaryRes.summary);
+    }
+    
+    const lastMessage = result.messages[result.messages.length - 1];
+    res.json({ 
+      aiMessage: lastMessage?.content || "Thank you. That completes our interview.", 
+      isFinished: result.isFinished 
+    });
+  } catch (error) {
+    console.error('Chat endpoint error:', error);
+    res.status(500).json({ message: 'Failed to process chat message' });
+  }
 });
 
 export default router;
