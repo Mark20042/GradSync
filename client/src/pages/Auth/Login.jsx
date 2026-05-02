@@ -16,7 +16,7 @@ import axiosInstance from "./../../utils/axiosInstance";
 import { API_PATH } from "./../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import loginAnimation from "../../assets/animations/Login.json";
+import loginAnimation from "../../assets/animations/login.json";
 import welcomeBirdieAnimation from "../../assets/animations/welcomebirdie.json";
 import ErrorModalLogin from "./components/ErrorModalLogin";
 
