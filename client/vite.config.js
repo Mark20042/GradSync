@@ -7,6 +7,6 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 export default defineConfig({
   plugins: [react(), tailwindcss(), nodePolyfills()],
   build: {
-    chunkSizeWarningLimit: 1600,
+    chunkSizeWarningLimit: 3000,
   },
 });
