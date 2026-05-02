@@ -25,6 +25,20 @@ const AdminUsers = () => {
 
     useEffect(() => {
         fetchUsers();
+
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(fetchUsers, 30000);
+
+        // Re-fetch when tab becomes visible
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") fetchUsers();
+        };
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, []);
 
     const fetchUsers = async () => {

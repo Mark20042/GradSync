@@ -5,25 +5,15 @@ import { BASE_URL } from "./apiPath";
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 80000,
+  withCredentials: true, // ← Sends/receives httpOnly cookies automatically
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-//request interceptor
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const accesstoken = localStorage.getItem("token");
-    if (accesstoken) {
-      config.headers.Authorization = `Bearer ${accesstoken}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// No need for Bearer token interceptor — the cookie is sent automatically
+// by the browser with every request because of `withCredentials: true`
 
 // Helper to rewrite hardcoded database URLs to the current BASE_URL
 export const fixLegacyUrls = (obj) => {
@@ -60,8 +50,12 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       // Handle common errors globally
       if (error.response.status === 401) {
-        // Redirect to login page
-        window.location.href = "/";
+        // Cookie expired or invalid — redirect to login
+        // Only redirect if not already on login/signup pages
+        const path = window.location.pathname;
+        if (path !== "/" && path !== "/login" && path !== "/signup") {
+          window.location.href = "/";
+        }
       } else if (error.response.status === 500) {
         console.error("Server error. Please try again later.");
       }

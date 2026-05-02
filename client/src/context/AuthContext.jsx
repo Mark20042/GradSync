@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axiosInstance from "../utils/axiosInstance";
+import { API_PATH } from "../utils/apiPath";
 
 const AuthContext = createContext();
 
@@ -19,41 +21,59 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // With cookie-based JWT, we verify auth by calling GET /api/auth/me
+  // If the cookie is valid, the server returns user data
+  // If the cookie is expired/missing, it returns 401
   const checkAuthStatus = async () => {
     try {
+      // First check if we have cached user data in localStorage
       const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token");
 
-      if (storedUser && storedToken) {
+      if (storedUser) {
+        // We have cached data — set it immediately for fast UI render
         const userData = JSON.parse(storedUser);
         setUser(userData);
         setAuthenticated(true);
-      } else {
-        setUser(null);
-        setAuthenticated(false);
       }
+
+      // Then verify with the server (cookie will be sent automatically)
+      const response = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
+      const serverUser = response.data;
+
+      // Update with fresh data from server
+      localStorage.setItem("user", JSON.stringify(serverUser));
+      setUser(serverUser);
+      setAuthenticated(true);
     } catch (error) {
-      console.error("Auth check failed:", error);
-      logout();
+      // Cookie is invalid/expired — clear everything
+      console.error("Auth check failed:", error?.response?.status || error.message);
+      localStorage.removeItem("user");
+      setUser(null);
+      setAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = (userData, token) => {
+  // After login, the server sets the httpOnly cookie automatically
+  // We just need to save user data for the UI
+  const login = (userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
     setUser(userData);
     setAuthenticated(true);
   };
 
-  const logout = () => {
+  // Call the server to clear the cookie, then clean up local state
+  const logout = async () => {
+    try {
+      await axiosInstance.post("/api/auth/logout");
+    } catch (error) {
+      console.error("Logout API error:", error);
+    }
     localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
     setUser(null);
     setAuthenticated(false);
-    window.location.href = "/"; // or use navigate("/")
+    window.location.href = "/";
   };
 
   const updateUser = (updatedUserData) => {

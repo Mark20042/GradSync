@@ -1,15 +1,9 @@
 import React from 'react';
 import { Settings, LogOut, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 
 const AccountSettingsSection = ({ setDeleteModalOpen }) => {
-    const navigate = useNavigate();
-
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userRole");
-        navigate("/login");
-    };
+    const { logout } = useAuth();
 
     return (
         <div>
@@ -19,7 +13,7 @@ const AccountSettingsSection = ({ setDeleteModalOpen }) => {
             </h3>
             <div className="space-y-4">
                 <button
-                    onClick={handleLogout}
+                    onClick={logout}
                     className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 text-gray-700 transition-colors"
                 >
                     <span className="font-medium">Log Out</span>

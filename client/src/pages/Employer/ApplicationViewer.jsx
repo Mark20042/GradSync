@@ -16,6 +16,7 @@ import { getInitials } from "../../utils/helper";
 import moment from "moment";
 import StatusBadge from "./../../components/StatusBadge";
 import ApplicantProfilePreview from "../../components/Cards/ApplicantProfilePreview";
+import RankedCandidates from "./RankedCandidates";
 
 const ApplicationViewer = () => {
   const location = useLocation();
@@ -26,6 +27,7 @@ const ApplicationViewer = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   const fetchApplications = async () => {
     try {
@@ -46,9 +48,42 @@ const ApplicationViewer = () => {
     else navigate("/manage-jobs");
   }, [jobId, navigate]);
 
-  // Group applications by job
+  // Group and Score applications by job
   const groupedApplications = useMemo(() => {
-    const filtered = applications.filter((app) => app.job && app.job.title);
+    const scoredApps = applications.map(app => {
+      let score = 0;
+      const reasons = [];
+
+      if (app.job && app.applicant) {
+        const jobSkills = app.job.skills?.map(s => s.toLowerCase()) || [];
+        const jobReq = app.job.requirements?.toLowerCase() || "";
+        const userSkills = app.applicant.skills?.map(s => s.toLowerCase()) || [];
+
+        let skillMatch = 0;
+        jobSkills.forEach(s => { if (userSkills.includes(s)) { score++; skillMatch++; } });
+        userSkills.forEach(us => { if (!jobSkills.includes(us) && jobReq.includes(us)) { score++; skillMatch++; } });
+
+        if (skillMatch > 0) reasons.push(`${skillMatch} matching skills`);
+
+        const desiredTitle = app.applicant.major?.toLowerCase() || "";
+        if (desiredTitle && app.job.title?.toLowerCase().includes(desiredTitle)) {
+          score += 2;
+          reasons.push("Matches Major");
+        }
+      }
+
+      return {
+        ...app,
+        matchScore: score,
+        matchReason: reasons.length > 0 ? reasons.join(", ") : "General Match"
+      };
+    });
+
+    // We don't sort here anymore, we just return the raw scored apps. 
+    // RankedCandidates component will sort them.
+    scoredApps.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const filtered = scoredApps.filter((app) => app.job && app.job.title);
 
     return filtered.reduce((acc, app) => {
       const jobId = app.job._id;
@@ -64,6 +99,7 @@ const ApplicationViewer = () => {
   }, [applications]);
 
   const handleDownloadResume = (resumeUrl) => {
+    if (!resumeUrl) return;
     window.open(resumeUrl, "_blank");
   };
 
@@ -80,21 +116,19 @@ const ApplicationViewer = () => {
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <button
-                className="group flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-white bg-white/50 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 border border-gray-200 hover:border-transparent rounded-xl transition-all duration-300 shadow-lg shadow-gray-100 hover:shadow-xl"
-                onClick={() => navigate("/manage-jobs")}
-              >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-                <span>Back</span>
-              </button>
+        <div className=" mb-8 px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-7xl mx-auto">
+            <button
+              className="group inline-flex items-center space-x-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-4"
+              onClick={() => navigate("/manage-jobs")}
+            >
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              <span>Back to Jobs</span>
+            </button>
 
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mt-1">
-                Applications Overview
-              </h1>
-            </div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              Applications Overview
+            </h1>
           </div>
         </div>
 
@@ -153,82 +187,117 @@ const ApplicationViewer = () => {
                       </div>
                     </div>
 
+                    {/* Tabs */}
+                    <div className="px-6 pt-4 border-b border-gray-200 bg-white">
+                      <div className="flex space-x-8">
+                        <button
+                          onClick={() => setActiveTab("all")}
+                          className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === "all" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          All Applications
+                          {activeTab === "all" && (
+                            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("ranked")}
+                          className={`pb-4 text-sm font-medium transition-colors relative flex items-center gap-2 ${activeTab === "ranked" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                          🏆 Top Ranked Candidates
+                          {activeTab === "ranked" && (
+                            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Applications List */}
-                    <div className="p-6">
-                      <div className="space-y-4">
-                        {applications.filter((app) => app.applicant).map((application) => (
-                          <div
-                            key={application._id}
-                            className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <div className="flex items-center gap-4">
-                              {/* Avatar */}
-                              <div className="flex-shrink-0">
-                                {application.applicant.avatar ? (
-                                  <img
-                                    src={application.applicant.avatar}
-                                    alt={application.applicant.fullName}
-                                    className="h-12 w-12 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <span className="text-blue-600 font-semibold text-lg">
-                                      {getInitials(
-                                        application.applicant.fullName
+                    <div className="p-6 bg-gray-50/50">
+                      {activeTab === "ranked" ? (
+                        <RankedCandidates
+                          applications={applications}
+                          handleDownloadResume={handleDownloadResume}
+                          setSelectedApplicant={setSelectedApplicant}
+                        />
+                      ) : (
+                        <div className="space-y-4">
+                          {applications.filter((app) => app.applicant).map((application) => (
+                            <div
+                              key={application._id}
+                              className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-4">
+                                {/* Avatar */}
+                                <div className="flex-shrink-0">
+                                  {application.applicant.avatar ? (
+                                    <img
+                                      src={application.applicant.avatar}
+                                      alt={application.applicant.fullName}
+                                      className="h-12 w-12 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                      <span className="text-blue-600 font-semibold text-lg">
+                                        {getInitials(
+                                          application.applicant.fullName
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Applicant Info */}
+                                <div className="min-w-0">
+                                  <h3 className="font-semibold text-gray-900 truncate">
+                                    {application.applicant.fullName}
+                                  </h3>
+                                  <p className="text-gray-600 text-sm truncate">
+                                    {application.applicant.email}
+                                  </p>
+                                  <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>
+                                      Applied{" "}
+                                      {moment(application.createdAt)?.format(
+                                        "Do MMM, YYYY"
                                       )}
                                     </span>
                                   </div>
-                                )}
-                              </div>
 
-                              {/* Applicant Info */}
-                              <div className="min-w-0">
-                                <h3 className="font-semibold text-gray-900 truncate">
-                                  {application.applicant.fullName}
-                                </h3>
-                                <p className="text-gray-600 text-sm truncate">
-                                  {application.applicant.email}
-                                </p>
-                                <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
-                                  <Calendar className="w-3 h-3" />
-                                  <span>
-                                    Applied{" "}
-                                    {moment(application.createdAt)?.format(
-                                      "Do MMM, YYYY"
-                                    )}
-                                  </span>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-3 mt-4 md:m-0">
-                              <StatusBadge status={application.status} />
-                              <button
-                                className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors "
-                                onClick={() =>
-                                  handleDownloadResume(
-                                    application.applicant.resume
-                                  )
-                                }
-                              >
-                                <Download className="w-4 h-4" />
-                                Resume
-                              </button>
+                              {/* Actions */}
+                              <div className="flex items-center gap-3 mt-4 md:m-0">
+                                <StatusBadge status={application.status} />
+                                <button
+                                  className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors "
+                                  onClick={() =>
+                                    handleDownloadResume(
+                                      application.applicant.resume
+                                    )
+                                  }
+                                >
+                                  <Download className="w-4 h-4" />
+                                  Resume
+                                </button>
 
-                              <button
-                                className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-                                onClick={() =>
-                                  setSelectedApplicant(application)
-                                }
-                              >
-                                <Eye className="w-4 h-4" />
-                                Preview
-                              </button>
+                                <button
+                                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                                  onClick={() =>
+                                    setSelectedApplicant(application)
+                                  }
+                                >
+                                  <Eye className="w-4 h-4" />
+                                  Preview
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )

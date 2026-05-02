@@ -53,20 +53,20 @@ const ResumeBuilder = () => {
             const formData = new FormData();
             formData.append("resume", blob, "resume.pdf");
 
-            await axiosInstance.post(API_PATH.AUTH.UPLOAD_RESUME, formData, {
+            const response = await axiosInstance.post(API_PATH.AUTH.UPLOAD_RESUME, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
 
+            // Update local state with the actual Cloudinary URL
+            const { resumeUrl } = response.data;
+            setUser(prev => ({ ...prev, resume: resumeUrl }));
+
             alert("Resume saved to your profile successfully!");
-
-            // Optionally update local user state if needed
-            setUser(prev => ({ ...prev, resume: "resume.pdf" }));
-
         } catch (error) {
             console.error("Error saving resume:", error);
-            alert(`Failed to save resume: ${error.message}`);
+            alert(`Failed to save resume: ${error.response?.data?.message || error.message}`);
         } finally {
             setSaving(false);
         }

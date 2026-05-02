@@ -22,6 +22,20 @@ const AdminJobs = () => {
     useEffect(() => {
         fetchJobs();
         fetchEmployers();
+
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(fetchJobs, 30000);
+
+        // Re-fetch when tab becomes visible
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") fetchJobs();
+        };
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, []);
 
     const fetchEmployers = async () => {

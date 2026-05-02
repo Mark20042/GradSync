@@ -30,6 +30,7 @@ import AdminRoute from "./routes/AdminRoute";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminJobs from "./pages/Admin/AdminJobs";
+import AdminApplications from "./pages/Admin/AdminApplications";
 import AdminReports from "./pages/Admin/AdminReports";
 import AdminFAQs from "./pages/Admin/AdminFAQs";
 import AdminEmployerSettings from "./pages/Admin/AdminEmployerSettings";
@@ -91,6 +92,7 @@ const App = () => {
             <Route path="/admin-users" element={<AdminUsers />} />
 
             <Route path="/admin-jobs" element={<AdminJobs />} />
+            <Route path="/admin-applications" element={<AdminApplications />} />
             <Route path="/admin-reports" element={<AdminReports />} />
             <Route path="/admin-faqs" element={<AdminFAQs />} />
             <Route

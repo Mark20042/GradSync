@@ -188,6 +188,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 { id: "admin-users", name: "Users", icon: Users },
 
                 { id: "admin-jobs", name: "Jobs", icon: Briefcase },
+                { id: "admin-applications", name: "Applications", icon: FileSpreadsheet },
                 {
                   id: "admin-assessments",
                   name: "Assessments",

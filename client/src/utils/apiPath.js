@@ -71,6 +71,8 @@ export const API_PATH = {
     USERS: "/api/admin/users",
     CREATE_USER: "/api/admin/users",
     JOBS: "/api/admin/jobs",
+    APPLICATIONS: "/api/admin/applications",
+    DELETE_APPLICATION: (id) => `/api/admin/applications/${id}`,
     REPORTS: "/api/admin/reports",
     FAQS: "/api/admin/faqs",
     JOB_FAQS: "/api/admin/job-faqs",

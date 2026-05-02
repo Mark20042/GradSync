@@ -295,9 +295,9 @@ const UserProfile = () => {
   };
 
   const downloadResume = () => {
-    if (user?.resume) {
-      window.open(user.resume, "_blank");
-    }
+    if (!user?.resume) return;
+    // Cloudinary raw URLs are directly downloadable
+    window.open(user.resume, "_blank");
   };
 
   const handleDeleteAccount = async () => {
@@ -305,9 +305,9 @@ const UserProfile = () => {
     try {
       await axiosInstance.delete(API_PATH.AUTH.DELETE_ACCOUNT);
       toast.success("Account deleted successfully.");
-      localStorage.removeItem("token");
-      localStorage.removeItem("userRole");
-      navigate("/");
+      // Clear auth state and cookie
+      localStorage.removeItem("user");
+      window.location.href = "/";
     } catch (error) {
       console.error("Error deleting account:", error);
       toast.error("Failed to delete account. Please try again.");

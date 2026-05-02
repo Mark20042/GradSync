@@ -43,19 +43,33 @@ const AdminDashboard = () => {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchAnalytics = async () => {
-            try {
-                const response = await axiosInstance.get(API_PATH.ADMIN.ANALYTICS);
-                setAnalytics(response.data);
-            } catch (error) {
-                console.error("Error fetching analytics:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchAnalytics = async () => {
+        try {
+            const response = await axiosInstance.get(API_PATH.ADMIN.ANALYTICS);
+            setAnalytics(response.data);
+        } catch (error) {
+            console.error("Error fetching analytics:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchAnalytics();
+
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(fetchAnalytics, 30000);
+
+        // Re-fetch when tab becomes visible again
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") fetchAnalytics();
+        };
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
     }, []);
 
     if (loading) {

@@ -102,26 +102,26 @@ const Login = () => {
         success: true,
       }));
 
-      const { token, role, isAdmin, isProfileComplete } = response.data;
+      const { role, isAdmin, isProfileComplete } = response.data;
 
-      if (token) {
-        login(response.data, token);
+      // Cookie is set automatically by the server (httpOnly)
+      // We just save user data for the UI
+      login(response.data);
 
-        //Redirect based on admin status and role
-        setTimeout(() => {
-          let redirectPath = "/find-jobs"; // default for graduates
+      //Redirect based on admin status and role
+      setTimeout(() => {
+        let redirectPath = "/find-jobs"; // default for graduates
 
-          if (isAdmin) {
-            redirectPath = "/admin-dashboard";
-          } else if (role === "employer") {
-            redirectPath = "/employer-dashboard";
-          } else if (role === "graduate" && !isProfileComplete) {
-            redirectPath = "/setup-profile-grad";
-          }
+        if (isAdmin) {
+          redirectPath = "/admin-dashboard";
+        } else if (role === "employer") {
+          redirectPath = "/employer-dashboard";
+        } else if (role === "graduate" && !isProfileComplete) {
+          redirectPath = "/setup-profile-grad";
+        }
 
-          window.location.href = redirectPath;
-        }, 2850);
-      }
+        window.location.href = redirectPath;
+      }, 2850);
     } catch (error) {
       const errorMessage =
         error.response?.data.message ||
