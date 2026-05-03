@@ -42,7 +42,7 @@ const HowItWorks = () => {
                     variants={fadeUp}
                     initial="hidden"
                     whileInView="show"
-                    viewport={{ once: true }}
+                    viewport={{ once: false, amount: 0.3 }}
                     transition={{ duration: 0.6 }}
                     className="text-center mb-16"
                 >
@@ -58,7 +58,7 @@ const HowItWorks = () => {
                             variants={fadeUp}
                             initial="hidden"
                             whileInView="show"
-                            viewport={{ once: true }}
+                            viewport={{ once: false, amount: 0.3 }}
                             transition={{ duration: 0.6, delay: index * 0.15 }}
                             className="relative"
                         >

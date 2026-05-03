@@ -27,7 +27,7 @@ import axiosInstance from "./../../utils/axiosInstance";
 import { API_PATH } from "./../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import registerAnimation from "../../assets/animations/register.json";
+import registerAnimation from "../../assets/animations/signup.json";
 import RegisterErrorModal from "../../components/Modals/RegisterErrorModal";
 import RegisterSuccessModal from "../../components/Modals/RegisterSuccessModal";
 
@@ -341,7 +341,7 @@ const SignUp = () => {
           transition={{ duration: 0.6 }}
           className="hidden lg:flex w-full lg:w-2/5 justify-center items-center"
         >
-          <div className="w-full max-w-md xl:max-w-lg">
+          <div className="w-full max-w-sm xl:max-w-lg">
             <DotLottieReact
               data={registerAnimation}
               loop
@@ -491,7 +491,9 @@ const SignUp = () => {
                     }`}
                   >
                     <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <div className="font-medium text-xs sm:text-sm">Fresh Graduate</div>
+                    <div className="font-medium text-xs sm:text-sm">
+                      Fresh Graduate
+                    </div>
                   </button>
                   <button
                     type="button"
@@ -503,7 +505,9 @@ const SignUp = () => {
                     }`}
                   >
                     <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
-                    <div className="font-medium text-xs sm:text-sm">Employer</div>
+                    <div className="font-medium text-xs sm:text-sm">
+                      Employer
+                    </div>
                   </button>
                 </div>
                 {formState.error.role && (
@@ -721,7 +725,9 @@ const SignUp = () => {
                 {formState.loading ? (
                   <>
                     <Loader className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" />
-                    <span className="text-sm sm:text-base">Verifying Documents...</span>
+                    <span className="text-sm sm:text-base">
+                      Verifying Documents...
+                    </span>
                   </>
                 ) : (
                   <span>Create Account</span>
