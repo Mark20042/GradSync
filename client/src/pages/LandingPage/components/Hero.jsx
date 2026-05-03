@@ -117,7 +117,7 @@ const Hero = () => {
               className="mt-10 grid grid-cols-3 gap-4 sm:gap-6 lg:flex lg:items-center lg:justify-start lg:gap-8"
             >
               <div className="text-center lg:text-left">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-800 bg-clip-text ">
                   10K+
                 </p>
                 <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
@@ -126,7 +126,7 @@ const Hero = () => {
               </div>
 
               <div className="text-center lg:text-left">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-800 bg-clip-text ">
                   5K+
                 </p>
                 <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
@@ -135,7 +135,7 @@ const Hero = () => {
               </div>
 
               <div className="text-center lg:text-left">
-                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-800 bg-clip-text ">
                   50K+
                 </p>
                 <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
