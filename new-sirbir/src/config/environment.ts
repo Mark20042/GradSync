@@ -49,6 +49,10 @@ export const env = {
   EMAIL_PASSWORD: process.env["EMAIL_PASSWORD"] ?? "",
   EMAIL_FROM: process.env["EMAIL_FROM"] ?? "",
 
+  // Mailtrap (for testing)
+  MAILTRAP_TOKEN: process.env["MAILTRAP_TOKEN"] ?? "",
+  MAILTRAP_INBOX_ID: process.env["MAILTRAP_INBOX_ID"] ? parseInt(process.env["MAILTRAP_INBOX_ID"]) : undefined,
+
   // Cloudinary
   CLOUDINARY_CLOUD_NAME: requireEnv("CLOUDINARY_CLOUD_NAME"),
   CLOUDINARY_API_KEY: requireEnv("CLOUDINARY_API_KEY"),

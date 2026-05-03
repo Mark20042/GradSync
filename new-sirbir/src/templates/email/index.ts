@@ -1,0 +1,5 @@
+export { getVerificationSuccessEmailTemplate } from './verification-success.template.js';
+export { getVerificationFailedEmailTemplate } from './verification-failed.template.js';
+export { getApprovalEmailTemplate } from './approval.template.js';
+export { getRejectionEmailTemplate } from './rejection.template.js';
+export { getInterviewResultEmailTemplate } from './interview-result.template.js';
