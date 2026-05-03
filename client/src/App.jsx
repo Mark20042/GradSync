@@ -4,7 +4,10 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
+import Lottie from "lottie-react";
+import welcomeBirdieAnimation from "./assets/animations/welcomebirdie.json";
 import LandingPage from "./pages/LandingPage/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
@@ -37,7 +40,7 @@ import AdminEmployerSettings from "./pages/Admin/AdminEmployerSettings";
 
 import MyApplications from "./pages/JobSeeker/MyApplications";
 import CompanyProfileView from "./pages/JobSeeker/CompanyProfileView";
-import ResumeBuilder from "./pages/JobSeeker/ResumeBuilder";
+const ResumeBuilder = lazy(() => import("./pages/JobSeeker/ResumeBuilder"));
 import SkillCenter from "./pages/JobSeeker/SkillCenter";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewResults from "./pages/Interview/InterviewResults";
@@ -50,72 +53,99 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+              <Lottie
+                animationData={welcomeBirdieAnimation}
+                loop={true}
+                style={{ width: 300, height: 300 }}
+              />
+              <p className="text-gray-600 text-lg font-medium mt-4">
+                It may take sometime to load
+              </p>
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-          {/* Protected Routes for Graduates */}
-          <Route element={<ProtectedRoute requiredRole="graduate" />}>
-            <Route path="/setup-profile-grad" element={<SetupProfileGrad />} />
-            <Route path="/find-jobs" element={<JobSeekerDashboard />} />
-            <Route path="/job/:jobId" element={<JobDetails />} />
-            <Route path="/saved-jobs" element={<SavedJobs />} />
-            <Route path="/my-applications" element={<MyApplications />} />
-            <Route path="/ai-mentor" element={<AIMentorChat />} />
-            <Route path="/profile" element={<UserProfile />} />
-            <Route path="/messages" element={<ConversationList />} />
-            <Route path="/messages/:conversationId" element={<Messages />} />
-            <Route path="/company/:id" element={<CompanyProfileView />} />
-            <Route path="/resume-builder" element={<ResumeBuilder />} />
-            <Route path="/skill-center" element={<SkillCenter />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/interview-room" element={<InterviewRoom />} />
-            <Route path="/interview-results" element={<InterviewResults />} />
-          </Route>
+            {/* Protected Routes for Graduates */}
+            <Route element={<ProtectedRoute requiredRole="graduate" />}>
+              <Route
+                path="/setup-profile-grad"
+                element={<SetupProfileGrad />}
+              />
+              <Route path="/find-jobs" element={<JobSeekerDashboard />} />
+              <Route path="/job/:jobId" element={<JobDetails />} />
+              <Route path="/saved-jobs" element={<SavedJobs />} />
+              <Route path="/my-applications" element={<MyApplications />} />
+              <Route path="/ai-mentor" element={<AIMentorChat />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/messages" element={<ConversationList />} />
+              <Route path="/messages/:conversationId" element={<Messages />} />
+              <Route path="/company/:id" element={<CompanyProfileView />} />
+              <Route path="/resume-builder" element={<ResumeBuilder />} />
+              <Route path="/skill-center" element={<SkillCenter />} />
+              <Route path="/quiz" element={<Quiz />} />
+              <Route path="/interview-room" element={<InterviewRoom />} />
+              <Route path="/interview-results" element={<InterviewResults />} />
+            </Route>
 
-          {/* Protected Routes for Employers */}
-          <Route element={<ProtectedRoute requiredRole="employer" />}>
-            <Route path="/employer-dashboard" element={<EmployerDashboard />} />
-            <Route path="/post-job" element={<JobPostingForm />} />
-            <Route path="/manage-jobs" element={<ManageJobs />} />
-            <Route path="/applicants" element={<ApplicationViewer />} />
-            <Route path="/applicant-profile" element={<ApplicantProfile />} />
-            <Route path="/company-profile" element={<EmployerProfilePage />} />
-            <Route path="/employer-messages" element={<EmployerMessages />} />
-            <Route path="/company/:id" element={<CompanyProfileView />} />
-          </Route>
+            {/* Protected Routes for Employers */}
+            <Route element={<ProtectedRoute requiredRole="employer" />}>
+              <Route
+                path="/employer-dashboard"
+                element={<EmployerDashboard />}
+              />
+              <Route path="/post-job" element={<JobPostingForm />} />
+              <Route path="/manage-jobs" element={<ManageJobs />} />
+              <Route path="/applicants" element={<ApplicationViewer />} />
+              <Route path="/applicant-profile" element={<ApplicantProfile />} />
+              <Route
+                path="/company-profile"
+                element={<EmployerProfilePage />}
+              />
+              <Route path="/employer-messages" element={<EmployerMessages />} />
+              <Route path="/company/:id" element={<CompanyProfileView />} />
+            </Route>
 
-          {/* Protected Routes for Admin */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/admin-users" element={<AdminUsers />} />
+            {/* Protected Routes for Admin */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/admin-users" element={<AdminUsers />} />
 
-            <Route path="/admin-jobs" element={<AdminJobs />} />
-            <Route path="/admin-applications" element={<AdminApplications />} />
-            <Route path="/admin-reports" element={<AdminReports />} />
-            <Route path="/admin-faqs" element={<AdminFAQs />} />
-            <Route
-              path="/admin-employer-settings"
-              element={<AdminEmployerSettings />}
-            />
-            <Route
-              path="/admin-assessments"
-              element={<AdminAssessmentManager />}
-            />
-            <Route
-              path="/admin-interview-questions"
-              element={<AdminInterviewQuestions />}
-            />
-            <Route
-              path="/admin-interview-scores"
-              element={<AdminInterviewScores />}
-            />
-          </Route>
+              <Route path="/admin-jobs" element={<AdminJobs />} />
+              <Route
+                path="/admin-applications"
+                element={<AdminApplications />}
+              />
+              <Route path="/admin-reports" element={<AdminReports />} />
+              <Route path="/admin-faqs" element={<AdminFAQs />} />
+              <Route
+                path="/admin-employer-settings"
+                element={<AdminEmployerSettings />}
+              />
+              <Route
+                path="/admin-assessments"
+                element={<AdminAssessmentManager />}
+              />
+              <Route
+                path="/admin-interview-questions"
+                element={<AdminInterviewQuestions />}
+              />
+              <Route
+                path="/admin-interview-scores"
+                element={<AdminInterviewScores />}
+              />
+            </Route>
 
-          {/* catch all route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* catch all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Router>
       <Toaster
         toastOptions={{
