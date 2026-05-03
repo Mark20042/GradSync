@@ -26,6 +26,8 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
 import UserProfileSkeleton from "./components/skeletons/UserProfileSkeleton";
+import { pdf } from "@react-pdf/renderer";
+import ResumePDFx from "./ResumePDFx";
 
 // Import new modular components
 import ContactSection from "./components/profile/ContactSection";
@@ -294,10 +296,23 @@ const UserProfile = () => {
     }
   };
 
-  const downloadResume = () => {
-    if (!user?.resume) return;
-    // Cloudinary raw URLs are directly downloadable
-    window.open(user.resume, "_blank");
+  const downloadResume = async () => {
+    if (!user) return;
+
+    try {
+      // Generate ATS-friendly PDF from current profile data using PDFx
+      const blob = await pdf(<ResumePDFx user={user} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${user.fullName.replace(/\s+/g, '_')}_Resume_ATS.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("ATS-friendly resume downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading resume:", error);
+      toast.error("Failed to download resume");
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -581,53 +596,42 @@ const UserProfile = () => {
                 <div>
                   <h3 className="text-lg font-semibold">Your Resume</h3>
                   <p className="text-blue-100 text-sm">
-                    {user?.resume ? "Resume uploaded and ready" : "Upload your resume to apply for jobs"}
+                    Download your ATS-friendly resume or upload your own
                   </p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                {user?.resume ? (
+              <div className="flex flex-wrap gap-3">
+                {/* Download button - always visible */}
+                <button
+                  onClick={downloadResume}
+                  className="flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-all shadow-lg"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Resume
+                </button>
+
+                {editing && (
                   <>
-                    <button
-                      onClick={downloadResume}
-                      className="flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-all"
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </button>
-                    {editing && (
-                      <>
-                        <label className="flex items-center px-4 py-2 bg-white/20 text-white rounded-lg font-medium hover:bg-white/30 transition-all cursor-pointer">
-                          <Upload className="w-4 h-4 mr-2" />
-                          Update
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.doc,.docx"
-                            onChange={handleResumeUpload}
-                          />
-                        </label>
-                        <button
-                          onClick={handleDeleteResume}
-                          className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </button>
-                      </>
+                    <label className="flex items-center px-4 py-2 bg-white/20 text-white rounded-lg font-medium hover:bg-white/30 transition-all cursor-pointer">
+                      <Upload className="w-4 h-4 mr-2" />
+                      {user?.resume ? "Update" : "Upload"}
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleResumeUpload}
+                      />
+                    </label>
+                    {user?.resume && (
+                      <button
+                        onClick={handleDeleteResume}
+                        className="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-all"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </button>
                     )}
                   </>
-                ) : (
-                  <label className="flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-all cursor-pointer">
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload Resume
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleResumeUpload}
-                    />
-                  </label>
                 )}
               </div>
             </div>
