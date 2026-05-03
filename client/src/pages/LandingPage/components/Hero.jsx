@@ -114,21 +114,33 @@ const Hero = () => {
               whileInView="show"
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="mt-10 flex items-center justify-center lg:justify-start gap-8"
+              className="mt-10 grid grid-cols-3 gap-4 sm:gap-6 lg:flex lg:items-center lg:justify-start lg:gap-8"
             >
-              <div>
-                <p className="text-2xl font-bold text-gray-900">10K+</p>
-                <p className="text-sm text-gray-500">Active Jobs</p>
+              <div className="text-center lg:text-left">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  10K+
+                </p>
+                <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
+                  Active Jobs
+                </p>
               </div>
-              <div className="w-px h-10 bg-gray-200"></div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">5K+</p>
-                <p className="text-sm text-gray-500">Companies</p>
+
+              <div className="text-center lg:text-left">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  5K+
+                </p>
+                <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
+                  Companies
+                </p>
               </div>
-              <div className="w-px h-10 bg-gray-200"></div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">50K+</p>
-                <p className="text-sm text-gray-500">Job Seekers</p>
+
+              <div className="text-center lg:text-left">
+                <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  50K+
+                </p>
+                <p className="text-sm sm:text-base text-gray-600 mt-2 font-medium">
+                  Job Seekers
+                </p>
               </div>
             </motion.div>
           </div>
@@ -139,14 +151,14 @@ const Hero = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex-2 flex justify-center lg:justify-end"
+            className="flex-2 flex justify-center lg:justify-end w-full"
           >
-            <div className="w-full max-w-full lg:w-[650px] xl:w-[670px]">
+            <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
               <DotLottieReact
                 data={jobportalAnimation}
                 loop
                 autoplay
-                style={{ width: "100%", height: "auto" }}
+                className="w-full h-auto"
               />
             </div>
           </motion.div>
