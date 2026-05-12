@@ -67,7 +67,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-17 h-17 flex items-center justify-center">
-              <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-full h-full object-contain" />
+              <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-bold text-lg text-gray-900">GradSync</span>
           </Link>

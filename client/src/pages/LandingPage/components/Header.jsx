@@ -20,7 +20,7 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-3">
-            <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-17 h-17 object-contain" />
+            <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-17 h-17 object-contain" />
             <span className="text-xl font-bold">GradSync</span>
           </div>
 

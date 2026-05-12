@@ -132,7 +132,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
           {!sidebarCollapsed ? (
             <Link className="flex items-center space-x-3" to="/">
               <div className="w-17 h-17 flex items-center justify-center overflow-hidden">
-                <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-full h-full object-contain" />
+                <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-full h-full object-contain" />
               </div>
               <span className="text-gray-900 font-bold text-xl">
                 GradSync

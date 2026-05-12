@@ -12,7 +12,7 @@ export default defineConfig({
     nodePolyfills(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      includeAssets: ["3dgradsynnclogo.png", "gradsynclogoapp.png"],
       workbox: {
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024, // Increase limit to 12MB
       },
@@ -23,20 +23,10 @@ export default defineConfig({
         theme_color: "#2563eb",
         icons: [
           {
-            src: "pwa-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "pwa-512x512.png",
+            src: "gradsynclogoapp.png",
             sizes: "512x512",
             type: "image/png",
-          },
-          {
-            src: "pwa-maskable-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
+            purpose: "any maskable",
           },
         ],
       },

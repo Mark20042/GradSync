@@ -113,7 +113,7 @@ const PublicJobSection = () => {
                         className="text-center py-24 bg-white/60 backdrop-blur-md rounded-3xl border border-white/50 shadow-sm max-w-3xl mx-auto"
                     >
                         <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 p-4">
-                            <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-full h-full object-contain" />
+                            <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-full h-full object-contain" />
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">No Jobs Available</h3>
                         <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">
