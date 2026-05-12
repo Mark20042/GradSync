@@ -30,16 +30,14 @@ const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   return (
     <button
       onClick={() => onClick(item.id)}
-      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
-        active
-          ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-      }`}
+      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${active
+        ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
+        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`}
     >
       <Icon
-        className={`w-5 h-5 flex-shrink-0 ${
-          active ? "text-blue-600" : "text-gray-500"
-        }`}
+        className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-600" : "text-gray-500"
+          }`}
       />
       {!isCollapsed && <span className="ml-3 truncate">{item.name}</span>}
     </button>
@@ -120,13 +118,12 @@ const DashboardLayout = ({ activeMenu, children }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 transform
-      ${
-        isMobile
-          ? sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
-          : "translate-x-0"
-      }
+      ${isMobile
+            ? sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+            : "translate-x-0"
+          }
       ${sidebarCollapsed ? "w-16" : "w-64"}
       bg-white border-r border-gray-200`}
       >
@@ -134,8 +131,8 @@ const DashboardLayout = ({ activeMenu, children }) => {
         <div className="flex items-center h-16 pl-6 border-b border-gray-200">
           {!sidebarCollapsed ? (
             <Link className="flex items-center space-x-3" to="/">
-              <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <Briefcase className="h-5 w-5 text-white" />
+              <div className="w-17 h-17 flex items-center justify-center overflow-hidden">
+                <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-full h-full object-contain" />
               </div>
               <span className="text-gray-900 font-bold text-xl">
                 GradSync

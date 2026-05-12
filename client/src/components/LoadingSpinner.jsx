@@ -1,16 +1,19 @@
-import { Briefcase } from "lucide-react";
+import React from 'react';
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import welcomeBirdieAnimation from "../assets/animations/welcomebirdie.json";
+
 const LoadingSpinner = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex  items-center justify-center">
-      <div className="text-center ">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-4 border-blue-200 border-t-blue-600 mx-auto relative"
-          style={{ animationDirection: 'reverse' }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Briefcase className="w-6 h-6 text-blue-600" />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-64 h-64 mx-auto mb-4">
+          <DotLottieReact
+            data={welcomeBirdieAnimation}
+            loop
+            autoplay
+          />
         </div>
-        <p className="text-gray-600 font-medium">
+        <p className="text-gray-600 font-semibold text-lg animate-pulse">
           Finding amazing opportunities...
         </p>
       </div>

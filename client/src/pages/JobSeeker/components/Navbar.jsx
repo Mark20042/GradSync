@@ -66,8 +66,8 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Briefcase className="w-5 h-5 text-white" />
+            <div className="w-17 h-17 flex items-center justify-center">
+              <img src="/gradsynclogo-transparent.png" alt="GradSync Logo" className="w-full h-full object-contain" />
             </div>
             <span className="font-bold text-lg text-gray-900">GradSync</span>
           </Link>
