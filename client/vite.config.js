@@ -13,6 +13,9 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
+      workbox: {
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // Increase limit to 8MB
+      },
       manifest: {
         name: "GradSync",
         short_name: "GradSync",
@@ -41,5 +44,17 @@ export default defineConfig({
   ],
   build: {
     chunkSizeWarningLimit: 3000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("lucide-react")) return "lucide";
+            if (id.includes("framer-motion")) return "framer";
+            if (id.includes("lottie")) return "lottie";
+            return "vendor";
+          }
+        },
+      },
+    },
   },
 });
