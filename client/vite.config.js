@@ -14,7 +14,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "mask-icon.svg"],
       workbox: {
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, // Increase limit to 8MB
+        maximumFileSizeToCacheInBytes: 12 * 1024 * 1024, // Increase limit to 12MB
       },
       manifest: {
         name: "GradSync",
@@ -51,6 +51,9 @@ export default defineConfig({
             if (id.includes("lucide-react")) return "lucide";
             if (id.includes("framer-motion")) return "framer";
             if (id.includes("lottie")) return "lottie";
+            if (id.includes("xlsx")) return "xlsx";
+            if (id.includes("recharts")) return "charts";
+            if (id.includes("jspdf") || id.includes("html2canvas") || id.includes("@react-pdf")) return "pdf";
             return "vendor";
           }
         },
