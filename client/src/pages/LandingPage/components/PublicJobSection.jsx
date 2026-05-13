@@ -110,7 +110,7 @@ const PublicJobSection = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
-                        className="text-center py-24 bg-white/60 backdrop-blur-md rounded-3xl border border-white/50 shadow-sm max-w-3xl mx-auto"
+                        className="text-center py-24  max-w-3xl mx-auto"
                     >
                         <div className="bg-blue-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 p-4">
                             <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-full h-full object-contain" />
