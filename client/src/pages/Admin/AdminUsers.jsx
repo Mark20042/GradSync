@@ -5,7 +5,7 @@ import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Trash2, Search, Shield, Edit, Eye, Plus, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import AdminModal from "../../components/Admin/AdminModal";
+import AdminModal from "./components/AdminModal";
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);

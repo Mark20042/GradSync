@@ -41,7 +41,7 @@ const InterviewResults = () => {
         <div className="text-center">
           <p className="text-slate-500 mb-4">No interview results found.</p>
           <button
-            onClick={() => navigate("/skill-center")}
+            onClick={() => navigate("/assessments")}
             className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all"
           >
             Go to Skill Center
@@ -84,7 +84,7 @@ const InterviewResults = () => {
       <div className="bg-white border-b border-slate-200 px-8 py-5">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => navigate("/skill-center")}
+            onClick={() => navigate("/assessments")}
             className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-medium transition-colors"
           >
             <ArrowLeft size={20} />

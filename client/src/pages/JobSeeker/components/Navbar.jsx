@@ -81,7 +81,7 @@ const Navbar = () => {
                     {/* Skill Center */}
                     <button
                       className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-                      onClick={() => navigate("/skill-center")}
+                      onClick={() => navigate("/assessments")}
                       title="Skill Center"
                     >
                       <Award className="w-5 h-5 text-yellow-500" />
@@ -213,7 +213,7 @@ const Navbar = () => {
         <div className="flex items-center justify-around p-2">
           {user?.role === "graduate" && (
             <>
-              <button onClick={() => navigate("/skill-center")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
+              <button onClick={() => navigate("/assessments")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
                 <Award className="w-5 h-5" />
                 <span className="text-[10px] mt-1">Skills</span>
               </button>

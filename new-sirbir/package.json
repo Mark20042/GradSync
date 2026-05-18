@@ -40,6 +40,7 @@
     "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
     "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.15.2",
     "socket.io": "^4.8.3",
     "tesseract.js": "^7.0.0",
     "winston": "^3.17.0",
@@ -57,6 +58,7 @@
     "@types/node": "^22.15.3",
     "@types/nodemailer": "^8.0.0",
     "@types/pdf-parse": "^1.1.5",
+    "@types/pdfkit": "^0.13.9",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }

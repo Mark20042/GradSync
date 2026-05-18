@@ -5,7 +5,7 @@ import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Trash2, Edit, Plus, HelpCircle, Eye } from "lucide-react";
 import toast from "react-hot-toast";
-import AdminModal from "../../components/Admin/AdminModal";
+import AdminModal from "./components/AdminModal";
 
 const AdminFAQs = () => {
     const [activeTab, setActiveTab] = useState("job"); // system tab hidden for now

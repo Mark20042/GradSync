@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item *)",
+      "PowerShell(Move-Item *)",
+      "PowerShell(Copy-Item *)",
+      "Bash(npm run *)"
+    ]
+  }
+}

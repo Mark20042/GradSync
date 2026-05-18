@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import PublicJobCard from "../../../components/Cards/PublicJobCard";
+import PublicJobCard from "./PublicJobCard";
 import axiosInstance from "../../../utils/axiosInstance";
 import { API_PATH } from "../../../utils/apiPath";
 import { useAuth } from "../../../context/AuthContext";

@@ -425,7 +425,7 @@ const InterviewRoom = () => {
   );
 
   if (isSubmitted) {
-    return <SuccessScreen onDashboard={() => navigate("/skill-center")} />;
+    return <SuccessScreen onDashboard={() => navigate("/assessments")} />;
   }
 
   if (isEvaluating) {

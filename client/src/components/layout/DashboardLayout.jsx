@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Settings,
   BarChart3,
+  Award,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import NotificationDropdown from "../NotificationDropdown";
@@ -30,14 +31,16 @@ const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   return (
     <button
       onClick={() => onClick(item.id)}
-      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${active
-        ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
-        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+      className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
+        active
+          ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
+          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+      }`}
     >
       <Icon
-        className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-600" : "text-gray-500"
-          }`}
+        className={`w-5 h-5 flex-shrink-0 ${
+          active ? "text-blue-600" : "text-gray-500"
+        }`}
       />
       {!isCollapsed && <span className="ml-3 truncate">{item.name}</span>}
     </button>
@@ -59,19 +62,22 @@ const DashboardLayout = ({ activeMenu, children }) => {
   // Fetch unread count initially and when dropdown closes
   useEffect(() => {
     if (user && !notificationOpen) {
-      axiosInstance.get(API_PATH.NOTIFICATIONS.GET_ALL)
-        .then(res => {
-          setUnreadCount(res.data.filter(n => !n.isRead).length);
+      axiosInstance
+        .get(API_PATH.NOTIFICATIONS.GET_ALL)
+        .then((res) => {
+          setUnreadCount(res.data.filter((n) => !n.isRead).length);
         })
-        .catch(err => console.error("Could not fetch notifications", err));
+        .catch((err) => console.error("Could not fetch notifications", err));
     }
   }, [user, notificationOpen]);
 
   // Listen for instant mark-as-read events
   useEffect(() => {
-    const handleReadEvent = () => setUnreadCount(prev => Math.max(0, prev - 1));
-    window.addEventListener('notificationRead', handleReadEvent);
-    return () => window.removeEventListener('notificationRead', handleReadEvent);
+    const handleReadEvent = () =>
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    window.addEventListener("notificationRead", handleReadEvent);
+    return () =>
+      window.removeEventListener("notificationRead", handleReadEvent);
   }, []);
 
   //Handle responsive behavior
@@ -118,12 +124,13 @@ const DashboardLayout = ({ activeMenu, children }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 transform
-      ${isMobile
-            ? sidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-            : "translate-x-0"
-          }
+      ${
+        isMobile
+          ? sidebarOpen
+            ? "translate-x-0"
+            : "-translate-x-full"
+          : "translate-x-0"
+      }
       ${sidebarCollapsed ? "w-16" : "w-64"}
       bg-white border-r border-gray-200`}
       >
@@ -132,11 +139,13 @@ const DashboardLayout = ({ activeMenu, children }) => {
           {!sidebarCollapsed ? (
             <Link className="flex items-center space-x-3" to="/">
               <div className="w-17 h-17 flex items-center justify-center overflow-hidden">
-                <img src="/3dgradsynnclogo.png" alt="GradSync Logo" className="w-full h-full object-contain" />
+                <img
+                  src="/3dgradsynnclogo.png"
+                  alt="GradSync Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-gray-900 font-bold text-xl">
-                GradSync
-              </span>
+              <span className="text-gray-900 font-bold text-xl">GradSync</span>
             </Link>
           ) : (
             <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
@@ -185,11 +194,20 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 { id: "admin-users", name: "Users", icon: Users },
 
                 { id: "admin-jobs", name: "Jobs", icon: Briefcase },
-                { id: "admin-applications", name: "Applications", icon: FileSpreadsheet },
+                {
+                  id: "admin-applications",
+                  name: "Applications",
+                  icon: FileSpreadsheet,
+                },
                 {
                   id: "admin-assessments",
                   name: "Assessments",
                   icon: Sparkles,
+                },
+                {
+                  id: "admin-assessment-review",
+                  name: "Assessment Review",
+                  icon: Award,
                 },
                 {
                   id: "admin-interview-questions",

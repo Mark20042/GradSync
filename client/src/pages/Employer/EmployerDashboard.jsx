@@ -13,8 +13,8 @@ import { API_PATH } from "./../../utils/apiPath";
 import axiosInstance from "./../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import JobDashboardCard from "../../components/Cards/JobDashboardCard";
-import ApplicationDashboardCard from "../../components/Cards/ApplicationDashboardCard";
+import JobDashboardCard from "./components/JobDashboardCard";
+import ApplicationDashboardCard from "./components/ApplicationDashboardCard";
 import DashboardAreaChart from "../../components/layout/DashboardAreaChart";
 
 const Card = ({ className, title, subtitle, headerAction, children }) => {
@@ -94,8 +94,8 @@ const StatCard = ({ title, value, icon: Icon, trend, trendValue, color }) => {
   );
 };
 
-import AvailabilityScheduler from "../../components/Employer/AvailabilityScheduler";
-import JobFAQManager from "../../components/Employer/JobFAQManager";
+import AvailabilityScheduler from "./components/AvailabilityScheduler";
+import JobFAQManager from "./components/JobFAQManager";
 
 const EmployerDashboard = () => {
   const navigate = useNavigate();

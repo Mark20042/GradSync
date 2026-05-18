@@ -7,7 +7,10 @@ import {
   getApprovalEmailTemplate,
   getRejectionEmailTemplate,
   getInterviewResultEmailTemplate,
+  getAssessmentApprovalEmailTemplate,
+  getAssessmentRejectionEmailTemplate,
 } from "@/templates/email/index.js";
+import { generateAssessmentCertificatePdf } from "@/utils/assessment-certificate.js";
 
 let transporter: nodemailer.Transporter | null = null;
 let mailtrapClient: MailtrapClient | null = null;
@@ -35,7 +38,7 @@ const getMailtrapClient = () => {
       testInboxId: isDevelopment ? env.MAILTRAP_INBOX_ID : undefined,
     });
     console.log(
-      `📧 Email service: Mailtrap ${isDevelopment ? "(Sandbox)" : "(Production)"}`
+      `📧 Email service: Mailtrap ${isDevelopment ? "(Sandbox)" : "(Production)"}`,
     );
   }
   return mailtrapClient;
@@ -44,8 +47,7 @@ const getMailtrapClient = () => {
 const shouldUseMailtrap = () => {
   const isDevelopment = env.NODE_ENV === "development";
   return (
-    env.EMAIL_SERVICE === "mailtrap" ||
-    (isDevelopment && env.MAILTRAP_TOKEN)
+    env.EMAIL_SERVICE === "mailtrap" || (isDevelopment && env.MAILTRAP_TOKEN)
   );
 };
 
@@ -61,7 +63,7 @@ const parseEmailFrom = () => {
 export const sendVerificationSuccessEmail = async (
   userEmail: string,
   userName: string,
-  role: string
+  role: string,
 ): Promise<boolean> => {
   try {
     const isEmployer = role === "employer";
@@ -83,7 +85,7 @@ export const sendVerificationSuccessEmail = async (
     } else {
       if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) {
         console.warn(
-          "⚠️  Email service not configured. Skipping email notification."
+          "⚠️  Email service not configured. Skipping email notification.",
         );
         return false;
       }
@@ -109,7 +111,7 @@ export const sendVerificationSuccessEmail = async (
 export const sendVerificationFailedEmail = async (
   userEmail: string,
   userName: string,
-  role: string
+  role: string,
 ): Promise<boolean> => {
   try {
     const signupUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/signup`;
@@ -129,7 +131,7 @@ export const sendVerificationFailedEmail = async (
     } else {
       if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) {
         console.warn(
-          "⚠️  Email service not configured. Skipping email notification."
+          "⚠️  Email service not configured. Skipping email notification.",
         );
         return false;
       }
@@ -147,17 +149,14 @@ export const sendVerificationFailedEmail = async (
       return true;
     }
   } catch (error: any) {
-    console.error(
-      "❌ Error sending failed verification email:",
-      error.message
-    );
+    console.error("❌ Error sending failed verification email:", error.message);
     return false;
   }
 };
 
 export const sendApprovalEmail = async (
   userEmail: string,
-  userName: string
+  userName: string,
 ): Promise<boolean> => {
   try {
     const loginUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/login`;
@@ -196,7 +195,7 @@ export const sendApprovalEmail = async (
 export const sendRejectionEmail = async (
   userEmail: string,
   userName: string,
-  reason: string
+  reason: string,
 ): Promise<boolean> => {
   try {
     if (shouldUseMailtrap()) {
@@ -235,7 +234,7 @@ export const sendInterviewResultEmail = async (
   userName: string,
   roleName: string,
   score: number,
-  summary: string
+  summary: string,
 ): Promise<boolean> => {
   try {
     const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/profile`;
@@ -252,7 +251,7 @@ export const sendInterviewResultEmail = async (
           roleName,
           score,
           summary,
-          resultUrl
+          resultUrl,
         ),
         category: "Interview Results",
       });
@@ -269,7 +268,7 @@ export const sendInterviewResultEmail = async (
           roleName,
           score,
           summary,
-          resultUrl
+          resultUrl,
         ),
       };
       const trans = getTransporter();
@@ -279,6 +278,133 @@ export const sendInterviewResultEmail = async (
     }
   } catch (error: any) {
     console.error("❌ Error sending interview result email:", error.message);
+    return false;
+  }
+};
+
+export const sendAssessmentApprovalEmail = async (
+  userEmail: string,
+  userName: string,
+  assessmentTitle: string,
+  score: number,
+  level?: string,
+): Promise<boolean> => {
+  try {
+    const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/profile`;
+    const pdfBuffer = await generateAssessmentCertificatePdf({
+      userName,
+      assessmentTitle,
+      score,
+      level,
+      issuedAt: new Date(),
+    });
+    const attachmentName = `${assessmentTitle.replace(/\s+/g, "-")}-certificate.pdf`;
+
+    if (shouldUseMailtrap()) {
+      const client = getMailtrapClient();
+      const fromEmail = parseEmailFrom();
+      await client.send({
+        from: fromEmail,
+        to: [{ email: userEmail }],
+        subject: "Assessment Approved - GradSync",
+        html: getAssessmentApprovalEmailTemplate(
+          userName,
+          assessmentTitle,
+          score,
+          resultUrl,
+        ),
+        attachments: [
+          {
+            filename: attachmentName,
+            content: pdfBuffer.toString("base64"),
+            type: "application/pdf",
+            disposition: "attachment",
+          },
+        ],
+        category: "Assessment Review",
+      });
+      console.log(`✅ Assessment approval email sent to ${userEmail}`);
+      return true;
+    }
+
+    if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) return false;
+    const mailOptions = {
+      from: env.EMAIL_FROM || `"GradSync" <${env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "Assessment Approved - GradSync",
+      html: getAssessmentApprovalEmailTemplate(
+        userName,
+        assessmentTitle,
+        score,
+        resultUrl,
+      ),
+      attachments: [
+        {
+          filename: attachmentName,
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    };
+    const trans = getTransporter();
+    await trans.sendMail(mailOptions);
+    console.log(`✅ Assessment approval email sent to ${userEmail}`);
+    return true;
+  } catch (error: any) {
+    console.error("❌ Error sending assessment approval email:", error.message);
+    return false;
+  }
+};
+
+export const sendAssessmentRejectionEmail = async (
+  userEmail: string,
+  userName: string,
+  assessmentTitle: string,
+  reason: string,
+): Promise<boolean> => {
+  try {
+    const supportEmail = "support@gradsync.tech";
+
+    if (shouldUseMailtrap()) {
+      const client = getMailtrapClient();
+      const fromEmail = parseEmailFrom();
+      await client.send({
+        from: fromEmail,
+        to: [{ email: userEmail }],
+        subject: "Assessment Update - GradSync",
+        html: getAssessmentRejectionEmailTemplate(
+          userName,
+          assessmentTitle,
+          reason,
+          supportEmail,
+        ),
+        category: "Assessment Review",
+      });
+      console.log(`✅ Assessment rejection email sent to ${userEmail}`);
+      return true;
+    }
+
+    if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) return false;
+    const mailOptions = {
+      from: env.EMAIL_FROM || `"GradSync" <${env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "Assessment Update - GradSync",
+      html: getAssessmentRejectionEmailTemplate(
+        userName,
+        assessmentTitle,
+        reason,
+        supportEmail,
+      ),
+    };
+    const trans = getTransporter();
+    await trans.sendMail(mailOptions);
+    console.log(`✅ Assessment rejection email sent to ${userEmail}`);
+    return true;
+  } catch (error: any) {
+    console.error(
+      "❌ Error sending assessment rejection email:",
+      error.message,
+    );
     return false;
   }
 };

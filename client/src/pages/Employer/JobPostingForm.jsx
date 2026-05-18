@@ -11,7 +11,7 @@ import toast from "react-hot-toast";
 import InputField from "../../components/Input/InputField";
 import SelectField from "../../components/Input/SelectField";
 import TextAreaField from "../../components/Input/TextAreaField";
-import JobPostingPreview from "../../components/Cards/JobPostingPreview";
+import JobPostingPreview from "./components/JobPostingPreview";
 import { useEffect } from "react";
 
 const JobPostingForm = () => {

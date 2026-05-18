@@ -105,7 +105,7 @@ const InterviewScoresSection = () => {
             Take a mock interview to get AI-evaluated feedback
           </p>
           <button
-            onClick={() => navigate("/skill-center")}
+            onClick={() => navigate("/assessments")}
             className="mt-4 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all"
           >
             Go to Skill Center

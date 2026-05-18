@@ -5,7 +5,7 @@ import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Search, Settings, Building2, Eye, Plus } from "lucide-react";
 import toast from "react-hot-toast";
-import AdminModal from "../../components/Admin/AdminModal";
+import AdminModal from "./components/AdminModal";
 import ScheduleSelector from "react-schedule-selector";
 import { startOfWeek, addDays, format, getHours, setHours, setMinutes, startOfDay } from "date-fns";
 

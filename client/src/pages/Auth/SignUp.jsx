@@ -28,8 +28,8 @@ import { API_PATH } from "./../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import registerAnimation from "../../assets/animations/signup.json";
-import RegisterErrorModal from "../../components/Modals/RegisterErrorModal";
-import RegisterSuccessModal from "../../components/Modals/RegisterSuccessModal";
+import RegisterErrorModal from "./components/RegisterErrorModal";
+import RegisterSuccessModal from "./components/RegisterSuccessModal";
 
 const SignUp = () => {
   const { login } = useAuth();

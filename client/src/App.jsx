@@ -40,13 +40,14 @@ import AdminEmployerSettings from "./pages/Admin/AdminEmployerSettings";
 import MyApplications from "./pages/JobSeeker/MyApplications";
 import CompanyProfileView from "./pages/JobSeeker/CompanyProfileView";
 const ResumeBuilder = lazy(() => import("./pages/JobSeeker/ResumeBuilder"));
-import SkillCenter from "./pages/JobSeeker/SkillCenter";
+import AssessmentList from "./pages/Assessment/AssessmentList";
+import AssessmentTaking from "./pages/Assessment/AssessmentTaking";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewResults from "./pages/Interview/InterviewResults";
 import AdminAssessmentManager from "./pages/Admin/AdminAssessmentManager";
+import AdminAssessmentReview from "./pages/Admin/AdminAssessmentReview";
 import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
 import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
-import Quiz from "./pages/JobSeeker/Quiz";
 
 const App = () => {
   return (
@@ -86,8 +87,8 @@ const App = () => {
               <Route path="/messages/:conversationId" element={<Messages />} />
               <Route path="/company/:id" element={<CompanyProfileView />} />
               <Route path="/resume-builder" element={<ResumeBuilder />} />
-              <Route path="/skill-center" element={<SkillCenter />} />
-              <Route path="/quiz" element={<Quiz />} />
+              <Route path="/assessments" element={<AssessmentList />} />
+              <Route path="/assessment-taking" element={<AssessmentTaking />} />
               <Route path="/interview-room" element={<InterviewRoom />} />
               <Route path="/interview-results" element={<InterviewResults />} />
             </Route>
@@ -129,6 +130,10 @@ const App = () => {
               <Route
                 path="/admin-assessments"
                 element={<AdminAssessmentManager />}
+              />
+              <Route
+                path="/admin-assessment-review"
+                element={<AdminAssessmentReview />}
               />
               <Route
                 path="/admin-interview-questions"

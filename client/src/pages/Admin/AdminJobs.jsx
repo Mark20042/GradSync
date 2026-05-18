@@ -5,7 +5,7 @@ import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Trash2, Search, Briefcase, Edit, Eye, Plus } from "lucide-react";
 import toast from "react-hot-toast";
-import AdminModal from "../../components/Admin/AdminModal";
+import AdminModal from "./components/AdminModal";
 
 const AdminJobs = () => {
     const [jobs, setJobs] = useState([]);

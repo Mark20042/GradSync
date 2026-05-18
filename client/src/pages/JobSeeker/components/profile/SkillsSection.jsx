@@ -17,7 +17,7 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
 
     const handleUnverifiedClick = (skillName) => {
         if (!editing) {
-            navigate('/skill-center', { state: { targetSkill: skillName } });
+            navigate('/assessments', { state: { targetSkill: skillName } });
         }
     };
 

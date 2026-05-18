@@ -15,7 +15,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import { getInitials } from "../../utils/helper";
 import moment from "moment";
 import StatusBadge from "./../../components/StatusBadge";
-import ApplicantProfilePreview from "../../components/Cards/ApplicantProfilePreview";
+import ApplicantProfilePreview from "./components/ApplicantProfilePreview";
 import RankedCandidates from "./RankedCandidates";
 
 const ApplicationViewer = () => {

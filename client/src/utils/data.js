@@ -136,8 +136,8 @@ export const JOB_SEEKER_MENU = [
     icon: Briefcase,
   },
   {
-    id: "skill-center",
-    name: "Skill Center",
+    id: "assessments",
+    name: "Assessments",
     icon: Award,
   },
   {
