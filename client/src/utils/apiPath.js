@@ -59,7 +59,6 @@ export const API_PATH = {
     CHECK_SUITABILITY: "/api/ai/suitability",
     GENERATE_SUMMARY: "/api/ai/summary",
     SCAN_MATCHES: "/api/ai/scan-matches",
-    MENTOR: "/api/ai/mentor",
     CHECK_CANDIDATE_SUITABILITY: "/api/ai/candidate-suitability",
   },
   NOTIFICATIONS: {

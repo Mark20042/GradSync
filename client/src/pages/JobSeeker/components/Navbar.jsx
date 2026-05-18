@@ -7,7 +7,6 @@ import ProfileDropdown from "./../../../components/layout/ProfileDropdpwn";
 import NotificationDropdown from "../../../components/NotificationDropdown";
 import axiosInstance from "../../../utils/axiosInstance";
 import { API_PATH } from "../../../utils/apiPath";
-import { Sparkles } from "lucide-react";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -76,18 +75,9 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-3">
             {user && (
               <>
-                {/* AI Mentor - Only for Graduates */}
+                {/* Graduate-specific navigation */}
                 {user?.role === "graduate" && (
                   <>
-                    <button
-                      className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-                      onClick={() => navigate("/ai-mentor")}
-                      title="AI Career Coach"
-                    >
-                      <Sparkles className="w-5 h-5 text-blue-600" />
-                      Career Coach
-                    </button>
-
                     {/* Skill Center */}
                     <button
                       className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -223,10 +213,6 @@ const Navbar = () => {
         <div className="flex items-center justify-around p-2">
           {user?.role === "graduate" && (
             <>
-              <button onClick={() => navigate("/ai-mentor")} className="flex flex-col items-center p-2 text-gray-500 hover:text-blue-600">
-                <Sparkles className="w-5 h-5" />
-                <span className="text-[10px] mt-1">Coach</span>
-              </button>
               <button onClick={() => navigate("/skill-center")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
                 <Award className="w-5 h-5" />
                 <span className="text-[10px] mt-1">Skills</span>

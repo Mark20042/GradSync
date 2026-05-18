@@ -13,12 +13,6 @@ export interface CandidateSuitabilityRequestBody {
   candidateId: string;
 }
 
-/** POST /api/ai/mentor */
-export interface MentorRequestBody {
-  referenceJobId?: string;
-  question: string;
-}
-
 // ─── Service Input Types ────────────────────────────────────────────────
 
 /** Profile data passed to AI services for analysis */
@@ -67,11 +61,6 @@ export interface SummaryResult {
 export interface InterviewEvalResult {
   score: number;
   feedback: string;
-}
-
-/** Result from AI mentor */
-export interface MentorResult {
-  answer: string;
 }
 
 /** Result from scan-matches endpoint */

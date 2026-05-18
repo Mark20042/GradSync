@@ -7,7 +7,6 @@ import type { AuthenticatedRequest } from '../../shared/interfaces/base.interfac
 import type {
   SuitabilityRequestBody,
   CandidateSuitabilityRequestBody,
-  MentorRequestBody,
   UserProfileForAI,
 } from './ai.interfaces.js';
 
@@ -239,57 +238,3 @@ export const checkCandidateSuitability = async (
   }
 };
 
-// ─── AI Career Mentor ───────────────────────────────────────────────────
-
-/**
- * @desc    Ask the AI Career Mentor
- * @route   POST /api/ai/mentor
- * @access  Private
- */
-export const askMentor = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const { referenceJobId, question } = req.body as MentorRequestBody;
-    const userId = req.user._id;
-
-    // 1. Fetch User Context
-    const user = await User.findById(userId).select(
-      'skills experiences education degree major'
-    );
-
-    let jobContext = '';
-    if (referenceJobId) {
-      const job = await Job.findById(referenceJobId).select(
-        'title description requirements skills company'
-      );
-      if (job) {
-        const companyObj = job.company as { companyName?: string } | undefined;
-        jobContext = `
-        CONTEXT: The user is asking about a specific job:
-        Title: ${job.title}
-        Company: ${companyObj?.companyName ?? 'Unknown'}
-        Description: ${job.description}
-        Requirements: ${job.requirements}
-        Required Skills: ${job.skills?.join(', ') ?? 'N/A'}
-        `;
-      }
-    }
-
-    const userContext = `
-    USER PROFILE:
-    Degree: ${user?.degree ?? 'N/A'} in ${user?.major ?? 'N/A'}
-    Skills: ${user?.skills?.join(', ') ?? 'N/A'}
-    Experience: ${user?.experiences?.map((e) => `${e.title} at ${e.company}`).join(', ') ?? 'N/A'}
-    `;
-
-    // 2. Call AI Mentor
-    const result = await ollama.askMentor(question, userContext, jobContext);
-
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('AI Mentor Error:', error);
-    res.status(500).json({ message: 'Failed to get mentor response' });
-  }
-};

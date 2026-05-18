@@ -15,7 +15,6 @@ import SetupProfileGrad from "./pages/Auth/SetupProfileGrad";
 import JobSeekerDashboard from "./pages/JobSeeker/JobSeekerDashboard";
 import JobDetails from "./pages/JobSeeker/JobDetails";
 import SavedJobs from "./pages/JobSeeker/SavedJobs";
-import AIMentorChat from "./pages/JobSeeker/AIMentorChat";
 import UserProfile from "./pages/JobSeeker/UserProfile";
 import JobPostingForm from "./pages/Employer/JobPostingForm";
 import ManageJobs from "./pages/Employer/ManageJobs";
@@ -82,7 +81,6 @@ const App = () => {
               <Route path="/job/:jobId" element={<JobDetails />} />
               <Route path="/saved-jobs" element={<SavedJobs />} />
               <Route path="/my-applications" element={<MyApplications />} />
-              <Route path="/ai-mentor" element={<AIMentorChat />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/messages" element={<ConversationList />} />
               <Route path="/messages/:conversationId" element={<Messages />} />

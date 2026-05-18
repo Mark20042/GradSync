@@ -88,14 +88,14 @@ const SkillCenter = () => {
         {/* Mock Interviewer Section */}
         <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
           <Video size={24} className="text-purple-500" />
-          AI Mock Interviewer
+          AI Practice Interviewer
         </h2>
 
         <div className="flex items-center gap-2 mb-5 text-sm text-gray-500">
           <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">
             Select Role
           </span>
-          Choose a mock interview job role to begin practicing.
+          Choose a practice interview job role to begin practicing.
         </div>
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">

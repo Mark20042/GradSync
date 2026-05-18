@@ -1,6 +1,5 @@
 import { ChatOllama } from '@langchain/ollama';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { env } from '../../../shared/config/environment.js';
 import type {
   UserProfileForAI,
@@ -9,7 +8,6 @@ import type {
   SummaryResult,
   InterviewEvalResult,
   FullInterviewEvalResult,
-  MentorResult,
 } from '../ai.interfaces.js';
 
 /**
@@ -20,7 +18,6 @@ import type {
  */
 export class OllamaService {
   private model: ChatOllama;
-  private mentorModel: ChatOllama;
 
   constructor() {
     // Primary model for structured analysis tasks
@@ -28,13 +25,6 @@ export class OllamaService {
       model: env.OLLAMA_MODEL,
       temperature: 0.2,
       baseUrl: env.OLLAMA_BASE_URL,
-    });
-
-    // Mentor model — slightly creative for conversational tone
-    this.mentorModel = new ChatOllama({
-      baseUrl: env.OLLAMA_BASE_URL,
-      model: 'qwen2.5:7b', // Lighter model for faster mentor responses
-      temperature: 0.7,
     });
   }
 
@@ -357,47 +347,6 @@ export class OllamaService {
     }
   }
 
-  // ─── AI Career Mentor ─────────────────────────────────────────────────
-
-  async askMentor(
-    question: string,
-    userContext: string,
-    jobContext: string
-  ): Promise<MentorResult> {
-    const systemPrompt = `You are an expert AI Career Mentor. Your goal is to provide helpful, encouraging, and actionable career advice to a job seeker.
-    
-    ${userContext}
-
-    ${jobContext}
-
-    Analyze the user's profile against the job context (if provided). 
-    If the user asks about the job, explain how their skills match or what they might be missing.
-    If no job is provided, give general career advice based on their profile.
-    Keep responses concise, professional, and supportive.
-    CRITICAL INSTRUCTION: Do NOT use any Markdown formatting in your response. Do not use asterisks (*) for bold/italics, and do not use hash symbols (#) for headers. Use plain paragraph text and standard numbered or bulleted lists (using dash - or numbers).`;
-
-    const messages = [
-      new SystemMessage(systemPrompt),
-      new HumanMessage(question),
-    ];
-
-    try {
-      const response = await this.mentorModel.invoke(messages);
-
-      const content =
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content);
-
-      // Clean markdown characters just in case the AI ignores the prompt
-      const cleanedAnswer = content.replace(/[*#]/g, '');
-
-      return { answer: cleanedAnswer };
-    } catch (error) {
-      console.error('AI Mentor Error:', error);
-      throw new Error('Failed to get mentor response');
-    }
-  }
 }
 
 // Singleton instance
