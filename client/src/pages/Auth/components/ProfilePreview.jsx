@@ -15,6 +15,7 @@ import {
   FileText,
   Trophy,
   Target,
+  Calendar,
 } from "lucide-react";
 
 const ProfilePreview = ({ userData, formData }) => {
@@ -35,20 +36,26 @@ const ProfilePreview = ({ userData, formData }) => {
   const languages = formData.languages || [];
   const skillsArray = formData.skills
     ? typeof formData.skills === "string"
-      ? formData.skills.split(",").map((s) => s.trim()).filter((s) => s)
+      ? formData.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s)
       : formData.skills
     : [];
 
   // Combine education for display if needed
   const displayEducation = [...education];
-  if (formData.university && !displayEducation.some(e => e.school === formData.university)) {
+  if (
+    formData.university &&
+    !displayEducation.some((e) => e.school === formData.university)
+  ) {
     displayEducation.unshift({
       school: formData.university,
       degree: formData.degree,
       startDate: "",
       endDate: `${formData.graduationMonth ? formData.graduationMonth + " " : ""}${formData.graduationYear}`,
-      location: "",
-      activities: ""
+      location: formData.universityAddress || "",
+      activities: "",
     });
   }
 
@@ -83,10 +90,19 @@ const ProfilePreview = ({ userData, formData }) => {
             {userData?.fullName || "Your Name"}
           </h2>
           <p className="text-gray-500 font-medium mb-4">
-            {formData.degree || "Degree"} {formData.major ? `in ${formData.major}` : ""}
+            {formData.degree || "Degree"}{" "}
+            {formData.major ? `in ${formData.major}` : ""}
           </p>
           <p className="text-gray-500 text-sm mb-4">
-            {formData.university || "University"} {formData.graduationYear ? `• Class of ${formData.graduationYear}` : ""}
+            {formData.university || "University"}{" "}
+            {formData.graduationYear
+              ? `• Class of ${formData.graduationYear}`
+              : ""}
+            {formData.universityAddress && (
+              <span className="block mt-1 text-xs text-gray-400">
+                {formData.universityAddress}
+              </span>
+            )}
           </p>
 
           <div className="flex flex-wrap gap-3 text-sm text-gray-600 mb-6">
@@ -108,22 +124,43 @@ const ProfilePreview = ({ userData, formData }) => {
                 <span>{formData.address}</span>
               </div>
             )}
+            {formData.birthdate && (
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span>Born: {formatDate(formData.birthdate)}</span>
+              </div>
+            )}
           </div>
 
           {/* Social Links */}
           <div className="flex gap-3 mb-6">
             {formData.linkedin && (
-              <a href={formData.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+              <a
+                href={formData.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
             )}
             {formData.github && (
-              <a href={formData.github} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              <a
+                href={formData.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
                 <Github className="w-5 h-5" />
               </a>
             )}
             {formData.website && (
-              <a href={formData.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
+              <a
+                href={formData.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+              >
                 <Globe className="w-5 h-5" />
               </a>
             )}
@@ -150,7 +187,10 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {skillsArray.map((skill, index) => (
-                    <span key={index} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium"
+                    >
                       {skill}
                     </span>
                   ))}
@@ -162,15 +202,22 @@ const ProfilePreview = ({ userData, formData }) => {
             {displayEducation.length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-purple-500" /> Education
+                  <GraduationCap className="w-4 h-4 text-purple-500" />{" "}
+                  Education
                 </h3>
                 <div className="space-y-4">
                   {displayEducation.map((edu, index) => (
-                    <div key={index} className="text-sm border-l-2 border-purple-100 pl-3">
-                      <p className="font-semibold text-gray-800">{edu.school}</p>
+                    <div
+                      key={index}
+                      className="text-sm border-l-2 border-purple-100 pl-3"
+                    >
+                      <p className="font-semibold text-gray-800">
+                        {edu.school}
+                      </p>
                       <p className="text-gray-600">{edu.degree}</p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {edu.startDate ? formatDate(edu.startDate) : ""} - {edu.endDate ? formatDate(edu.endDate) : "Present"}
+                        {edu.startDate ? formatDate(edu.startDate) : ""} -{" "}
+                        {edu.endDate ? formatDate(edu.endDate) : "Present"}
                       </p>
                     </div>
                   ))}
@@ -186,11 +233,15 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="space-y-4">
                   {[...experiences, ...internships].map((exp, index) => (
-                    <div key={index} className="text-sm border-l-2 border-green-100 pl-3">
+                    <div
+                      key={index}
+                      className="text-sm border-l-2 border-green-100 pl-3"
+                    >
                       <p className="font-semibold text-gray-800">{exp.title}</p>
                       <p className="text-gray-600">{exp.company}</p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(exp.startDate)} - {exp.current ? "Present" : formatDate(exp.endDate)}
+                        {formatDate(exp.startDate)} -{" "}
+                        {exp.current ? "Present" : formatDate(exp.endDate)}
                       </p>
                     </div>
                   ))}
@@ -206,23 +257,34 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="space-y-4">
                   {projects.map((project, index) => (
-                    <div key={index} className="text-sm border-l-2 border-indigo-100 pl-3">
+                    <div
+                      key={index}
+                      className="text-sm border-l-2 border-indigo-100 pl-3"
+                    >
                       <div className="flex justify-between items-baseline mb-1">
                         <h4 className="font-semibold text-gray-800 flex items-center gap-2">
                           {project.name}
                           {project.url && (
-                            <a href={project.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-indigo-600">
+                            <a
+                              href={project.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-indigo-600"
+                            >
                               <ExternalLink className="w-3 h-3" />
                             </a>
                           )}
                         </h4>
                         {(project.startDate || project.endDate) && (
                           <span className="text-xs text-gray-500">
-                            {formatDate(project.startDate)} - {formatDate(project.endDate)}
+                            {formatDate(project.startDate)} -{" "}
+                            {formatDate(project.endDate)}
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-600 whitespace-pre-line">{project.description}</p>
+                      <p className="text-gray-600 whitespace-pre-line">
+                        {project.description}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -237,10 +299,17 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="space-y-3">
                   {certifications.map((cert, index) => (
-                    <div key={index} className="text-sm border-l-2 border-orange-100 pl-3">
+                    <div
+                      key={index}
+                      className="text-sm border-l-2 border-orange-100 pl-3"
+                    >
                       <div className="flex justify-between items-baseline">
-                        <span className="font-semibold text-gray-800">{cert.name}</span>
-                        <span className="text-xs text-gray-500">{formatDate(cert.issueDate)}</span>
+                        <span className="font-semibold text-gray-800">
+                          {cert.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(cert.issueDate)}
+                        </span>
                       </div>
                       <p className="text-gray-600">{cert.issuer}</p>
                     </div>
@@ -257,10 +326,17 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="space-y-3">
                   {awards.map((award, index) => (
-                    <div key={index} className="text-sm border-l-2 border-yellow-100 pl-3">
+                    <div
+                      key={index}
+                      className="text-sm border-l-2 border-yellow-100 pl-3"
+                    >
                       <div className="flex justify-between items-baseline">
-                        <span className="font-semibold text-gray-800">{award.title}</span>
-                        <span className="text-xs text-gray-500">{formatDate(award.date)}</span>
+                        <span className="font-semibold text-gray-800">
+                          {award.title}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatDate(award.date)}
+                        </span>
                       </div>
                       <p className="text-gray-600">{award.issuer}</p>
                     </div>
@@ -277,7 +353,10 @@ const ProfilePreview = ({ userData, formData }) => {
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {languages.map((lang, index) => (
-                    <div key={index} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100 flex items-center gap-1">
+                    <div
+                      key={index}
+                      className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100 flex items-center gap-1"
+                    >
                       <span>{lang.language}</span>
                       <span className="text-blue-300">•</span>
                       <span className="text-blue-500">{lang.proficiency}</span>
@@ -296,37 +375,61 @@ const ProfilePreview = ({ userData, formData }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {formData.jobPreferences.desiredJobTitle && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Desired Role</p>
-                      <p className="text-sm text-gray-800 font-medium">{formData.jobPreferences.desiredJobTitle}</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Desired Role
+                      </p>
+                      <p className="text-sm text-gray-800 font-medium">
+                        {formData.jobPreferences.desiredJobTitle}
+                      </p>
                     </div>
                   )}
                   {formData.jobPreferences.jobType && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Job Type</p>
-                      <p className="text-sm text-gray-800 font-medium">{formData.jobPreferences.jobType}</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Job Type
+                      </p>
+                      <p className="text-sm text-gray-800 font-medium">
+                        {formData.jobPreferences.jobType}
+                      </p>
                     </div>
                   )}
                   {formData.jobPreferences.preferredLocation && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Location</p>
-                      <p className="text-sm text-gray-800 font-medium">{formData.jobPreferences.preferredLocation}</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Location
+                      </p>
+                      <p className="text-sm text-gray-800 font-medium">
+                        {formData.jobPreferences.preferredLocation}
+                      </p>
                     </div>
                   )}
                   {formData.jobPreferences.salaryExpectation && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Salary Range</p>
-                      <p className="text-sm text-gray-800 font-medium">{formData.jobPreferences.salaryExpectation}</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Salary Range
+                      </p>
+                      <p className="text-sm text-gray-800 font-medium">
+                        {formData.jobPreferences.salaryExpectation}
+                      </p>
                     </div>
                   )}
                   {formData.jobPreferences.industry && (
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Industry</p>
-                      <p className="text-sm text-gray-800 font-medium">{formData.jobPreferences.industry}</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Industry
+                      </p>
+                      <p className="text-sm text-gray-800 font-medium">
+                        {formData.jobPreferences.industry}
+                      </p>
                     </div>
                   )}
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex items-center justify-between">
-                    <p className="text-xs text-gray-500 uppercase font-semibold">Relocation</p>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${formData.jobPreferences.relocation ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
+                    <p className="text-xs text-gray-500 uppercase font-semibold">
+                      Relocation
+                    </p>
+                    <span
+                      className={`text-xs font-bold px-2 py-1 rounded-full ${formData.jobPreferences.relocation ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}
+                    >
                       {formData.jobPreferences.relocation ? "Yes" : "No"}
                     </span>
                   </div>

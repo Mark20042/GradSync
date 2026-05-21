@@ -36,6 +36,62 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
         )}
       </div>
 
+      {/* University Address */}
+      <div className="md:col-span-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          University Address *
+        </label>
+        <div className="relative">
+          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            name="universityAddress"
+            placeholder="University exact address"
+            value={formData.universityAddress || ""}
+            onChange={handleChange}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              validationErrors.universityAddress
+                ? "border-red-500"
+                : "border-gray-300"
+            }`}
+            required
+          />
+        </div>
+        {validationErrors.universityAddress && (
+          <p className="text-red-500 text-xs mt-1">
+            {validationErrors.universityAddress}
+          </p>
+        )}
+      </div>
+
+      {/* Birthdate */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Birthdate
+        </label>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="date"
+            name="birthdate"
+            value={
+              formData.birthdate
+                ? new Date(formData.birthdate).toISOString().split("T")[0]
+                : ""
+            }
+            onChange={handleChange}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              validationErrors.birthdate ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+        </div>
+        {validationErrors.birthdate && (
+          <p className="text-red-500 text-xs mt-1">
+            {validationErrors.birthdate}
+          </p>
+        )}
+      </div>
+
       {/* Graduation Date */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">

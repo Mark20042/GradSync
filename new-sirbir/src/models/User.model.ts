@@ -1,5 +1,5 @@
-import mongoose, { Schema } from 'mongoose';
-import type { IUser } from '@/interfaces/base.interfaces.js';
+import mongoose, { Schema } from "mongoose";
+import type { IUser } from "@/interfaces/base.interfaces.js";
 
 // ─── Sub-Schemas ────────────────────────────────────────────────────────
 
@@ -53,24 +53,24 @@ const userSchema = new Schema<IUser>(
   {
     fullName: {
       type: String,
-      required: [true, 'Full name is required'],
+      required: [true, "Full name is required"],
       trim: true,
     },
     email: {
       type: String,
-      required: [true, 'Email is required'],
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
     },
     password: {
       type: String,
-      required: [true, 'Password is required'],
+      required: [true, "Password is required"],
       minlength: 6,
     },
     role: {
       type: String,
-      required: [true, 'Role is required'],
-      enum: ['graduate', 'employer'],
+      required: [true, "Role is required"],
+      enum: ["graduate", "employer"],
     },
 
     // Personal Information
@@ -82,27 +82,29 @@ const userSchema = new Schema<IUser>(
 
     // Graduate-specific fields
     degree: { type: String },
-    university: { type: String, default: '' },
+    university: { type: String, default: "" },
+    universityAddress: { type: String, default: "" },
     graduationYear: { type: Number, default: null },
     major: String,
+    birthdate: { type: Date, default: null },
 
     // Professional profiles
-    tor: { type: String, default: '' },
+    tor: { type: String, default: "" },
     verificationStatus: {
       type: String,
-      enum: ['pending', 'verified', 'failed'],
-      default: 'pending',
+      enum: ["pending", "verified", "failed"],
+      default: "pending",
     },
-    verificationMessage: { type: String, default: '' },
+    verificationMessage: { type: String, default: "" },
     approvalStatus: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
-    rejectionReason: { type: String, default: '' },
-    portfolio: { type: String, default: '' },
-    linkedin: { type: String, default: '' },
-    github: { type: String, default: '' },
+    rejectionReason: { type: String, default: "" },
+    portfolio: { type: String, default: "" },
+    linkedin: { type: String, default: "" },
+    github: { type: String, default: "" },
 
     // Work experience
     experiences: [experienceSchema],
@@ -118,7 +120,7 @@ const userSchema = new Schema<IUser>(
         language: String,
         proficiency: {
           type: String,
-          enum: ['Basic', 'Conversational', 'Fluent', 'Native'],
+          enum: ["Basic", "Conversational", "Fluent", "Native"],
         },
       },
     ],
@@ -135,7 +137,7 @@ const userSchema = new Schema<IUser>(
       preferredLocation: String,
       jobType: {
         type: String,
-        enum: ['Full-time', 'Part-time', 'Contract', 'Internship', 'Remote'],
+        enum: ["Full-time", "Part-time", "Contract", "Internship", "Remote"],
       },
       salaryExpectation: Number,
       relocation: Boolean,
@@ -148,7 +150,7 @@ const userSchema = new Schema<IUser>(
     companyName: { type: String, trim: true },
     companyDescription: String,
     companyLogo: String,
-    businessPermit: { type: String, default: '' },
+    businessPermit: { type: String, default: "" },
 
     // Admin
     isAdmin: { type: Boolean, default: false },
@@ -159,8 +161,8 @@ const userSchema = new Schema<IUser>(
     // Experience type
     experienceType: {
       type: String,
-      enum: ['work', 'internship'],
-      default: 'work',
+      enum: ["work", "internship"],
+      default: "work",
     },
 
     // Profile completion tracking
@@ -170,14 +172,14 @@ const userSchema = new Schema<IUser>(
     verifiedSkills: [
       {
         skill: { type: String, required: true },
-        assessmentTitle: { type: String, default: '' },
+        assessmentTitle: { type: String, default: "" },
         level: {
           type: String,
-          enum: ['Entry', 'Mid', 'Senior', 'Expert'],
-          default: 'Entry',
+          enum: ["Entry", "Mid", "Senior", "Expert"],
+          default: "Entry",
         },
         earnedAt: { type: Date, default: Date.now },
-        badgeIcon: { type: String, default: '' },
+        badgeIcon: { type: String, default: "" },
         score: { type: Number, default: 0 },
       },
     ],
@@ -185,8 +187,8 @@ const userSchema = new Schema<IUser>(
     // AI scan tracking
     lastScanDate: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const User = mongoose.model<IUser>('User', userSchema);
+const User = mongoose.model<IUser>("User", userSchema);
 export default User;

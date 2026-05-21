@@ -24,7 +24,6 @@ const jobSchema = new Schema<IJob>(
     location: String,
     type: String,
     category: String,
-    skills: [String],
     salary: Number,
     salaryMin: Number,
     salaryMax: Number,

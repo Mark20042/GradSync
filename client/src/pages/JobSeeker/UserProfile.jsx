@@ -20,6 +20,7 @@ import {
   Upload,
   Trash2,
   Layers,
+  MapPin,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../utils/axiosInstance";
@@ -81,7 +82,7 @@ const UserProfile = () => {
     if (Array.isArray(skills)) {
       return skills
         .map((skill) =>
-          typeof skill === "string" ? skill.trim() : String(skill).trim()
+          typeof skill === "string" ? skill.trim() : String(skill).trim(),
         )
         .filter((skill) => skill.length > 0);
     }
@@ -100,10 +101,11 @@ const UserProfile = () => {
       const userData = response.data;
 
       const formatDates = (items, dateFields) => {
-        return items.map(item => {
+        return items.map((item) => {
           const newItem = { ...item };
-          dateFields.forEach(field => {
-            if (newItem[field]) newItem[field] = formatDateForInput(newItem[field]);
+          dateFields.forEach((field) => {
+            if (newItem[field])
+              newItem[field] = formatDateForInput(newItem[field]);
           });
           return newItem;
         });
@@ -112,22 +114,25 @@ const UserProfile = () => {
       const formattedData = {
         ...userData,
         education: Array.isArray(userData.education)
-          ? formatDates(userData.education, ['startDate', 'endDate'])
+          ? formatDates(userData.education, ["startDate", "endDate"])
           : [],
         experiences: Array.isArray(userData.experiences)
-          ? formatDates(userData.experiences, ['startDate', 'endDate'])
+          ? formatDates(userData.experiences, ["startDate", "endDate"])
           : [],
         internships: Array.isArray(userData.internships)
-          ? formatDates(userData.internships, ['startDate', 'endDate'])
+          ? formatDates(userData.internships, ["startDate", "endDate"])
           : [],
         projects: Array.isArray(userData.projects)
-          ? formatDates(userData.projects, ['startDate', 'endDate'])
+          ? formatDates(userData.projects, ["startDate", "endDate"])
           : [],
         certifications: Array.isArray(userData.certifications)
-          ? formatDates(userData.certifications, ['issueDate', 'expirationDate'])
+          ? formatDates(userData.certifications, [
+              "issueDate",
+              "expirationDate",
+            ])
           : [],
         awards: Array.isArray(userData.awards)
-          ? formatDates(userData.awards, ['date'])
+          ? formatDates(userData.awards, ["date"])
           : [],
         languages: Array.isArray(userData.languages) ? userData.languages : [],
         skills: formatSkills(userData.skills),
@@ -177,7 +182,7 @@ const UserProfile = () => {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
       const newAvatarUrl = response.data.avatarUrl;
@@ -201,8 +206,10 @@ const UserProfile = () => {
         jobType: editData.jobPreferences?.jobType || undefined,
         desiredJobTitle: editData.jobPreferences?.desiredJobTitle || undefined,
         industry: editData.jobPreferences?.industry || undefined,
-        preferredLocation: editData.jobPreferences?.preferredLocation || undefined,
-        salaryExpectation: editData.jobPreferences?.salaryExpectation || undefined,
+        preferredLocation:
+          editData.jobPreferences?.preferredLocation || undefined,
+        salaryExpectation:
+          editData.jobPreferences?.salaryExpectation || undefined,
       };
 
       const formattedData = {
@@ -213,7 +220,7 @@ const UserProfile = () => {
 
       const response = await axiosInstance.put(
         API_PATH.AUTH.UPDATE_PROFILE,
-        formattedData
+        formattedData,
       );
 
       const updatedUserData = response.data;
@@ -253,7 +260,7 @@ const UserProfile = () => {
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       const newResumeUrl = response.data.resumeUrl;
@@ -286,7 +293,7 @@ const UserProfile = () => {
     try {
       const response = await axiosInstance.post(API_PATH.AI.GENERATE_SUMMARY);
       const { summary } = response.data;
-      setEditData(prev => ({ ...prev, bio: summary }));
+      setEditData((prev) => ({ ...prev, bio: summary }));
       toast.success("Bio generated!");
     } catch (error) {
       console.error("Error generating summary:", error);
@@ -303,9 +310,9 @@ const UserProfile = () => {
       // Generate ATS-friendly PDF from current profile data using PDFx
       const blob = await pdf(<ResumePDFx user={user} />).toBlob();
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `${user.fullName.replace(/\s+/g, '_')}_Resume_ATS.pdf`;
+      link.download = `${user.fullName.replace(/\s+/g, "_")}_Resume_ATS.pdf`;
       link.click();
       URL.revokeObjectURL(url);
       toast.success("ATS-friendly resume downloaded successfully!");
@@ -347,7 +354,6 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 pb-12 pt-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
-
         {/* Back to Find Jobs Link */}
         <button
           onClick={() => navigate("/find-jobs")}
@@ -368,7 +374,11 @@ const UserProfile = () => {
               <div className="relative group">
                 <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-offset-2 ring-blue-50">
                   <img
-                    src={user?.avatar || "https://ui-avatars.com/api/?name=" + (user?.fullName || "User")}
+                    src={
+                      user?.avatar ||
+                      "https://ui-avatars.com/api/?name=" +
+                        (user?.fullName || "User")
+                    }
                     alt={user?.fullName}
                     className="w-full h-full object-cover"
                   />
@@ -393,7 +403,9 @@ const UserProfile = () => {
 
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-3xl font-bold text-gray-900">{user?.fullName}</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {user?.fullName}
+                  </h1>
                   <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium uppercase tracking-wide">
                     {user?.role}
                   </span>
@@ -401,6 +413,12 @@ const UserProfile = () => {
                 <p className="text-blue-600 font-medium text-lg">
                   {user?.education?.[0]?.degree || user?.degree || "Job Seeker"}
                 </p>
+                {user?.universityAddress && (
+                  <p className="text-gray-500 text-sm mt-1 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1 text-gray-400" />
+                    {user?.universityAddress}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -445,7 +463,6 @@ const UserProfile = () => {
 
         {/* Content Section */}
         <div className="grid lg:grid-cols-4 gap-8">
-
           {/* Sidebar Navigation */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 sticky top-24">
@@ -457,15 +474,19 @@ const UserProfile = () => {
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${activeSection === section.id
-                      ? "bg-blue-50 text-blue-600 font-semibold shadow-sm"
-                      : section.danger
-                        ? "text-red-500 hover:bg-red-50"
-                        : "text-gray-600 hover:bg-gray-50"
-                      }`}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
+                      activeSection === section.id
+                        ? "bg-blue-50 text-blue-600 font-semibold shadow-sm"
+                        : section.danger
+                          ? "text-red-500 hover:bg-red-50"
+                          : "text-gray-600 hover:bg-gray-50"
+                    }`}
                   >
-                    <section.icon className={`w-5 h-5 ${activeSection === section.id ? "text-blue-600" : ""
-                      }`} />
+                    <section.icon
+                      className={`w-5 h-5 ${
+                        activeSection === section.id ? "text-blue-600" : ""
+                      }`}
+                    />
                     <span>{section.label}</span>
                   </button>
                 ))}
@@ -542,7 +563,6 @@ const UserProfile = () => {
                 />
               )}
 
-
               {activeSection === "skills" && (
                 <SkillsSection
                   user={user}
@@ -571,16 +591,13 @@ const UserProfile = () => {
                 />
               )}
 
-              {activeSection === "interviews" && (
-                <InterviewScoresSection />
-              )}
+              {activeSection === "interviews" && <InterviewScoresSection />}
 
               {activeSection === "settings" && (
                 <AccountSettingsSection
                   setDeleteModalOpen={setDeleteModalOpen}
                 />
               )}
-
             </motion.div>
           </div>
         </div>

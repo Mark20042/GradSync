@@ -88,8 +88,10 @@ export interface IUser extends Document {
   // Graduate-specific
   degree?: string;
   university?: string;
+  universityAddress?: string;
   graduationYear?: number | null;
   major?: string;
+  birthdate?: Date | null;
 
   // Verification
   tor?: string;
