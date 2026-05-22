@@ -10,6 +10,7 @@ import { Send, ArrowLeft, MessageCircleDashed, Building2, Briefcase } from "luci
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import MessageListSkeleton from "./components/skeletons/MessageListSkeleton";
+import toast from "react-hot-toast";
 
 const getCalendarDate = (date) => {
   return moment(date).calendar(null, {
@@ -109,6 +110,18 @@ const Messages = () => {
         setMessages((prevMessages) => [...prevMessages, fixedMessage]);
       }
     });
+
+    newSocket.on("messageSent", (message) => {
+      const fixedMessage = fixLegacyUrls(message);
+      if (fixedMessage.conversationId === conversationId) {
+        setMessages((prevMessages) => [...prevMessages, fixedMessage]);
+      }
+    });
+
+    newSocket.on("messageError", (error) => {
+      toast.error(error.message);
+    });
+
     return () => newSocket.disconnect();
   }, [user, conversationId]);
 
@@ -127,18 +140,6 @@ const Messages = () => {
       content: newMessage.trim(),
     };
     socket.emit("sendMessage", messageData);
-
-    const tempMessage = {
-      ...messageData,
-      _id: Date.now(),
-      sender: {
-        _id: user._id,
-        fullName: user.fullName,
-        avatar: user.avatar,
-      },
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prevMessages) => [...prevMessages, tempMessage]);
     setNewMessage("");
   };
 

@@ -7,6 +7,8 @@ import User from '@/models/User.model.js';
 import { createNotification } from '@/utils/notification.helper.js';
 import { checkAndSendAutoReply } from '@/services/auto-reply.helper.js';
 
+import { isMessageClean } from '@/controllers/message.controller.js';
+
 let io: SocketIOServer;
 
 export const initializeSocket = (server: HTTPServer): void => {
@@ -30,6 +32,11 @@ export const initializeSocket = (server: HTTPServer): void => {
     // 2. Listen for a new message
     socket.on('sendMessage', async ({ conversationId, senderId, recipientId, content }) => {
       try {
+        const validation = isMessageClean(content);
+        if (!validation.clean) {
+          // Send error specifically back to the sender
+          return socket.emit('messageError', { message: validation.reason });
+        }
         // Save the new message to the database
         const newMessage = new Message({ conversationId, sender: senderId, content });
         const savedMessage = await newMessage.save();
@@ -54,8 +61,11 @@ export const initializeSocket = (server: HTTPServer): void => {
           );
         }
 
-        // Emit the message *only* to the recipient's room
+        // Emit the message to the recipient's room
         io.to(recipientId).emit('receiveMessage', populatedMessage);
+
+        // Emit confirmation back to the sender
+        io.to(senderId).emit('messageSent', populatedMessage);
 
         // Check for Auto-Reply (Employer Auto-Pilot)
         await checkAndSendAutoReply(recipientId, senderId, content, conversationId, io);

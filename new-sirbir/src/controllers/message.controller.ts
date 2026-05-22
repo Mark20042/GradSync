@@ -1,6 +1,7 @@
 import type { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
+import { BadRequestError } from "@/errors/index.js";
 import Message from "@/models/Message.model.js";
 import Conversation from "@/models/Conversation.model.js";
 import { createNotification } from "@/utils/notification.helper.js";
@@ -14,9 +15,45 @@ const getMessages = async (req: AuthRequest, res: Response, next: NextFunction) 
   } catch (error) { next(error); }
 };
 
+export const isMessageClean = (messageText: string): { clean: boolean; reason?: string } => {
+  if (!messageText) return { clean: true };
+  const lowerCaseMsg = messageText.toLowerCase();
+
+  // 1. Hate Speech & Spam Keywords
+  const bannedKeywords = [
+    "crypto", "bitcoin", "lottery", "earn fast", "sugar daddy",
+    "piste", "yawa", "suck", "giatay", "dildos",
+    "fuck", "shit", "bitch", "asshole", "cunt", "nigger", "faggot", "retard", "whore", "slut"
+  ];
+  const containsBannedWord = bannedKeywords.some(word => lowerCaseMsg.includes(word));
+  if (containsBannedWord) {
+    return { clean: false, reason: "Message contains prohibited keywords, spam, or inappropriate language." };
+  }
+
+  // 2. Regular Expression: Block URLs/Links
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)/g;
+  if (urlRegex.test(lowerCaseMsg)) {
+    return { clean: false, reason: "External links are not permitted in the chat for security reasons." };
+  }
+
+  // 3. Regular Expression: Block Excessive Repeated Characters (e.g., "hiii")
+  const repeatedCharsRegex = /(.)\1{2,}/g;
+  if (repeatedCharsRegex.test(lowerCaseMsg)) {
+    return { clean: false, reason: "Message contains excessive repeated characters." };
+  }
+
+  return { clean: true };
+};
+
 const sendMessage = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { conversationId, content } = req.body;
+
+    const validation = isMessageClean(content);
+    if (!validation.clean) {
+      throw new BadRequestError(validation.reason);
+    }
+
     const senderId = req.user._id;
     const newMessage = await Message.create({ conversationId, sender: senderId, content });
     const conversation = await Conversation.findByIdAndUpdate(conversationId,
