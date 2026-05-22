@@ -282,6 +282,56 @@ export const sendInterviewResultEmail = async (
   }
 };
 
+export const sendEmployerAssessmentResultEmail = async (
+  userEmail: string,
+  userName: string,
+  assessmentTitle: string,
+  score: number,
+): Promise<boolean> => {
+  try {
+    const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/my-assessments`;
+
+    if (shouldUseMailtrap()) {
+      const client = getMailtrapClient();
+      const fromEmail = parseEmailFrom();
+      await client.send({
+        from: fromEmail,
+        to: [{ email: userEmail }],
+        subject: "Employer Assessment Results - GradSync",
+        html: getAssessmentApprovalEmailTemplate(
+          userName,
+          assessmentTitle,
+          score,
+          resultUrl,
+        ),
+        category: "Assessment Review",
+      });
+      console.log(`✅ Employer assessment result email sent to ${userEmail}`);
+      return true;
+    }
+
+    if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) return false;
+    const mailOptions = {
+      from: env.EMAIL_FROM || `"GradSync" <${env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "Employer Assessment Results - GradSync",
+      html: getAssessmentApprovalEmailTemplate(
+        userName,
+        assessmentTitle,
+        score,
+        resultUrl,
+      ),
+    };
+    const trans = getTransporter();
+    await trans.sendMail(mailOptions);
+    console.log(`✅ Employer assessment result email sent to ${userEmail}`);
+    return true;
+  } catch (error: any) {
+    console.error("❌ Error sending employer assessment result email:", error.message);
+    return false;
+  }
+};
+
 export const sendAssessmentApprovalEmail = async (
   userEmail: string,
   userName: string,

@@ -12,6 +12,9 @@ import {
   LayoutDashboard,
   Plus,
   MessageCircle,
+  Video,
+  Zap,
+  ClipboardList,
 } from "lucide-react";
 
 export const jobSeekerFeatures = [
@@ -118,10 +121,26 @@ export const EMPLOYER_MENU = [
     icon: MessageCircle,
   },
   {
+    id: "employer-auto-pilot",
+    name: "Auto-Pilot",
+    icon: Zap,
+  },
+  {
+    id: "employer-assessments",
+    name: "Assessments",
+    icon: ClipboardList,
+  },
+  {
     id: "company-profile",
     name: "Company Profile",
     icon: Building2,
   },
+  {
+    id: "employer-interviews",
+    name: "Interviews",
+    icon: Video,
+  },
+
 ];
 
 export const JOB_SEEKER_MENU = [

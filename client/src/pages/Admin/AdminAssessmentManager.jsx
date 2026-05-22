@@ -39,6 +39,7 @@ const AdminAssessmentManager = () => {
   });
 
   const [newQuestion, setNewQuestion] = useState({
+    type: "multiple-choice",
     questionText: "",
     codeSnippet: "",
     imageUrl: "",
@@ -160,9 +161,12 @@ const AdminAssessmentManager = () => {
       return;
     }
 
-    const validOptions = newQuestion.options.filter((opt) => opt.trim() !== "");
-    if (validOptions.length < 2) {
-      toast.error("Please provide at least 2 options");
+    const validOptions = newQuestion.type === 'identification' 
+      ? [] 
+      : newQuestion.options.filter((opt) => opt.trim() !== "");
+      
+    if (newQuestion.type !== 'identification' && validOptions.length < 2) {
+      toast.error("Please provide at least 2 options for this question type");
       return;
     }
 
@@ -177,6 +181,7 @@ const AdminAssessmentManager = () => {
       );
       toast.success("Question added!");
       setNewQuestion({
+        type: "multiple-choice",
         questionText: "",
         codeSnippet: "",
         imageUrl: "",
@@ -228,11 +233,12 @@ const AdminAssessmentManager = () => {
       return;
     }
 
-    const validOptions = editingQuestion.options.filter(
-      (opt) => opt.trim() !== "",
-    );
-    if (validOptions.length < 2) {
-      toast.error("Please provide at least 2 options");
+    const validOptions = editingQuestion.type === 'identification' 
+      ? [] 
+      : editingQuestion.options.filter((opt) => opt.trim() !== "");
+      
+    if (editingQuestion.type !== 'identification' && validOptions.length < 2) {
+      toast.error("Please provide at least 2 options for this question type");
       return;
     }
 
@@ -241,6 +247,7 @@ const AdminAssessmentManager = () => {
       await axiosInstance.put(
         `/api/assessments/${selectedAssessment._id}/questions/${editingQuestion._id}`,
         {
+          type: editingQuestion.type,
           questionText: editingQuestion.questionText,
           codeSnippet: editingQuestion.codeSnippet || "",
           imageUrl: editingQuestion.imageUrl || "",
@@ -561,6 +568,28 @@ const AdminAssessmentManager = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-2 m-0">Add Question</h2>
               <p className="text-gray-500 mb-8 font-medium">to {selectedAssessment.title}</p>
 
+              <label className="block font-semibold text-gray-700 mb-2">Question Type *</label>
+              <select
+                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                value={newQuestion.type}
+                onChange={(e) => {
+                  const t = e.target.value;
+                  const newOptions = t === 'true-false' 
+                    ? ['True', 'False', '', ''] 
+                    : (newQuestion.type === 'true-false' ? ["", "", "", ""] : newQuestion.options);
+                  setNewQuestion({ 
+                    ...newQuestion, 
+                    type: t,
+                    options: newOptions,
+                    correctAnswer: ""
+                  });
+                }}
+              >
+                <option value="multiple-choice">Multiple Choice</option>
+                <option value="true-false">True / False</option>
+                <option value="identification">Identification (Type the answer)</option>
+              </select>
+
               <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>
               <textarea
                 rows={3}
@@ -593,34 +622,51 @@ const AdminAssessmentManager = () => {
                 onChange={(e) => setNewQuestion({ ...newQuestion, imageUrl: e.target.value })}
               />
 
-              <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
-              <div className="grid gap-2 mb-4">
-                {newQuestion.options.map((option, index) => (
-                  <input
-                    key={index}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                    placeholder={`Option ${index + 1}`}
-                    value={option}
-                    onChange={(e) => {
-                      const newOptions = [...newQuestion.options];
-                      newOptions[index] = e.target.value;
-                      setNewQuestion({ ...newQuestion, options: newOptions });
-                    }}
-                  />
-                ))}
-              </div>
+              {newQuestion.type !== 'identification' && (
+                <>
+                  <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
+                  <div className="grid gap-2 mb-4">
+                    {newQuestion.options.slice(0, newQuestion.type === 'true-false' ? 2 : 4).map((option, index) => (
+                      <input
+                        key={index}
+                        disabled={newQuestion.type === 'true-false'}
+                        className={`w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${newQuestion.type === 'true-false' ? 'bg-gray-100' : ''}`}
+                        placeholder={`Option ${index + 1}`}
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...newQuestion.options];
+                          newOptions[index] = e.target.value;
+                          setNewQuestion({ ...newQuestion, options: newOptions });
+                        }}
+                      />
+                    ))}
+                  </div>
 
-              <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={newQuestion.correctAnswer}
-                onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
-              >
-                <option value="">Select correct answer</option>
-                {newQuestion.options.map((opt, i) => opt && (
-                  <option key={i} value={opt}>{opt}</option>
-                ))}
-              </select>
+                  <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
+                  <select
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                    value={newQuestion.correctAnswer}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
+                  >
+                    <option value="">Select correct answer</option>
+                    {newQuestion.options.slice(0, newQuestion.type === 'true-false' ? 2 : 4).map((opt, i) => opt && (
+                      <option key={i} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {newQuestion.type === 'identification' && (
+                <>
+                  <label className="block font-semibold text-gray-700 mb-2">Exact Correct Answer *</label>
+                  <input
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-semibold text-green-700 bg-green-50"
+                    placeholder="e.g. React"
+                    value={newQuestion.correctAnswer}
+                    onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
+                  />
+                </>
+              )}
 
               <label className="block font-semibold text-gray-700 mb-2">Explanation (Optional)</label>
               <textarea
@@ -659,6 +705,28 @@ const AdminAssessmentManager = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-2 m-0">Edit Question</h2>
               <p className="text-gray-500 mb-8 font-medium">in {selectedAssessment?.title}</p>
 
+              <label className="block font-semibold text-gray-700 mb-2">Question Type *</label>
+              <select
+                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                value={editingQuestion.type || 'multiple-choice'}
+                onChange={(e) => {
+                  const t = e.target.value;
+                  const newOptions = t === 'true-false' 
+                    ? ['True', 'False', '', ''] 
+                    : (editingQuestion.type === 'true-false' ? ["", "", "", ""] : editingQuestion.options);
+                  setEditingQuestion({ 
+                    ...editingQuestion, 
+                    type: t,
+                    options: newOptions,
+                    correctAnswer: ""
+                  });
+                }}
+              >
+                <option value="multiple-choice">Multiple Choice</option>
+                <option value="true-false">True / False</option>
+                <option value="identification">Identification (Type the answer)</option>
+              </select>
+
               <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>
               <textarea
                 rows={3}
@@ -691,34 +759,51 @@ const AdminAssessmentManager = () => {
                 onChange={(e) => setEditingQuestion({ ...editingQuestion, imageUrl: e.target.value })}
               />
 
-              <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
-              <div className="grid gap-2 mb-4">
-                {editingQuestion.options?.map((option, index) => (
-                  <input
-                    key={index}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                    placeholder={`Option ${index + 1}`}
-                    value={option}
-                    onChange={(e) => {
-                      const newOptions = [...editingQuestion.options];
-                      newOptions[index] = e.target.value;
-                      setEditingQuestion({ ...editingQuestion, options: newOptions });
-                    }}
-                  />
-                ))}
-              </div>
+              {editingQuestion.type !== 'identification' && (
+                <>
+                  <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
+                  <div className="grid gap-2 mb-4">
+                    {editingQuestion.options?.slice(0, editingQuestion.type === 'true-false' ? 2 : 4).map((option, index) => (
+                      <input
+                        key={index}
+                        disabled={editingQuestion.type === 'true-false'}
+                        className={`w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${editingQuestion.type === 'true-false' ? 'bg-gray-100' : ''}`}
+                        placeholder={`Option ${index + 1}`}
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...editingQuestion.options];
+                          newOptions[index] = e.target.value;
+                          setEditingQuestion({ ...editingQuestion, options: newOptions });
+                        }}
+                      />
+                    ))}
+                  </div>
 
-              <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={editingQuestion.correctAnswer}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
-              >
-                <option value="">Select correct answer</option>
-                {editingQuestion.options?.map((opt, i) => opt && (
-                  <option key={i} value={opt}>{opt}</option>
-                ))}
-              </select>
+                  <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
+                  <select
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                    value={editingQuestion.correctAnswer}
+                    onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
+                  >
+                    <option value="">Select correct answer</option>
+                    {editingQuestion.options?.slice(0, editingQuestion.type === 'true-false' ? 2 : 4).map((opt, i) => opt && (
+                      <option key={i} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {editingQuestion.type === 'identification' && (
+                <>
+                  <label className="block font-semibold text-gray-700 mb-2">Exact Correct Answer *</label>
+                  <input
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-semibold text-green-700 bg-green-50"
+                    placeholder="e.g. React"
+                    value={editingQuestion.correctAnswer}
+                    onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
+                  />
+                </>
+              )}
 
               <label className="block font-semibold text-gray-700 mb-2">Explanation (Optional)</label>
               <textarea

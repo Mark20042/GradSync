@@ -92,7 +92,6 @@ const AdminUsers = () => {
             graduationYear: "",
             linkedin: "",
             github: "",
-            portfolio: "",
             jobPreferences: {
                 desiredJobTitle: "",
                 jobType: "",
@@ -1325,8 +1324,8 @@ const AdminUsers = () => {
                                             <p className="text-gray-900 font-medium truncate">{viewingUser.github || "N/A"}</p>
                                         </div>
                                         <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                            <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Portfolio</h5>
-                                            <p className="text-gray-900 font-medium truncate">{viewingUser.portfolio || "N/A"}</p>
+                                            <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Website</h5>
+                                            <p className="text-gray-900 font-medium truncate">{viewingUser.website || "N/A"}</p>
                                         </div>
                                     </div>
                                 </div>

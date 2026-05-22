@@ -123,14 +123,14 @@ const EmployerMessages = () => {
 
   if (loading) {
     return (
-      <DashboardLayout activeMenu="messages">
+      <DashboardLayout activeMenu="employer-messages">
         <LoadingSpinner />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout activeMenu="messages">
+    <DashboardLayout activeMenu="employer-messages">
       <div className="h-[calc(100vh-100px)] flex flex-col">
         {/* Header */}
         <div className="mb-6 flex-none">

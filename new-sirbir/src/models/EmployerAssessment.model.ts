@@ -1,6 +1,6 @@
 import mongoose, { Schema, type Document, type Types } from 'mongoose';
 
-export interface IAssessmentQuestion {
+export interface IEmployerAssessmentQuestion {
   _id?: Types.ObjectId;
   type: 'multiple-choice' | 'true-false' | 'identification';
   questionText: string;
@@ -11,14 +11,18 @@ export interface IAssessmentQuestion {
   explanation?: string;
 }
 
-export interface IAssessment extends Document {
+export interface IEmployerAssessment extends Document {
   _id: Types.ObjectId;
-  skill: string;
+  employer: Types.ObjectId;
+  job?: Types.ObjectId;
   title: string;
-  difficulty: 'Entry' | 'Mid' | 'Senior' | 'Expert';
+  description?: string;
   timeLimit: number;
   passingScore: number;
-  questions: IAssessmentQuestion[];
+  strictProtocols: boolean;
+  validFrom?: Date;
+  validUntil?: Date;
+  questions: IEmployerAssessmentQuestion[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -33,17 +37,21 @@ const questionSchema = new Schema({
   explanation: { type: String, default: '' },
 });
 
-const assessmentSchema = new Schema<IAssessment>(
+const employerAssessmentSchema = new Schema<IEmployerAssessment>(
   {
-    skill: { type: String, required: true, unique: true },
+    employer: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    job: { type: Schema.Types.ObjectId, ref: 'Job', default: null },
     title: { type: String, required: true },
-    difficulty: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Expert'], default: 'Entry' },
+    description: { type: String, default: '' },
     timeLimit: { type: Number, default: 15 },
     passingScore: { type: Number, default: 80 },
+    strictProtocols: { type: Boolean, default: true },
+    validFrom: { type: Date, default: null },
+    validUntil: { type: Date, default: null },
     questions: [questionSchema],
   },
   { timestamps: true }
 );
 
-const Assessment = mongoose.model<IAssessment>('Assessment', assessmentSchema);
-export default Assessment;
+const EmployerAssessment = mongoose.model<IEmployerAssessment>('EmployerAssessment', employerAssessmentSchema);
+export default EmployerAssessment;

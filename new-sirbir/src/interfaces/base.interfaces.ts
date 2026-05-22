@@ -145,6 +145,7 @@ export interface IJob extends Document {
   title: string;
   description: string;
   requirements: string;
+  benefits?: string;
   company: Types.ObjectId | { companyName?: string };
   location?: string;
   type?: string;

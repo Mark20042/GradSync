@@ -1,6 +1,9 @@
 // components/FormSteps/JobPreferencesStep.js
-import React from "react";
-import { FileText } from "lucide-react";
+import React, { useState } from "react";
+import { FileText, Sparkles } from "lucide-react";
+import axiosInstance from "../../../../utils/axiosInstance";
+import { API_PATH } from "../../../../utils/apiPath";
+import toast from "react-hot-toast";
 
 const JobPreferencesStep = ({ formData, setFormData }) => {
   const handleJobPreferenceChange = (e) => {
@@ -12,6 +15,23 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
         [name]: type === "checkbox" ? checked : value,
       },
     }));
+  };
+
+  const [summaryLoading, setSummaryLoading] = useState(false);
+
+  const handleGenerateSummary = async () => {
+    setSummaryLoading(true);
+    try {
+      const response = await axiosInstance.post(API_PATH.AI.GENERATE_SUMMARY);
+      const { summary } = response.data;
+      setFormData((prev) => ({ ...prev, bio: summary }));
+      toast.success("Bio generated!");
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      toast.error("Failed to generate summary");
+    } finally {
+      setSummaryLoading(false);
+    }
   };
 
   return (
@@ -133,6 +153,44 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
               }
             />
           </label>
+        </div>
+      </div>
+
+      {/* Bio */}
+      <div className="md:col-span-2 mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            About Me (Bio)
+          </label>
+          <button
+            type="button"
+            onClick={handleGenerateSummary}
+            disabled={summaryLoading}
+            className="flex items-center gap-2 text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1.5 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50 font-medium shadow-sm"
+          >
+            {summaryLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-3 h-3" />
+                Generate with AI
+              </>
+            )}
+          </button>
+        </div>
+        <div className="relative">
+          <FileText className="absolute left-3 top-4 text-gray-400 w-5 h-5" />
+          <textarea
+            name="bio"
+            rows={4}
+            placeholder="Tell employers about yourself..."
+            value={formData.bio || ""}
+            onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          />
         </div>
       </div>
     </div>

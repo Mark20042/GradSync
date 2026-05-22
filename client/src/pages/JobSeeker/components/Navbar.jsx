@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award } from "lucide-react";
+import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -86,6 +86,16 @@ const Navbar = () => {
                     >
                       <Award className="w-5 h-5 text-yellow-500" />
                       Skills
+                    </button>
+
+                    {/* My Assessments (Employer Invites) */}
+                    <button
+                      className="relative flex items-center px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 gap-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                      onClick={() => navigate("/my-assessments")}
+                      title="My Assessments"
+                    >
+                      <ClipboardList className="w-5 h-5 text-indigo-500" />
+                      My Assessments
                     </button>
 
                     {/* My Applications */}
@@ -216,6 +226,10 @@ const Navbar = () => {
               <button onClick={() => navigate("/assessments")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
                 <Award className="w-5 h-5" />
                 <span className="text-[10px] mt-1">Skills</span>
+              </button>
+              <button onClick={() => navigate("/my-assessments")} className="flex flex-col items-center p-2 text-gray-500 hover:text-indigo-600">
+                <ClipboardList className="w-5 h-5" />
+                <span className="text-[10px] mt-1">Tests</span>
               </button>
             </>
           )}

@@ -27,6 +27,7 @@ const JobPostingForm = () => {
     type: "",
     description: "",
     requirements: "",
+    benefits: "",
     salaryMin: "",
     salaryMax: "",
   });
@@ -66,6 +67,7 @@ const JobPostingForm = () => {
       type: formData.type,
       description: formData.description,
       requirements: formData.requirements,
+      benefits: formData.benefits,
       salaryMin: formData.salaryMin,
       salaryMax: formData.salaryMax,
     };
@@ -86,10 +88,10 @@ const JobPostingForm = () => {
           type: "",
           description: "",
           requirements: "",
+          benefits: "",
           salaryMin: "",
           salaryMax: "",
         });
-        navigate("/employer-dashboard");
         return;
       }
       console.error("Unexpected response", response);
@@ -159,6 +161,7 @@ const JobPostingForm = () => {
               type: jobData.type,
               description: jobData.description,
               requirements: jobData.requirements,
+              benefits: jobData.benefits || "",
               salaryMin: jobData.salaryMin,
               salaryMax: jobData.salaryMax,
             });
@@ -294,6 +297,18 @@ const JobPostingForm = () => {
                 }
                 error={errors.requirements}
                 required
+              />
+
+              {/* Company Benefits */}
+              <TextAreaField
+                label="Company Benefits (Optional)"
+                id="benefits"
+                placeholder="List the perks, benefits, and allowances you offer..."
+                value={formData.benefits}
+                onChange={(e) =>
+                  handleInputChange("benefits", e.target.value)
+                }
+                error={errors.benefits}
               />
 
               {/* Salary Range */}

@@ -8,6 +8,8 @@ import { API_PATH } from "../../../utils/apiPath";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import EmployerSuitabilityModal from "./EmployerSuitabilityModal";
+import EmployerAssessmentInvitationModal from "./EmployerAssessmentInvitationModal";
+import { FileCode } from "lucide-react";
 
 import StatusBadge from "../../../components/StatusBadge";
 const statusOptions = ["Applied", "In Review", "Rejected", "Accepted"];
@@ -23,6 +25,7 @@ const ApplicantProfilePreview = ({
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -168,6 +171,21 @@ const ApplicantProfilePreview = ({
               candidateName={selectedApplicant.applicant.fullName}
               jobTitle={selectedApplicant.job.title}
             />
+
+            <EmployerAssessmentInvitationModal
+              isOpen={showInviteModal}
+              onClose={() => setShowInviteModal(false)}
+              candidate={selectedApplicant.applicant}
+              job={selectedApplicant.job}
+            />
+
+            <button
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
+              onClick={() => setShowInviteModal(true)}
+            >
+              <FileCode className="w-4 h-4" />
+              Invite to Assessment
+            </button>
 
             <button
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"

@@ -134,7 +134,7 @@ const ContactSection = ({ user, editing, editData, handleEditChange }) => {
                 />
               ) : user.website ? (
                 <a
-                  href={user.website}
+                  href={user.website.startsWith("http") ? user.website : `https://${user.website}`}
                   className="text-blue-600 hover:underline font-medium"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -146,6 +146,7 @@ const ContactSection = ({ user, editing, editData, handleEditChange }) => {
               )}
             </div>
           </div>
+
         </div>
       </div>
 

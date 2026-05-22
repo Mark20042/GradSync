@@ -88,8 +88,41 @@ const JobFAQManager = () => {
         }
         remove(index);
     };
+    if (loading) {
+        return (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+                {/* Header Skeleton */}
+                <div className="flex justify-between items-center mb-6">
+                    <div className="space-y-2">
+                        <div className="h-6 bg-gray-200 rounded w-40"></div>
+                        <div className="h-4 bg-gray-200 rounded w-64"></div>
+                    </div>
+                    <div className="h-10 bg-gray-200 rounded-lg w-28"></div>
+                </div>
 
-    if (loading) return <div>Loading...</div>;
+                {/* FAQ Cards Skeleton */}
+                <div className="space-y-6">
+                    {[1, 2].map((i) => (
+                        <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-100 space-y-4">
+                            <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                            <div className="h-10 bg-gray-200 rounded-md w-full"></div>
+                            
+                            <div className="h-4 bg-gray-200 rounded w-48 mb-2 mt-4"></div>
+                            <div className="h-10 bg-gray-200 rounded-md w-full"></div>
+                            
+                            <div className="h-4 bg-gray-200 rounded w-24 mb-2 mt-4"></div>
+                            <div className="h-16 bg-gray-200 rounded-md w-full"></div>
+                        </div>
+                    ))}
+                    
+                    {/* Save Button Skeleton */}
+                    <div className="flex justify-end pt-2">
+                        <div className="h-10 bg-gray-200 rounded-lg w-36"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

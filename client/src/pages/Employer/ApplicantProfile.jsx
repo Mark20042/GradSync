@@ -127,14 +127,14 @@ const ApplicantProfile = () => {
                       View Resume
                     </a>
                   )}
-                  {applicant.applicant.portfolio && (
+                  {applicant.applicant.website && (
                     <a
-                      href={applicant.applicant.portfolio}
+                      href={applicant.applicant.website.startsWith("http") ? applicant.applicant.website : `https://${applicant.applicant.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
                     >
-                      Portfolio
+                      Website
                     </a>
                   )}
                   <button

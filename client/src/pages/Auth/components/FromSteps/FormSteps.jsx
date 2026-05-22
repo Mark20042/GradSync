@@ -14,7 +14,6 @@ const stepTitles = [
   "Skills & Certifications",
   "Projects",
   "Job Preferences",
-  "Finalize",
 ];
 
 const FormSteps = ({
@@ -46,8 +45,7 @@ const FormSteps = ({
         return <ProjectsStep {...commonProps} />;
       case 6:
         return <JobPreferencesStep {...commonProps} />;
-      case 7:
-        return <BasicInfoStep {...commonProps} />;
+
       default:
         return <BasicInfoStep {...commonProps} />;
     }

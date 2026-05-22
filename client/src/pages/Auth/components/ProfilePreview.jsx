@@ -266,7 +266,7 @@ const ProfilePreview = ({ userData, formData }) => {
                           {project.name}
                           {project.url && (
                             <a
-                              href={project.url}
+                              href={project.url.startsWith("http") ? project.url : `https://${project.url}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-gray-400 hover:text-indigo-600"

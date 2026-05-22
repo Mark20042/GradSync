@@ -8,7 +8,8 @@ import { createNotification } from "@/utils/notification.helper.js";
 const getMessages = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const messages = await Message.find({ conversationId: req.params.conversationId })
-      .populate("sender", "fullName avatar role").sort({ createdAt: "asc" });
+      .populate("sender", "fullName avatar role")
+      .sort({ createdAt: "asc" });
     res.status(StatusCodes.OK).json(messages);
   } catch (error) { next(error); }
 };
@@ -28,7 +29,8 @@ const sendMessage = async (req: AuthRequest, res: Response, next: NextFunction) 
           `You have a new message from ${req.user.fullName || "a user"}`, conversationId);
       }
     }
-    const populated = await Message.findById(newMessage._id).populate("sender", "fullName avatar");
+    const populated = await Message.findById(newMessage._id)
+      .populate("sender", "fullName avatar");
     res.status(StatusCodes.CREATED).json(populated);
   } catch (error) { next(error); }
 };

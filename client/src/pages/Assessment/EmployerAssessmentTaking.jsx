@@ -20,10 +20,10 @@ import PreAssessmentAgreement from "./components/PreAssessmentAgreement";
 import InstructionsScreen from "./components/InstructionsScreen";
 import ViolationWarning from "./components/ViolationWarning";
 
-const AssessmentTaking = () => {
+const EmployerAssessmentTaking = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { assessmentId, skill } = location.state || {};
+  const { assessmentId, skill, invitationId } = location.state || {};
 
   const [assessment, setAssessment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ const AssessmentTaking = () => {
 
   useEffect(() => {
     if (!assessmentId) {
-      navigate("/assessments");
+      navigate("/messages");
       return;
     }
     fetchAssessment();
@@ -117,18 +117,18 @@ const AssessmentTaking = () => {
       startTimeRef.current = Date.now();
       setTimeLeft(assessment.timeLimit * 60);
       timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleSubmit();
-            return 0;
-          }
-          return prev - 1;
-        });
+        setTimeLeft((prev) => Math.max(0, prev - 1));
       }, 1000);
       return () => clearInterval(timerRef.current);
     }
   }, [assessment, hasStarted, isSubmitted]);
+
+  // Auto-submit when time is up
+  useEffect(() => {
+    if (hasStarted && !isSubmitted && timeLeft === 0) {
+      handleSubmit(false);
+    }
+  }, [timeLeft, hasStarted, isSubmitted]);
 
   const recordViolation = (type) => {
     const newViolation = {
@@ -163,19 +163,19 @@ const AssessmentTaking = () => {
   };
 
   const handleCancel = () => {
-    navigate("/assessments");
+    navigate("/messages");
   };
 
   const fetchAssessment = async () => {
     try {
       const res = await axiosInstance.get(
-        `/api/assessments/detail/${assessmentId}`,
+        `/api/employer-assessments/detail/${assessmentId}`,
       );
       setAssessment(res.data);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch assessment", error);
-      navigate("/assessments");
+      navigate("/messages");
     }
   };
 
@@ -213,7 +213,7 @@ const AssessmentTaking = () => {
     );
 
     const submissionData = {
-      skill: assessment.skill,
+      assessmentId: assessment._id,
       answers: formattedAnswers,
       violations: violations,
       violationCount: violationCount,
@@ -222,37 +222,26 @@ const AssessmentTaking = () => {
         : 0,
       forcedSubmission: forcedByViolation,
       status: violationCount >= 3 ? "under-review" : "submitted",
+      invitationId,
     };
 
     try {
       const res = await axiosInstance.post(
-        "/api/assessments/submit",
+        "/api/employer-assessments/submit",
         submissionData,
       );
       setResult(res.data);
       setIsSubmitted(true);
 
       if (violationCount >= 3) {
-        toast.success("Assessment submitted for review due to violations");
-      } else if (res.data.passed) {
+        toast.success("Assessment submitted for review with some flagged activities.");
+      } else {
         confetti({
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
         });
-        toast.success("Congratulations! You passed!");
-        // Send certificate and result via email (API call placeholder)
-        try {
-          await axiosInstance.post("/api/assessments/send-certificate", {
-            assessmentId,
-            result: res.data,
-          });
-        } catch (err) {
-          // Optionally show a toast or log error
-          console.error("Failed to send certificate email", err);
-        }
-      } else {
-        toast.error("Assessment completed. Better luck next time!");
+        toast.success("Assessment submitted successfully! Good luck on your journey.");
       }
     } catch (error) {
       console.error("Submission failed", error);
@@ -364,11 +353,11 @@ const AssessmentTaking = () => {
           </h1>
 
           <p className="text-slate-500 max-w-md mx-auto text-base leading-relaxed mb-8">
-            Great job! Your assessment has been recorded. Our administrators will verify your submission and send your certificate via email upon approval.
+            Great job! Your assessment has been recorded. The employer will review your submission and you will be notified of your results.
           </p>
 
           {/* Premium Info Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {/* Date Card */}
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center hover:scale-[1.02] transition-transform duration-300">
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
@@ -382,39 +371,26 @@ const AssessmentTaking = () => {
               </span>
             </div>
 
-            {/* Status Card */}
+            {/* Score Card */}
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center hover:scale-[1.02] transition-transform duration-300">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mb-2">
                 <ShieldCheck size={20} className="text-amber-600" />
               </div>
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">
-                Review Status
+                Score Status
               </span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-                Pending Review
-              </span>
-            </div>
-
-            {/* Delivery Card */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center hover:scale-[1.02] transition-transform duration-300">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-                <Mail size={20} className="text-indigo-600" />
-              </div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">
-                Certificate
-              </span>
-              <span className="font-semibold text-slate-700 text-sm">
-                Registered Email
+                Pending Release
               </span>
             </div>
           </div>
 
           {/* Action Button */}
           <button
-            onClick={() => navigate("/assessments")}
+            onClick={() => navigate("/messages")}
             className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-2xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group cursor-pointer"
           >
-            Return to Skill Center
+            Return to Messages
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
           </button>
         </div>
@@ -602,4 +578,4 @@ const AssessmentTaking = () => {
   );
 };
 
-export default AssessmentTaking;
+export default EmployerAssessmentTaking;

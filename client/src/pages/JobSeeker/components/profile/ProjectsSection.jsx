@@ -90,7 +90,7 @@ const ProjectsSection = ({ user, editing, editData, setEditData }) => {
                                     <h4 className="font-semibold text-gray-900 text-lg">{proj.name}</h4>
                                     {proj.url && (
                                         <a
-                                            href={proj.url}
+                                            href={proj.url.startsWith("http") ? proj.url : `https://${proj.url}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm"

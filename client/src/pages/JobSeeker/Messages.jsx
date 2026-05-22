@@ -286,7 +286,9 @@ const Messages = () => {
                           ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-br-sm"
                           : "bg-white text-gray-800 border border-gray-100 rounded-bl-sm"
                           }`}>
+                          
                           <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                          
                           <p className={`text-[10px] mt-1.5 text-right ${item.sender._id === user._id ? "text-blue-100" : "text-gray-400"
                             }`}>
                             {moment(item.createdAt).format("h:mm A")}

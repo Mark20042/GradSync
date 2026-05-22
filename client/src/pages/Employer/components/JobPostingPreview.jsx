@@ -88,6 +88,18 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
               </p>
             </div>
 
+            {/* Benefits */}
+            {formData.benefits && (
+              <div className="mt-6">
+                <h3 className="text-md font-semibold text-gray-900 mb-2">
+                  Company Benefits
+                </h3>
+                <p className="text-gray-700 text-sm whitespace-pre-line">
+                  {formData.benefits}
+                </p>
+              </div>
+            )}
+
             {/* Salary */}
             {(formData.salaryMin || formData.salaryMax) && (
               <div className="mt-6">

@@ -11,7 +11,8 @@ import {
   CheckCircle,
   Bookmark,
   Archive,
-  Share2
+  Share2,
+  Gift
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
@@ -344,6 +345,21 @@ const JobDetails = () => {
                 {jobDetails.requirements}
               </div>
             </section>
+
+            {/* Benefits */}
+            {jobDetails.benefits && (
+              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <div className="p-2 bg-green-50 rounded-lg text-green-600">
+                    <Gift className="w-5 h-5" />
+                  </div>
+                  Company Benefits
+                </h2>
+                <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
+                  {jobDetails.benefits}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Right Column - Sidebar */}

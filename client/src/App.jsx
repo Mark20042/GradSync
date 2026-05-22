@@ -22,6 +22,11 @@ import EmployerDashboard from "./pages/Employer/EmployerDashboard";
 import ApplicationViewer from "./pages/Employer/ApplicationViewer";
 import EmployerProfilePage from "./pages/Employer/EmployerProfilePage";
 import ApplicantProfile from "./pages/Employer/ApplicantProfile";
+import EmployerInterviews from "./pages/Employer/EmployerInterviews";
+import EmployerAutoPilot from "./pages/Employer/EmployerAutoPilot";
+import EmployerAssessments from "./pages/Employer/EmployerAssessments";
+import EmployerAssessmentBuilder from "./pages/Employer/EmployerAssessmentBuilder";
+import EmployerAssessmentReview from "./pages/Employer/EmployerAssessmentReview";
 import ConversationList from "./pages/JobSeeker/ConversationList";
 import EmployerMessages from "./pages/Employer/EmployerMessages";
 import Messages from "./pages/JobSeeker/Messages";
@@ -42,6 +47,8 @@ import CompanyProfileView from "./pages/JobSeeker/CompanyProfileView";
 const ResumeBuilder = lazy(() => import("./pages/JobSeeker/ResumeBuilder"));
 import AssessmentList from "./pages/Assessment/AssessmentList";
 import AssessmentTaking from "./pages/Assessment/AssessmentTaking";
+import EmployerAssessmentTaking from "./pages/Assessment/EmployerAssessmentTaking";
+import MyAssessments from "./pages/Assessment/MyAssessments";
 import InterviewRoom from "./pages/Interview/InterviewRoom";
 import InterviewResults from "./pages/Interview/InterviewResults";
 import AdminAssessmentManager from "./pages/Admin/AdminAssessmentManager";
@@ -89,6 +96,8 @@ const App = () => {
               <Route path="/resume-builder" element={<ResumeBuilder />} />
               <Route path="/assessments" element={<AssessmentList />} />
               <Route path="/assessment-taking" element={<AssessmentTaking />} />
+              <Route path="/employer-assessment-taking" element={<EmployerAssessmentTaking />} />
+              <Route path="/my-assessments" element={<MyAssessments />} />
               <Route path="/interview-room" element={<InterviewRoom />} />
               <Route path="/interview-results" element={<InterviewResults />} />
             </Route>
@@ -109,6 +118,11 @@ const App = () => {
               />
               <Route path="/employer-messages" element={<EmployerMessages />} />
               <Route path="/company/:id" element={<CompanyProfileView />} />
+              <Route path="/employer-interviews" element={<EmployerInterviews />} />
+              <Route path="/employer-auto-pilot" element={<EmployerAutoPilot />} />
+              <Route path="/employer-assessments" element={<EmployerAssessments />} />
+              <Route path="/employer-assessment-builder" element={<EmployerAssessmentBuilder />} />
+              <Route path="/employer-assessment-review" element={<EmployerAssessmentReview />} />
             </Route>
 
             {/* Protected Routes for Admin */}

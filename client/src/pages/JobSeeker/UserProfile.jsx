@@ -413,10 +413,10 @@ const UserProfile = () => {
                 <p className="text-blue-600 font-medium text-lg">
                   {user?.education?.[0]?.degree || user?.degree || "Job Seeker"}
                 </p>
-                {user?.universityAddress && (
+                {user?.address && (
                   <p className="text-gray-500 text-sm mt-1 flex items-center">
                     <MapPin className="w-4 h-4 mr-1 text-gray-400" />
-                    {user?.universityAddress}
+                    {user?.address}
                   </p>
                 )}
               </div>

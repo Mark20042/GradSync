@@ -52,3 +52,14 @@ export const adminMiddleware = (
   }
   next();
 };
+
+export const employerMiddleware = (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction,
+) => {
+  if (req.user?.role !== "employer" && !req.user?.isAdmin) {
+    throw new UnauthenticatedError("Employer access required");
+  }
+  next();
+};

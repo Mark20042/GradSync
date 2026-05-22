@@ -1,6 +1,8 @@
-// components/FormSteps/BasicInfoStep.js
-import React from "react";
-import { GraduationCap, Calendar, Award, MapPin } from "lucide-react";
+import React, { useState } from "react";
+import { GraduationCap, Calendar, Award, MapPin, Globe, Sparkles, FileText } from "lucide-react";
+import axiosInstance from "../../../../utils/axiosInstance";
+import { API_PATH } from "../../../../utils/apiPath";
+import toast from "react-hot-toast";
 
 const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
   const handleChange = (e) => {
@@ -210,10 +212,10 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
         </div>
       </div>
 
-      {/* Location */}
+      {/* Personal Address */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Address
+          Personal Address
         </label>
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -221,7 +223,25 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             type="text"
             name="address"
             placeholder="e.g. Cebu City, Philippines"
-            value={formData.address}
+            value={formData.address || ""}
+            onChange={handleChange}
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Website */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Website
+        </label>
+        <div className="relative">
+          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="url"
+            name="website"
+            placeholder="e.g. https://yourwebsite.com"
+            value={formData.website || ""}
             onChange={handleChange}
             className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />

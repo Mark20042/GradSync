@@ -61,9 +61,15 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const assessment = await Assessment.findOne({ skill });
     if (!assessment) throw new NotFoundError("Assessment not found");
     let correct = 0;
-    assessment.questions.forEach((q) => {
+    assessment.questions.forEach((q: any) => {
       const ua = answers.find((a: any) => a.questionId === String(q._id));
-      if (ua && ua.selectedOption.trim() === q.correctAnswer.trim()) correct++;
+      if (ua) {
+        if (q.type === 'identification') {
+          if (ua.selectedOption.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) correct++;
+        } else {
+          if (ua.selectedOption.trim() === q.correctAnswer.trim()) correct++;
+        }
+      }
     });
     const score = (correct / assessment.questions.length) * 100;
     const passed = score >= assessment.passingScore;

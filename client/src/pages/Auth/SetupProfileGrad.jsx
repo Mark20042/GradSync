@@ -17,7 +17,7 @@ const SetupProfileGrad = () => {
   const [success, setSuccess] = useState(false);
   const [userData, setUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 7; // Reduced steps since Resume is removed
+  const totalSteps = 6; // Reduced steps since Resume is removed
 
   const [formData, setFormData] = useState({
     university: "",
@@ -156,7 +156,7 @@ const SetupProfileGrad = () => {
           major: formData.major || "",
           endDate: `${formData.graduationMonth ? formData.graduationMonth + " " : ""}${formData.graduationYear}` || "",
           startDate: "",
-          location: formData.address || "",
+          location: formData.universityAddress || "",
           activities: "",
           isPrimary: true,
         });
@@ -194,6 +194,9 @@ const SetupProfileGrad = () => {
         awards: formData.awards || [],
         languages: formData.languages || [],
         jobPreferences: formData.jobPreferences || {},
+        website: formData.website || "",
+        bio: formData.bio || "",
+        birthdate: formData.birthdate || null,
       };
 
       delete payload.experienceType;
