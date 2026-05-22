@@ -30,7 +30,10 @@ const getDetail = async (req: Request, res: Response, next: NextFunction) => {
 
 const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { skill, title, difficulty, timeLimit, passingScore } = req.body;
+    const {
+      skill, title, difficulty, timeLimit, passingScore,
+      maxTabSwitches, maxCopyPastes, maxWindowBlurs, maxRightClicks, maxDevTools
+    } = req.body;
     if (await Assessment.findOne({ skill }))
       throw new BadRequestError("Assessment already exists");
     const a = new Assessment({
@@ -39,6 +42,11 @@ const create = async (req: Request, res: Response, next: NextFunction) => {
       difficulty,
       timeLimit: timeLimit || 15,
       passingScore: passingScore || 80,
+      maxTabSwitches: maxTabSwitches ?? 3,
+      maxCopyPastes: maxCopyPastes ?? 3,
+      maxWindowBlurs: maxWindowBlurs ?? 3,
+      maxRightClicks: maxRightClicks ?? 3,
+      maxDevTools: maxDevTools ?? 1,
       questions: [],
     });
     await a.save();
@@ -60,6 +68,7 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
     } = req.body;
     const assessment = await Assessment.findOne({ skill });
     if (!assessment) throw new NotFoundError("Assessment not found");
+    
     let correct = 0;
     assessment.questions.forEach((q: any) => {
       const ua = answers.find((a: any) => a.questionId === String(q._id));
@@ -72,9 +81,45 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
       }
     });
     const score = (correct / assessment.questions.length) * 100;
-    const passed = score >= assessment.passingScore;
-    const status = passed ? "under-review" : "rejected";
-    await AssessmentSubmission.create({
+
+    // Count violations by type
+    const violationCounts = {
+      "tab-switch": 0,
+      "copy-paste": 0,
+      "window-blur": 0,
+      "right-click": 0,
+      "devtools": 0,
+    };
+    
+    violations.forEach((v: any) => {
+      if (v.type in violationCounts) {
+        violationCounts[v.type as keyof typeof violationCounts]++;
+      }
+    });
+
+    let passed = score >= assessment.passingScore;
+    let rejectionReason: string | null = null;
+
+    if (!passed) {
+      rejectionReason = "Score below passing threshold.";
+    } else {
+      // Check violation limits against assessment config
+      if (violationCounts["tab-switch"] > (assessment.maxTabSwitches ?? 3)) {
+        passed = false; rejectionReason = `Multiple tab-switching violations detected.`;
+      } else if (violationCounts["copy-paste"] > (assessment.maxCopyPastes ?? 3)) {
+        passed = false; rejectionReason = `Multiple copy-paste violations detected.`;
+      } else if (violationCounts["window-blur"] > (assessment.maxWindowBlurs ?? 3)) {
+        passed = false; rejectionReason = `Multiple window blur violations detected.`;
+      } else if (violationCounts["right-click"] > (assessment.maxRightClicks ?? 3)) {
+        passed = false; rejectionReason = `Multiple right-click violations detected.`;
+      } else if (violationCounts["devtools"] > (assessment.maxDevTools ?? 1)) {
+        passed = false; rejectionReason = `Unauthorized use of developer tools detected.`;
+      }
+    }
+
+    const status = passed ? "approved" : "rejected";
+
+    const submission = await AssessmentSubmission.create({
       assessment: assessment._id,
       user: req.user._id,
       answers,
@@ -85,14 +130,66 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
       timeSpent,
       forcedSubmission,
       status,
+      rejectionReason,
     });
+
+    const user = req.user as any;
+
+    if (passed) {
+      // Grant certificate and verified skill
+      const level = assessment.difficulty;
+      const idx = user.verifiedSkills?.findIndex((s: any) => s.skill === assessment.skill) ?? -1;
+      const levelH: Record<string, number> = { Entry: 1, Mid: 2, Senior: 3, Expert: 4 };
+      
+      if (idx >= 0 && user.verifiedSkills) {
+        const cur = user.verifiedSkills[idx]!;
+        if ((levelH[level] ?? 0) >= (levelH[cur.level ?? "Entry"] ?? 0)) {
+          cur.level = level;
+          cur.assessmentTitle = assessment.title;
+          cur.earnedAt = new Date();
+          if (score > (cur.score ?? 0)) cur.score = score;
+        }
+      } else {
+        user.verifiedSkills?.push({
+          skill: assessment.skill,
+          assessmentTitle: assessment.title,
+          level,
+          badgeIcon: "verified-badge",
+          score,
+          earnedAt: new Date(),
+        });
+      }
+      await user.save();
+
+      if (user?.email) {
+        await sendAssessmentApprovalEmail(
+          user.email,
+          user.fullName || "Job Seeker",
+          assessment?.title || assessment?.skill || "Assessment",
+          score,
+          assessment?.difficulty,
+        );
+      }
+    } else {
+      if (user?.email) {
+        await sendAssessmentRejectionEmail(
+          user.email,
+          user.fullName || "Job Seeker",
+          assessment?.title || assessment?.skill || "Assessment",
+          rejectionReason || "Did not pass the assessment.",
+        );
+      }
+    }
+
     res.status(StatusCodes.OK).json({
       score,
       passed,
+      status,
+      rejectionReason,
       candidateName: passed ? req.user.fullName : undefined,
       message: passed
-        ? "Assessment submitted for verification."
-        : "You did not pass. Try again later.",
+        ? "Assessment submitted and approved successfully."
+        : "Assessment rejected. " + (rejectionReason || ""),
     });
   } catch (error) {
     next(error);
@@ -115,105 +212,6 @@ const getSubmissionsForReview = async (
   }
 };
 
-const approveSubmission = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const submission = await AssessmentSubmission.findById(req.params.id)
-      .populate("assessment")
-      .populate("user");
-    if (!submission) throw new NotFoundError("Submission not found");
-
-    submission.status = "approved";
-    submission.reviewedBy = req.user._id;
-    submission.reviewedAt = new Date();
-    submission.rejectionReason = null;
-    await submission.save();
-
-    const assessment = submission.assessment as any;
-    const user = submission.user as any;
-    if (submission.passed && assessment && user) {
-      const level = assessment.difficulty;
-      const idx =
-        user.verifiedSkills?.findIndex(
-          (s: any) => s.skill === assessment.skill,
-        ) ?? -1;
-      const levelH: Record<string, number> = {
-        Entry: 1,
-        Mid: 2,
-        Senior: 3,
-        Expert: 4,
-      };
-      if (idx >= 0 && user.verifiedSkills) {
-        const cur = user.verifiedSkills[idx]!;
-        if ((levelH[level] ?? 0) >= (levelH[cur.level ?? "Entry"] ?? 0)) {
-          cur.level = level;
-          cur.assessmentTitle = assessment.title;
-          cur.earnedAt = new Date();
-          if (submission.score > (cur.score ?? 0)) cur.score = submission.score;
-        }
-      } else {
-        user.verifiedSkills?.push({
-          skill: assessment.skill,
-          assessmentTitle: assessment.title,
-          level,
-          badgeIcon: "verified-badge",
-          score: submission.score,
-          earnedAt: new Date(),
-        });
-      }
-      await user.save();
-    }
-
-    if (user?.email) {
-      await sendAssessmentApprovalEmail(
-        user.email,
-        user.fullName || "Job Seeker",
-        assessment?.title || assessment?.skill || "Assessment",
-        submission.score,
-        assessment?.difficulty,
-      );
-    }
-
-    res.status(StatusCodes.OK).json({ message: "Assessment approved" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const rejectSubmission = async (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const submission = await AssessmentSubmission.findById(req.params.id)
-      .populate("assessment")
-      .populate("user");
-    if (!submission) throw new NotFoundError("Submission not found");
-    submission.status = "rejected";
-    submission.reviewedBy = req.user._id;
-    submission.reviewedAt = new Date();
-    submission.rejectionReason = req.body?.reason || "Rejected by admin";
-    await submission.save();
-
-    const assessment = submission.assessment as any;
-    const user = submission.user as any;
-    if (user?.email) {
-      await sendAssessmentRejectionEmail(
-        user.email,
-        user.fullName || "Job Seeker",
-        assessment?.title || assessment?.skill || "Assessment",
-        submission.rejectionReason || "Rejected by admin",
-      );
-    }
-    res.status(StatusCodes.OK).json({ message: "Assessment rejected" });
-  } catch (error) {
-    next(error);
-  }
-};
 
 const deleteSubmission = async (
   req: AuthRequest,
@@ -376,7 +374,5 @@ export {
   unverifyUser,
   getBySkill,
   getSubmissionsForReview,
-  approveSubmission,
-  rejectSubmission,
   deleteSubmission,
 };

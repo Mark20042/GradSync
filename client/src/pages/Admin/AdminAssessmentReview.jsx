@@ -11,7 +11,10 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
+
   Trash2,
+  Settings,
+  Save,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -24,23 +27,8 @@ const AdminAssessmentReview = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [verifiedReviewIds, setVerifiedReviewIds] = useState({});
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [rejectSubmission, setRejectSubmission] = useState(null);
-  const [rejectReasonOption, setRejectReasonOption] = useState("manual-review");
-  const [rejectReasonText, setRejectReasonText] = useState("");
-
-  const rejectReasonOptions = [
-    { value: "multiple-violations", label: "Multiple integrity violations" },
-    { value: "suspicious-activity", label: "Suspicious activity detected" },
-    { value: "insufficient-score", label: "Score below passing threshold" },
-    {
-      value: "incomplete-answers",
-      label: "Incomplete answers / missing responses",
-    },
-    { value: "manual-review", label: "Requires manual review" },
-    { value: "other", label: "Other (specify)" },
-  ];
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
@@ -57,42 +45,6 @@ const AdminAssessmentReview = () => {
       toast.error("Failed to load submissions");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleApprove = async (submissionId) => {
-    if (!window.confirm("Approve this assessment and release the certificate?"))
-      return;
-
-    try {
-      await axiosInstance.put(
-        `/api/assessments/submissions/${submissionId}/approve`,
-      );
-      toast.success("Assessment approved and certificate released!");
-      fetchSubmissions();
-      setShowDetailModal(false);
-      setSelectedSubmission(null);
-    } catch (error) {
-      console.error("Failed to approve", error);
-      toast.error("Failed to approve assessment");
-    }
-  };
-
-  const handleReject = async (submissionId, reason) => {
-    try {
-      await axiosInstance.put(
-        `/api/assessments/submissions/${submissionId}/reject`,
-        {
-          reason: reason || "Multiple violations detected",
-        },
-      );
-      toast.success("Assessment rejected. User can retake.");
-      fetchSubmissions();
-      setShowDetailModal(false);
-      setSelectedSubmission(null);
-    } catch (error) {
-      console.error("Failed to reject", error);
-      toast.error("Failed to reject assessment");
     }
   };
 
@@ -113,31 +65,6 @@ const AdminAssessmentReview = () => {
     }
   };
 
-  const openRejectModal = (submission) => {
-    setRejectSubmission(submission);
-    setRejectReasonOption("manual-review");
-    setRejectReasonText("");
-    setShowRejectModal(true);
-  };
-
-  const submitReject = async () => {
-    if (!rejectSubmission) return;
-
-    const selectedLabel = rejectReasonOptions.find(
-      (opt) => opt.value === rejectReasonOption,
-    )?.label;
-    const custom = rejectReasonText.trim();
-    const reason =
-      rejectReasonOption === "other"
-        ? custom || "Other"
-        : custom
-          ? `${selectedLabel}: ${custom}`
-          : selectedLabel;
-
-    await handleReject(rejectSubmission._id, reason);
-    setShowRejectModal(false);
-  };
-
   const getViolationTypeLabel = (type) => {
     const labels = {
       "tab-switch": "Tab Switch",
@@ -151,11 +78,6 @@ const AdminAssessmentReview = () => {
 
   const getStatusBadge = (status) => {
     const configs = {
-      "under-review": {
-        bg: "bg-yellow-100",
-        text: "text-yellow-700",
-        label: "Under Review",
-      },
       approved: {
         bg: "bg-green-100",
         text: "text-green-700",
@@ -167,7 +89,7 @@ const AdminAssessmentReview = () => {
         label: "Rejected",
       },
     };
-    const config = configs[status] || configs["under-review"];
+    const config = configs[status] || configs["rejected"];
     return (
       <span
         className={`px-3 py-1 rounded-full text-xs font-bold ${config.bg} ${config.text}`}
@@ -195,22 +117,16 @@ const AdminAssessmentReview = () => {
   );
   const averageScore = totalSubmissions
     ? submissions.reduce((sum, sub) => sum + (sub.score || 0), 0) /
-      totalSubmissions
+    totalSubmissions
     : 0;
   const passRate = totalSubmissions
     ? (submissions.filter(
-        (sub) => (sub.score || 0) >= (sub.assessment?.passingScore || 80),
-      ).length /
-        totalSubmissions) *
-      100
+      (sub) => (sub.score || 0) >= (sub.assessment?.passingScore || 80),
+    ).length /
+      totalSubmissions) *
+    100
     : 0;
 
-  const toggleVerifiedReview = (submissionId) => {
-    setVerifiedReviewIds((prev) => ({
-      ...prev,
-      [submissionId]: !prev[submissionId],
-    }));
-  };
 
   if (loading) {
     return (
@@ -236,11 +152,13 @@ const AdminAssessmentReview = () => {
                 Review flagged assessments and approve or reject submissions
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Total Pending:</span>
-              <span className="text-2xl font-bold text-orange-600">
-                {submissions.filter((s) => s.status === "under-review").length}
-              </span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Total Submissions:</span>
+                <span className="text-2xl font-bold text-blue-600">
+                  {submissions.length}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -275,7 +193,6 @@ const AdminAssessmentReview = () => {
                 className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white appearance-none cursor-pointer min-w-[200px]"
               >
                 <option value="all">All Status</option>
-                <option value="under-review">Under Review</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
               </select>
@@ -376,13 +293,12 @@ const AdminAssessmentReview = () => {
                           Violations
                         </p>
                         <p
-                          className={`font-bold text-lg ${
-                            submission.violationCount >= 3
+                          className={`font-bold text-lg ${submission.violationCount >= 3
                               ? "text-red-600"
                               : submission.violationCount >= 2
                                 ? "text-orange-600"
                                 : "text-yellow-600"
-                          }`}
+                            }`}
                         >
                           {submission.violationCount}
                         </p>
@@ -439,34 +355,6 @@ const AdminAssessmentReview = () => {
             </div>
 
             <div className="p-6">
-              {/* Assessment Verifier */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900 m-0">
-                      Assessment Verifier
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Verify this submission before viewing detailed results.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => toggleVerifiedReview(selectedSubmission._id)}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                      verifiedReviewIds[selectedSubmission._id]
-                        ? "bg-emerald-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {verifiedReviewIds[selectedSubmission._id]
-                      ? "Verified"
-                      : "Verify to View"}
-                  </button>
-                </div>
-              </div>
-
-              {verifiedReviewIds[selectedSubmission._id] ? (
-                <>
                   {/* Violation Log */}
                   <div className="mb-6">
                     <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -474,7 +362,7 @@ const AdminAssessmentReview = () => {
                       Violation Log
                     </h4>
                     {selectedSubmission.violations &&
-                    selectedSubmission.violations.length > 0 ? (
+                      selectedSubmission.violations.length > 0 ? (
                       <div className="space-y-2">
                         {selectedSubmission.violations.map((violation, idx) => (
                           <div
@@ -547,7 +435,7 @@ const AdminAssessmentReview = () => {
                       Answers & Scoring
                     </h4>
                     {selectedSubmission.answers &&
-                    selectedSubmission.answers.length > 0 ? (
+                      selectedSubmission.answers.length > 0 ? (
                       <div className="space-y-3">
                         {selectedSubmission.answers.map((answer, idx) => {
                           const questionId =
@@ -604,143 +492,39 @@ const AdminAssessmentReview = () => {
                       </p>
                     )}
                   </div>
-                </>
-              ) : (
-                <div className="bg-white rounded-lg border border-gray-200 p-4 text-sm text-gray-500">
-                  Verify this submission to view violations, answers, and
-                  approval actions.
-                </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-gray-100">
-                {verifiedReviewIds[selectedSubmission._id] &&
-                  selectedSubmission.status === "under-review" && (
-                    <>
-                      <button
-                        onClick={() => handleApprove(selectedSubmission._id)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors"
-                      >
-                        <CheckCircle size={20} />
-                        Approve & Release Certificate
-                      </button>
-                      <button
-                        onClick={() => openRejectModal(selectedSubmission)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors"
-                      >
-                        <XCircle size={20} />
-                        Reject & Request Retake
-                      </button>
-                    </>
-                  )}
-              </div>
 
-              {selectedSubmission.status === "approved" && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-                  <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-green-800 font-semibold">
-                    Approved by{" "}
-                    {selectedSubmission.reviewedBy?.fullName || "Admin"} on{" "}
-                    {new Date(
-                      selectedSubmission.reviewedAt,
-                    ).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-
-              {selectedSubmission.status === "rejected" && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                  <XCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                  <p className="text-red-800 font-semibold">
-                    Rejected by{" "}
-                    {selectedSubmission.reviewedBy?.fullName || "Admin"} on{" "}
-                    {new Date(
-                      selectedSubmission.reviewedAt,
-                    ).toLocaleDateString()}
-                  </p>
-                  {selectedSubmission.rejectionReason && (
-                    <p className="text-red-700 text-sm mt-2">
-                      Reason: {selectedSubmission.rejectionReason}
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                {selectedSubmission.status === "approved" && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                    <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                    <p className="text-green-800 font-semibold">
+                      Auto-approved on{" "}
+                      {new Date(selectedSubmission.submittedAt).toLocaleDateString()}
                     </p>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+
+                {selectedSubmission.status === "rejected" && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                    <XCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                    <p className="text-red-800 font-semibold">
+                      Rejected on{" "}
+                      {new Date(selectedSubmission.submittedAt).toLocaleDateString()}
+                    </p>
+                    {selectedSubmission.rejectionReason && (
+                      <p className="text-red-700 text-sm mt-2 font-medium">
+                        Reason: {selectedSubmission.rejectionReason}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {showRejectModal && rejectSubmission && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-6">
-          <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-gray-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 m-0">
-                  Reject Submission
-                </h3>
-                <p className="text-sm text-gray-500 m-0">
-                  {rejectSubmission.user?.fullName || "Unknown User"} •{" "}
-                  {rejectSubmission.assessment?.skill}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowRejectModal(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Close"
-              >
-                <XCircle size={20} className="text-gray-500" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Rejection Reason
-                </label>
-                <select
-                  value={rejectReasonOption}
-                  onChange={(e) => setRejectReasonOption(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white"
-                >
-                  {rejectReasonOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Additional Details (optional)
-                </label>
-                <textarea
-                  value={rejectReasonText}
-                  onChange={(e) => setRejectReasonText(e.target.value)}
-                  rows={4}
-                  placeholder="Add context for the rejection..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
-              <button
-                onClick={() => setShowRejectModal(false)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitReject}
-                className="px-5 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700"
-              >
-                Reject Submission
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </DashboardLayout>
   );
 };

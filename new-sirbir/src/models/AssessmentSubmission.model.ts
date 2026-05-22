@@ -22,9 +22,7 @@ export interface IAssessmentSubmission extends Document {
   violationCount: number;
   timeSpent: number;
   forcedSubmission: boolean;
-  status: "under-review" | "approved" | "rejected";
-  reviewedBy?: Types.ObjectId | null;
-  reviewedAt?: Date | null;
+  status: "approved" | "rejected";
   rejectionReason?: string | null;
   submittedAt?: Date;
   createdAt?: Date;
@@ -59,11 +57,9 @@ const assessmentSubmissionSchema = new Schema<IAssessmentSubmission>(
     forcedSubmission: { type: Boolean, default: false },
     status: {
       type: String,
-      enum: ["under-review", "approved", "rejected"],
-      default: "under-review",
+      enum: ["approved", "rejected"],
+      default: "rejected",
     },
-    reviewedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
-    reviewedAt: { type: Date, default: null },
     rejectionReason: { type: String, default: null },
     submittedAt: { type: Date, default: Date.now },
   },

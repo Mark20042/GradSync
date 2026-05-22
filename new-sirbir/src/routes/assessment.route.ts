@@ -17,18 +17,6 @@ router.get(
   adminMiddleware,
   ctrl.getSubmissionsForReview,
 );
-router.put(
-  "/submissions/:id/approve",
-  authenticationMiddleware,
-  adminMiddleware,
-  ctrl.approveSubmission as any,
-);
-router.put(
-  "/submissions/:id/reject",
-  authenticationMiddleware,
-  adminMiddleware,
-  ctrl.rejectSubmission as any,
-);
 router.delete(
   "/submissions/:id",
   authenticationMiddleware,

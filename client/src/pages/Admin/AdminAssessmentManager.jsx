@@ -29,6 +29,7 @@ const AdminAssessmentManager = () => {
 
   const [verifiedUsers, setVerifiedUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [userToUnverify, setUserToUnverify] = useState(null);
 
   const [newAssessment, setNewAssessment] = useState({
     skill: "",
@@ -36,6 +37,11 @@ const AdminAssessmentManager = () => {
     difficulty: "Entry",
     timeLimit: 15,
     passingScore: 80,
+    maxTabSwitches: 3,
+    maxCopyPastes: 3,
+    maxWindowBlurs: 3,
+    maxRightClicks: 3,
+    maxDevTools: 1,
   });
 
   const [newQuestion, setNewQuestion] = useState({
@@ -78,7 +84,12 @@ const AdminAssessmentManager = () => {
         title: "", 
         difficulty: "Entry",
         timeLimit: 15,
-        passingScore: 80 
+        passingScore: 80,
+        maxTabSwitches: 3,
+        maxCopyPastes: 3,
+        maxWindowBlurs: 3,
+        maxRightClicks: 3,
+        maxDevTools: 1,
       });
       fetchAssessments();
     } catch (error) {
@@ -136,19 +147,15 @@ const AdminAssessmentManager = () => {
     }
   };
 
-  const handleUnverifyUser = async (userId) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to unverify this user? They will lose their badge.",
-      )
-    )
-      return;
+  const handleUnverifyUser = async () => {
+    if (!userToUnverify) return;
 
     try {
       await axiosInstance.delete(
-        `/api/assessments/${selectedAssessment.skill}/users/${userId}`,
+        `/api/assessments/${selectedAssessment.skill}/users/${userToUnverify._id}`,
       );
       toast.success("User unverified successfully");
+      setUserToUnverify(null);
       handleViewVerifiedUsers(selectedAssessment);
     } catch (error) {
       toast.error("Failed to unverify user");
@@ -460,6 +467,60 @@ const AdminAssessmentManager = () => {
                 </div>
               </div>
 
+              <h3 className="text-lg font-bold text-gray-800 mt-2 mb-4">Integrity Violations (Auto-reject Thresholds)</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Tab Switches</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newAssessment.maxTabSwitches}
+                    onChange={(e) => setNewAssessment({ ...newAssessment, maxTabSwitches: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Copy-Pastes</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newAssessment.maxCopyPastes}
+                    onChange={(e) => setNewAssessment({ ...newAssessment, maxCopyPastes: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Window Blurs</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newAssessment.maxWindowBlurs}
+                    onChange={(e) => setNewAssessment({ ...newAssessment, maxWindowBlurs: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Right Clicks</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newAssessment.maxRightClicks}
+                    onChange={(e) => setNewAssessment({ ...newAssessment, maxRightClicks: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max DevTools Opens</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newAssessment.maxDevTools}
+                    onChange={(e) => setNewAssessment({ ...newAssessment, maxDevTools: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleCreateAssessment}
@@ -536,6 +597,60 @@ const AdminAssessmentManager = () => {
                     placeholder="80"
                     value={selectedAssessment.passingScore || 80}
                     onChange={(e) => setSelectedAssessment({ ...selectedAssessment, passingScore: parseInt(e.target.value) || 80 })}
+                  />
+                </div>
+              </div>
+
+              <h3 className="text-lg font-bold text-gray-800 mt-2 mb-4">Integrity Violations (Auto-reject Thresholds)</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Tab Switches</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={selectedAssessment.maxTabSwitches ?? 3}
+                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxTabSwitches: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Copy-Pastes</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={selectedAssessment.maxCopyPastes ?? 3}
+                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxCopyPastes: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Window Blurs</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={selectedAssessment.maxWindowBlurs ?? 3}
+                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxWindowBlurs: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Right Clicks</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={selectedAssessment.maxRightClicks ?? 3}
+                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxRightClicks: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max DevTools Opens</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={selectedAssessment.maxDevTools ?? 1}
+                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxDevTools: parseInt(e.target.value) || 0 })}
+                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -932,7 +1047,7 @@ const AdminAssessmentManager = () => {
                               className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-100"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleUnverifyUser(user._id);
+                                setUserToUnverify(user);
                               }}
                               title="Unverify User"
                             >
@@ -947,6 +1062,36 @@ const AdminAssessmentManager = () => {
             </div>
           </div>
         )}
+        {/* Unverify User Confirmation Modal */}
+        {userToUnverify && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1100] p-5 animate-in fade-in duration-200" onClick={() => setUserToUnverify(null)}>
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle size={32} className="text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Unverify User?</h2>
+              <p className="text-center text-gray-500 mb-8">
+                Are you sure you want to unverify <span className="font-bold text-gray-800">{userToUnverify.fullName}</span>? They will lose their badge for this skill. This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setUserToUnverify(null)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUnverifyUser}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-[0_4px_12px_-2px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_6px_16px_-2px_rgba(239,68,68,0.5)]"
+                >
+                  Yes, Unverify
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </DashboardLayout>
   );

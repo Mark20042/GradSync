@@ -18,7 +18,7 @@ import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
 import PreAssessmentAgreement from "./components/PreAssessmentAgreement";
 import InstructionsScreen from "./components/InstructionsScreen";
-import ViolationWarning from "./components/ViolationWarning";
+
 
 const AssessmentTaking = () => {
   const location = useLocation();
@@ -38,10 +38,6 @@ const AssessmentTaking = () => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [violations, setViolations] = useState([]);
-  const [violationCount, setViolationCount] = useState(0);
-  const [showViolationWarning, setShowViolationWarning] = useState(false);
-  const [currentViolationType, setCurrentViolationType] = useState("");
-  const [isTerminated, setIsTerminated] = useState(false);
 
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
@@ -56,7 +52,7 @@ const AssessmentTaking = () => {
 
   // Violation detection
   useEffect(() => {
-    if (!hasStarted || isSubmitted || isTerminated) return;
+    if (!hasStarted || isSubmitted) return;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -110,7 +106,7 @@ const AssessmentTaking = () => {
       document.removeEventListener("paste", handlePaste);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [hasStarted, isSubmitted, isTerminated]);
+  }, [hasStarted, isSubmitted]);
 
   useEffect(() => {
     if (assessment && hasStarted && !isSubmitted) {
@@ -131,25 +127,18 @@ const AssessmentTaking = () => {
   }, [assessment, hasStarted, isSubmitted]);
 
   const recordViolation = (type) => {
-    const newViolation = {
-      type,
-      timestamp: new Date().toISOString(),
-      questionIndex: currentIndex,
-    };
+    if (isSubmitted) return;
+    
+    setViolations((prev) => {
+      const newViolation = {
+        type,
+        timestamp: new Date().toISOString(),
+        questionIndex: currentIndex,
+      };
+      return [...prev, newViolation];
+    });
 
-    setViolations((prev) => [...prev, newViolation]);
-    setViolationCount((prev) => prev + 1);
-    setCurrentViolationType(type);
-    setShowViolationWarning(true);
-
-    const newCount = violationCount + 1;
-
-    if (newCount >= 3) {
-      setIsTerminated(true);
-      setTimeout(() => {
-        handleSubmit(true); // Force submit with violations
-      }, 3000);
-    }
+    toast.error("Oops! What have you done? Integrity violation detected.", { id: 'violation-warning' });
   };
 
   const handleAgreementAccept = () => {
@@ -216,12 +205,10 @@ const AssessmentTaking = () => {
       skill: assessment.skill,
       answers: formattedAnswers,
       violations: violations,
-      violationCount: violationCount,
+      violationCount: violations.length,
       timeSpent: startTimeRef.current
         ? Math.floor((Date.now() - startTimeRef.current) / 1000)
         : 0,
-      forcedSubmission: forcedByViolation,
-      status: violationCount >= 3 ? "under-review" : "submitted",
     };
 
     try {
@@ -232,9 +219,7 @@ const AssessmentTaking = () => {
       setResult(res.data);
       setIsSubmitted(true);
 
-      if (violationCount >= 3) {
-        toast.success("Assessment submitted for review due to violations");
-      } else if (res.data.passed) {
+      if (res.data.passed) {
         confetti({
           particleCount: 150,
           spread: 70,
@@ -428,15 +413,6 @@ const AssessmentTaking = () => {
 
   return (
     <>
-      {/* Violation Warning Modal */}
-      {showViolationWarning && (
-        <ViolationWarning
-          violationCount={violationCount}
-          violationType={currentViolationType}
-          onClose={() => setShowViolationWarning(false)}
-        />
-      )}
-
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden quiz-page-wrapper">
         <style>{`
               .quiz-page-wrapper::before {
@@ -475,20 +451,7 @@ const AssessmentTaking = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              {/* Violation Counter */}
-              {violationCount > 0 && (
-                <div
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${violationCount === 1
-                      ? "bg-yellow-100 text-yellow-700"
-                      : violationCount === 2
-                        ? "bg-orange-100 text-orange-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  <AlertCircle size={14} />
-                  {violationCount}/3 Warnings
-                </div>
-              )}
+
               {/* Timer */}
               <div
                 className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold tabular-nums transition-colors ${timeLeft < 60 ? "bg-red-100 text-red-500" : "bg-blue-50 text-blue-500"}`}

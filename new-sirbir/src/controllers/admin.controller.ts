@@ -325,3 +325,5 @@ export const uploadImage = async (req: any, res: Response, next: NextFunction) =
     res.status(200).json({ imageUrl: result.url });
   } catch (error) { next(error); }
 };
+
+

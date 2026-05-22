@@ -27,6 +27,7 @@ const ApplicantProfile = () => {
   const [loading, setLoading] = useState(true);
   const [interviewScores, setInterviewScores] = useState([]);
   const [selectedInterview, setSelectedInterview] = useState(null);
+  const [selectedSkill, setSelectedSkill] = useState(null);
 
   const fetchApplicant = async () => {
     try {
@@ -337,7 +338,7 @@ const ApplicantProfile = () => {
                             </div>
                             {proj.url && (
                               <a
-                                href={proj.url}
+                                href={proj.url.startsWith('http') ? proj.url : `https://${proj.url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline flex items-center gap-1"
@@ -505,14 +506,15 @@ const ApplicantProfile = () => {
                         return (
                           <div
                             key={index}
+                            onClick={() => isVerified && setSelectedSkill(verifiedSkill)}
                             className={`relative px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 ${
                               isVerified
-                                ? `bg-gradient-to-r ${getBadgeColor(verifiedSkill.level)} text-white shadow-sm`
-                                : "bg-gray-100 text-gray-600 border border-gray-200"
+                                ? `bg-gradient-to-r ${getBadgeColor(verifiedSkill.level)} text-white shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all`
+                                : "bg-gray-100 text-gray-600 border border-gray-200 cursor-default"
                             }`}
                             title={
                               isVerified
-                                ? `Verified ${verifiedSkill.level} Level`
+                                ? "Click to view details"
                                 : "Unverified Skill"
                             }
                           >
@@ -777,6 +779,52 @@ const ApplicantProfile = () => {
           </>
         )}
       </div>
+      {/* Skill Details Modal */}
+      {selectedSkill && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelectedSkill(null)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Shield className="w-6 h-6 text-blue-600" />
+                {selectedSkill.skill}
+              </h3>
+              <button onClick={() => setSelectedSkill(null)} className="text-gray-400 hover:text-gray-600">
+                <XCircle size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                <p className="text-sm text-blue-600 font-semibold mb-1">Assessment Score</p>
+                <p className="text-3xl font-black text-blue-700">{selectedSkill.score || 0}%</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-1">Proficiency Level</p>
+                <p className="text-gray-900 font-medium">{selectedSkill.level}</p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-gray-700 mb-1">Interpretation</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {selectedSkill.level === "Entry" && "Demonstrates fundamental knowledge and basic understanding of core concepts."}
+                  {selectedSkill.level === "Mid" && "Shows practical experience, capable of applying knowledge to solve standard problems independently."}
+                  {selectedSkill.level === "Senior" && "Exhibits advanced expertise, capable of designing solutions and guiding others."}
+                  {selectedSkill.level === "Expert" && "Demonstrates mastery, deep subject matter expertise, and thought leadership in this area."}
+                </p>
+              </div>
+              
+              {selectedSkill.assessmentTitle && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Assessment</p>
+                  <p className="text-sm text-gray-600">{selectedSkill.assessmentTitle}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 };

@@ -18,6 +18,11 @@ export interface IAssessment extends Document {
   difficulty: 'Entry' | 'Mid' | 'Senior' | 'Expert';
   timeLimit: number;
   passingScore: number;
+  maxTabSwitches: number;
+  maxCopyPastes: number;
+  maxWindowBlurs: number;
+  maxRightClicks: number;
+  maxDevTools: number;
   questions: IAssessmentQuestion[];
   createdAt?: Date;
   updatedAt?: Date;
@@ -40,6 +45,11 @@ const assessmentSchema = new Schema<IAssessment>(
     difficulty: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Expert'], default: 'Entry' },
     timeLimit: { type: Number, default: 15 },
     passingScore: { type: Number, default: 80 },
+    maxTabSwitches: { type: Number, default: 3 },
+    maxCopyPastes: { type: Number, default: 3 },
+    maxWindowBlurs: { type: Number, default: 3 },
+    maxRightClicks: { type: Number, default: 3 },
+    maxDevTools: { type: Number, default: 1 },
     questions: [questionSchema],
   },
   { timestamps: true }
