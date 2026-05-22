@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BarChart3, User, Calendar, Eye, ChevronDown, ChevronUp, Search, Trash2 } from "lucide-react";
+import { BarChart3, User, Calendar, Eye, ChevronDown, ChevronUp, Search, Trash2, AlertTriangle, X } from "lucide-react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
@@ -8,8 +8,11 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 const AdminInterviewScores = () => {
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState(null);
+  const [selectedInterviewForDetails, setSelectedInterviewForDetails] = useState(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [interviewToDelete, setInterviewToDelete] = useState(null);
 
   useEffect(() => {
     fetchScores();
@@ -27,17 +30,24 @@ const AdminInterviewScores = () => {
     }
   };
 
-  const handleDelete = async (e, id) => {
+  const handleDelete = (e, id) => {
     e.stopPropagation(); // prevent row click from expanding
-    if (window.confirm("Are you sure you want to delete this interview record? This action cannot be undone.")) {
-      try {
-        await axiosInstance.delete(API_PATH.INTERVIEW.DELETE_INTERVIEW(id));
-        toast.success("Interview record deleted successfully");
-        setInterviews((prev) => prev.filter((i) => i._id !== id));
-      } catch (error) {
-        toast.error("Failed to delete interview");
-        console.error("Delete Error:", error);
-      }
+    setInterviewToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!interviewToDelete) return;
+    try {
+      await axiosInstance.delete(API_PATH.INTERVIEW.DELETE_INTERVIEW(interviewToDelete));
+      toast.success("Interview record deleted successfully");
+      setInterviews((prev) => prev.filter((i) => i._id !== interviewToDelete));
+    } catch (error) {
+      toast.error("Failed to delete interview");
+      console.error("Delete Error:", error);
+    } finally {
+      setDeleteModalOpen(false);
+      setInterviewToDelete(null);
     }
   };
 
@@ -131,7 +141,10 @@ const AdminInterviewScores = () => {
             {filtered.map((interview) => (
               <React.Fragment key={interview._id}>
                 <div 
-                  onClick={() => setExpandedId(expandedId === interview._id ? null : interview._id)}
+                  onClick={() => {
+                    setSelectedInterviewForDetails(interview);
+                    setDetailsModalOpen(true);
+                  }}
                   className="grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr_0.5fr] px-6 py-4 border-b border-gray-100 items-center cursor-pointer transition-colors hover:bg-slate-50 last:border-none"
                 >
                   <div className="flex items-center gap-3">
@@ -165,10 +178,17 @@ const AdminInterviewScores = () => {
                     {new Date(interview.createdAt).toLocaleDateString()}
                   </span>
                   <div className="flex justify-center">
-                    {expandedId === interview._id
-                      ? <ChevronUp size={20} className="text-gray-400" />
-                      : <ChevronDown size={20} className="text-gray-400" />
-                    }
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedInterviewForDetails(interview);
+                        setDetailsModalOpen(true);
+                      }}
+                      className="p-2 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
+                      title="View Details"
+                    >
+                      <Eye size={18} />
+                    </button>
                   </div>
                   <div className="flex justify-center">
                     <button
@@ -180,46 +200,120 @@ const AdminInterviewScores = () => {
                     </button>
                   </div>
                 </div>
-                {expandedId === interview._id && (
-                  <div className="px-6 py-6 bg-slate-50 border-b-2 border-slate-200">
-                    <div className="mb-4">
-                      <h4 className="text-sm font-bold text-gray-900 mb-1">
-                        AI Feedback Summary
-                      </h4>
-                      <p className="text-sm text-gray-600 leading-relaxed max-w-4xl">
-                        {interview.aiFeedback?.summary || "No summary available."}
-                      </p>
-                    </div>
-                    <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest">
-                      Per-Question Breakdown ({interview.answers?.length || 0} questions)
-                    </h4>
-                    <div className="flex flex-col gap-3">
-                      {interview.answers?.map((answer, idx) => (
-                        <div key={idx} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
-                          <div className="flex justify-between items-start mb-2 gap-3">
-                            <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
-                              Q{idx + 1}: {answer.questionText}
-                            </p>
-                            <span className={`inline-flex items-center justify-center px-3 py-0.5 rounded-full font-bold text-[0.65rem] shrink-0 ${getScoreColor(answer.score)}`}>
-                              {answer.score}/100
-                            </span>
-                          </div>
-                          <p className="text-[0.75rem] text-gray-400 mb-1 leading-normal italic">
-                            <strong className="text-gray-500 not-italic">Candidate said:</strong> {answer.candidateAnswer || <em className="text-gray-300">No answer</em>}
-                          </p>
-                          <p className="text-[0.75rem] text-gray-600 leading-normal">
-                            <strong className="text-gray-700">Feedback:</strong> {answer.feedback}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </React.Fragment>
             ))}
           </div>
         )}
       </div>
+
+      {/* Details Modal */}
+      {detailsModalOpen && selectedInterviewForDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setDetailsModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 m-0">Interview Details</h3>
+                <p className="text-sm text-gray-500 m-0 mt-1">
+                  Candidate: <span className="font-semibold text-gray-700">{selectedInterviewForDetails.candidateId?.fullName || "Unknown"}</span> • Role: <span className="font-semibold text-gray-700">{selectedInterviewForDetails.roleName || "General"}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setDetailsModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-slate-50 flex-1">
+              <div className="mb-6 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h4 className="text-sm font-bold text-gray-900 mb-2">
+                  AI Feedback Summary
+                </h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {selectedInterviewForDetails.aiFeedback?.summary || "No summary available."}
+                </p>
+              </div>
+              
+              <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest px-1">
+                Per-Question Breakdown ({selectedInterviewForDetails.answers?.length || 0} questions)
+              </h4>
+              <div className="flex flex-col gap-4">
+                {selectedInterviewForDetails.answers?.map((answer, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
+                    <div className="flex justify-between items-start mb-3 gap-4">
+                      <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
+                        Q{idx + 1}: {answer.questionText}
+                      </p>
+                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 ${getScoreColor(answer.score)}`}>
+                        {answer.score}/100
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-3">
+                      <p className="text-[0.8rem] text-gray-600 leading-relaxed italic m-0">
+                        <strong className="text-gray-500 not-italic mr-2">Candidate said:</strong> 
+                        {answer.candidateAnswer || <em className="text-gray-300">No answer</em>}
+                      </p>
+                    </div>
+                    <p className="text-[0.8rem] text-gray-700 leading-relaxed m-0">
+                      <strong className="text-gray-900 mr-2">Feedback:</strong> {answer.feedback}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex justify-end shrink-0">
+              <button
+                onClick={() => setDetailsModalOpen(false)}
+                className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-fade-in">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center border border-red-100 shrink-0">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Interview Record</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete this interview record? This action cannot be undone and will permanently remove the scores and AI feedback.
+            </p>
+            
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors shadow-sm shadow-red-200"
+              >
+                Delete Record
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </DashboardLayout>
   );
 };

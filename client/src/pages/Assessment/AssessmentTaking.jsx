@@ -18,6 +18,7 @@ import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
 import PreAssessmentAgreement from "./components/PreAssessmentAgreement";
 import InstructionsScreen from "./components/InstructionsScreen";
+import { showIntegrityWarningToast } from "../../utils/toastUtils";
 
 
 const AssessmentTaking = () => {
@@ -138,7 +139,7 @@ const AssessmentTaking = () => {
       return [...prev, newViolation];
     });
 
-    toast.error("Oops! What have you done? Integrity violation detected.", { id: 'violation-warning' });
+    showIntegrityWarningToast();
   };
 
   const handleAgreementAccept = () => {

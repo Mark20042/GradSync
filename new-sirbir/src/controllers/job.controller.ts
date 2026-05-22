@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import { NotFoundError, UnauthorizedError } from "@/errors/index.js";
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
@@ -53,34 +54,168 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
     const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User not found");
+    
+    const userIdObj = new mongoose.Types.ObjectId(userId);
     const userSkills = user.skills?.map(s => s.toLowerCase()) || [];
-    const preferredLocation = user.jobPreferences?.preferredLocation?.toLowerCase() || user.address?.toLowerCase() || "";
-    const jobs = await Job.find({ isClosed: false }).populate("company", "fullName companyName companyLogo");
-    const savedJobs = await SavedJob.find({ graduate: userId }).select("job");
-    const saveJobIds = savedJobs.map(s => String(s.job));
-    const applications = await Application.find({ applicant: userId }).select("job status");
-    const appliedMap: Record<string, string> = {};
-    applications.forEach(app => { appliedMap[String(app.job)] = app.status; });
+    const preferredLocation = user.address?.toLowerCase() || "";
+    const desiredTitle = user.major?.toLowerCase() || "";
 
-    let scoredJobs = jobs.map(job => {
-      let score = 0; const reasons: string[] = [];
-      const jobSkills = job.skills?.map(s => s.toLowerCase()) || [];
-      const jobReq = job.requirements?.toLowerCase() || "";
-      let skillMatch = 0;
-      jobSkills.forEach(s => { if (userSkills.includes(s)) { score++; skillMatch++; } });
-      userSkills.forEach(us => { if (!jobSkills.includes(us) && jobReq.includes(us)) { score++; skillMatch++; } });
-      if (skillMatch > 0) reasons.push("Matches your skills");
-      if (preferredLocation && job.location?.toLowerCase().includes(preferredLocation)) { score += 2; reasons.push("Near you"); }
-      const desiredTitle = user.jobPreferences?.desiredJobTitle?.toLowerCase() || user.major?.toLowerCase() || "";
-      if (desiredTitle && job.title?.toLowerCase().includes(desiredTitle)) { score += 2; reasons.push("Matches your profile"); }
-      let primary = reasons.length > 0 ? reasons[reasons.length - 1]! : "Recommended";
-      if (reasons.includes("Near you")) primary = "Near you";
-      else if (reasons.includes("Matches your skills")) primary = "Matches your skills";
-      const id = String(job._id);
-      return { ...job.toObject(), matchScore: score, matchReason: primary, isSaved: saveJobIds.includes(id), applicationStatus: appliedMap[id] || null };
-    });
-    scoredJobs = scoredJobs.filter(j => j.matchScore > 0).sort((a, b) => b.matchScore - a.matchScore);
-    res.status(StatusCodes.OK).json(scoredJobs.slice(0, 6));
+    const scoredJobs = await Job.aggregate([
+      // 1. Only open jobs
+      { $match: { isClosed: false } },
+      
+      // 2. Add searchable text combining skills and requirements for broad matching
+      {
+        $addFields: {
+          searchableText: {
+            $toLower: {
+              $concat: [
+                { $ifNull: ["$requirements", ""] },
+                " ",
+                {
+                  $reduce: {
+                    input: { $ifNull: ["$skills", []] },
+                    initialValue: "",
+                    in: { $concat: ["$$value", " ", "$$this"] }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      
+      // 3. Compute base match scores
+      {
+        $addFields: {
+          skillMatchScore: {
+            $size: {
+              $filter: {
+                input: userSkills,
+                as: "us",
+                cond: {
+                  $gte: [{ $indexOfCP: ["$searchableText", "$$us"] }, 0]
+                }
+              }
+            }
+          },
+
+          locationMatchScore: preferredLocation ? {
+            $cond: [
+              { $gte: [ { $indexOfCP: [ { $toLower: { $ifNull: ["$location", ""] } }, preferredLocation ] }, 0 ] },
+              2,
+              0
+            ]
+          } : 0,
+          titleMatchScore: desiredTitle ? {
+            $cond: [
+              { $gte: [ { $indexOfCP: [ { $toLower: { $ifNull: ["$title", ""] } }, desiredTitle ] }, 0 ] },
+              2,
+              0
+            ]
+          } : 0
+        }
+      },
+      
+      // 4. Compute total score and primary reason
+      {
+        $addFields: {
+          matchScore: {
+            $add: [
+              { $multiply: ["$skillMatchScore", 2] }, // Weight skills heavily
+              "$locationMatchScore", 
+              "$titleMatchScore"
+            ]
+          },
+          matchReason: {
+            $switch: {
+              branches: [
+                { case: { $gt: ["$locationMatchScore", 0] }, then: "Near you" },
+                { case: { $gt: ["$skillMatchScore", 0] }, then: "Matches your skills" },
+                { case: { $gt: ["$titleMatchScore", 0] }, then: "Matches your profile" }
+              ],
+              default: "Recommended"
+            }
+          }
+        }
+      },
+      
+      // 5. Filter out jobs with 0 score
+      { $match: { matchScore: { $gt: 0 } } },
+      
+      // 6. Sort and Limit
+      { $sort: { matchScore: -1 } },
+      { $limit: 6 },
+      
+      // 7. Lookup Company Info
+      {
+        $lookup: {
+          from: "users",
+          localField: "company",
+          foreignField: "_id",
+          as: "companyInfo"
+        }
+      },
+      {
+        $unwind: { path: "$companyInfo", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $addFields: {
+          company: {
+            _id: "$companyInfo._id",
+            fullName: "$companyInfo.fullName",
+            companyName: "$companyInfo.companyName",
+            companyLogo: "$companyInfo.companyLogo"
+          }
+        }
+      },
+      
+      // 8. Lookup Saved Jobs
+      {
+        $lookup: {
+          from: "savedjobs",
+          let: { jobId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $and: [ { $eq: ["$job", "$$jobId"] }, { $eq: ["$graduate", userIdObj] } ] } } }
+          ],
+          as: "savedData"
+        }
+      },
+      
+      // 9. Lookup Applications
+      {
+        $lookup: {
+          from: "applications",
+          let: { jobId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $and: [ { $eq: ["$job", "$$jobId"] }, { $eq: ["$applicant", userIdObj] } ] } } }
+          ],
+          as: "appData"
+        }
+      },
+      
+      // 10. Extract flags and cleanup
+      {
+        $addFields: {
+          id: "$_id",
+          isSaved: { $gt: [{ $size: "$savedData" }, 0] },
+          applicationStatus: { $ifNull: [{ $arrayElemAt: ["$appData.status", 0] }, null] }
+        }
+      },
+      {
+        $project: {
+          searchableText: 0,
+          skillMatchScore: 0,
+          locationMatchScore: 0,
+          titleMatchScore: 0,
+          companyInfo: 0,
+          savedData: 0,
+          appData: 0
+        }
+      }
+    ]);
+
+    res.status(StatusCodes.OK).json(scoredJobs);
   } catch (error) { next(error); }
 };
 

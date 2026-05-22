@@ -17,7 +17,7 @@ const SetupProfileGrad = () => {
   const [success, setSuccess] = useState(false);
   const [userData, setUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 6; // Reduced steps since Resume is removed
+  const totalSteps = 5; // Reduced steps since Job Prefs and Resume are removed
 
   const [formData, setFormData] = useState({
     university: "",
@@ -43,14 +43,6 @@ const SetupProfileGrad = () => {
     languages: [],
     experienceType: "work", // Default for ExperienceStep tab
     certificationType: "certification", // Default for SkillsStep tab
-    jobPreferences: {
-      desiredJobTitle: "",
-      industry: "",
-      preferredLocation: "",
-      jobType: "",
-      salaryExpectation: "",
-      relocation: false,
-    },
   });
 
   const [validationErrors, setValidationErrors] = useState({});
@@ -71,16 +63,7 @@ const SetupProfileGrad = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleJobPreferenceChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      jobPreferences: {
-        ...prev.jobPreferences,
-        [name]: type === "checkbox" ? checked : value,
-      },
-    }));
-  };
+
 
   const validateStep = () => {
     const errors = {};
@@ -115,7 +98,7 @@ const SetupProfileGrad = () => {
 
   const nextStep = async () => {
     // Only validate if NOT moving to the last step
-    const shouldValidate = currentStep < 6; // Stop validating before step 6 (Job Prefs)
+    const shouldValidate = currentStep < totalSteps; // Stop validating before the last step if needed, or always validate. For now, we validate if not the last. Actually, validate all steps before moving.
 
     if (currentStep < totalSteps && (!shouldValidate || validateStep())) {
       setCurrentStep(currentStep + 1);
@@ -193,7 +176,7 @@ const SetupProfileGrad = () => {
         certifications: formData.certifications || [],
         awards: formData.awards || [],
         languages: formData.languages || [],
-        jobPreferences: formData.jobPreferences || {},
+        jobPreferences: {},
         website: formData.website || "",
         bio: formData.bio || "",
         birthdate: formData.birthdate || null,

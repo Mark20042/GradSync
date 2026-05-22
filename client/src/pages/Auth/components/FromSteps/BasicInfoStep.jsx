@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { GraduationCap, Calendar, Award, MapPin, Globe, Sparkles, FileText } from "lucide-react";
 import axiosInstance from "../../../../utils/axiosInstance";
+
 import { API_PATH } from "../../../../utils/apiPath";
 import toast from "react-hot-toast";
+import LocationDetectInput from "../../../../components/Input/LocationDetectInput";
 
 const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
   const handleChange = (e) => {
@@ -25,9 +27,8 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             placeholder="Your university"
             value={formData.university}
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              validationErrors.university ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.university ? "border-red-500" : "border-gray-300"
+              }`}
             required
           />
         </div>
@@ -51,11 +52,10 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             placeholder="University exact address"
             value={formData.universityAddress || ""}
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              validationErrors.universityAddress
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.universityAddress
                 ? "border-red-500"
                 : "border-gray-300"
-            }`}
+              }`}
             required
           />
         </div>
@@ -82,9 +82,8 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
                 : ""
             }
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              validationErrors.birthdate ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.birthdate ? "border-red-500" : "border-gray-300"
+              }`}
           />
         </div>
         {validationErrors.birthdate && (
@@ -139,11 +138,10 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
               max="2030"
               value={formData.graduationYear}
               onChange={handleChange}
-              className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                validationErrors.graduationYear
+              className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.graduationYear
                   ? "border-red-500"
                   : "border-gray-300"
-              }`}
+                }`}
               required
             />
           </div>
@@ -168,9 +166,8 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             placeholder="e.g. Bachelor of Science in Computer Science"
             value={formData.degree}
             onChange={handleChange}
-            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              validationErrors.degree ? "border-red-500" : "border-gray-300"
-            }`}
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.degree ? "border-red-500" : "border-gray-300"
+              }`}
             required
           />
         </div>
@@ -217,15 +214,12 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Personal Address
         </label>
-        <div className="relative">
-          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
+        <div className="w-full">
+          <LocationDetectInput
             name="address"
             placeholder="e.g. Cebu City, Philippines"
             value={formData.address || ""}
             onChange={handleChange}
-            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>

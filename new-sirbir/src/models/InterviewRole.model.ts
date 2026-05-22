@@ -12,6 +12,11 @@ export interface IInterviewRole extends Document {
   roleName: string;
   description?: string;
   questions: IRoleQuestion[];
+  maxTabSwitches: number;
+  maxCopyPastes: number;
+  maxWindowBlurs: number;
+  maxRightClicks: number;
+  maxDevTools: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -27,6 +32,11 @@ const interviewRoleSchema = new Schema<IInterviewRole>(
     roleName: { type: String, required: true, unique: true },
     description: { type: String, default: '' },
     questions: [questionSchema],
+    maxTabSwitches: { type: Number, default: 3 },
+    maxCopyPastes: { type: Number, default: 3 },
+    maxWindowBlurs: { type: Number, default: 3 },
+    maxRightClicks: { type: Number, default: 3 },
+    maxDevTools: { type: Number, default: 1 },
   },
   { timestamps: true }
 );

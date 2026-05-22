@@ -28,6 +28,9 @@ export interface IInterview extends Document {
   aiScore: number;
   aiFeedback: IAiFeedback;
   status: 'pending' | 'evaluated' | 'failed';
+  violations?: any[];
+  violationCount?: number;
+  rejectionReason?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -52,6 +55,9 @@ const interviewSchema = new Schema<IInterview>(
     aiScore: { type: Number, min: 0, max: 100, default: 0 },
     aiFeedback: { type: Object, default: {} },
     status: { type: String, enum: ['pending', 'evaluated', 'failed'], default: 'pending' },
+    violations: { type: [Object], default: [] },
+    violationCount: { type: Number, default: 0 },
+    rejectionReason: { type: String, default: '' },
   },
   { timestamps: true }
 );

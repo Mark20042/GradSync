@@ -78,8 +78,8 @@ const ApplicantProfilePreview = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-[rgba(0,0,0,0.2)] bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ring-1 ring-black/5">
         {/*Modal Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -94,75 +94,94 @@ const ApplicantProfilePreview = ({
         </div>
         {/*Modal Content */}
         <div className="p-6">
-          <div className="text-center mb-6">
+          {/* Header Row */}
+          <div className="flex items-center gap-5 mb-6">
             {selectedApplicant.applicant.avatar ? (
               <img
                 src={selectedApplicant.applicant.avatar}
                 alt={selectedApplicant.applicant.fullName}
-                className="h-20 w-20 rounded-full object-cover mx-auto"
+                className="h-16 w-16 rounded-full object-cover shadow-sm ring-2 ring-gray-100"
               />
             ) : (
-              <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto">
-                <span className="text-blue-600 font-semibold text-2xl leading-tight tracking-wide">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-sm ring-2 ring-white">
+                <span className="text-blue-700 font-bold text-xl tracking-wide">
                   {getInitials(selectedApplicant.applicant.fullName)}
                 </span>
               </div>
             )}
-            <h4 className="mt-4 text-xl font-semibold text-gray-900">
-              {selectedApplicant.applicant.fullName}
-            </h4>
-            <p className="text-gray-600">{selectedApplicant.applicant.email}</p>
+            <div>
+              <h4 className="text-xl font-bold text-gray-900 leading-tight">
+                {selectedApplicant.applicant.fullName}
+              </h4>
+              <p className="text-gray-500 text-sm mt-0.5">{selectedApplicant.applicant.email}</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h5 className="font-medium text-gray-900 mb-2">
-                Applied Position
-              </h5>
-              <p className="text-gray-700">{selectedApplicant.job.title}</p>
-              <p className="text-gray-600 text-sm mt-1">
-                {selectedApplicant.job.location} • {selectedApplicant.job.type}
-              </p>
-            </div>
+          <div className="space-y-5">
+            {/* Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                  Applied Position
+                </p>
+                <p className="font-semibold text-gray-900">{selectedApplicant.job.title}</p>
+                <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                  <span className="truncate">{selectedApplicant.job.location}</span>
+                  <span>•</span>
+                  <span>{selectedApplicant.job.type}</span>
+                </p>
+              </div>
 
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h5 className="font-medium text-gray-900 mb-2">
-                Application Details
-              </h5>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <StatusBadge status={currentStatus} />
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Applied Date:</span>
-                  <span className="text-gray-900">
-                    {moment(selectedApplicant.createdAt).format("Do MMM, YYYY")}
+              <div className="bg-gray-50/80 p-4 rounded-xl border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                    Application Status
+                  </p>
+                  <span className="text-[11px] text-gray-400 font-medium bg-white px-2 py-0.5 rounded-full border border-gray-100">
+                    {moment(selectedApplicant.createdAt).format("MMM Do, YYYY")}
                   </span>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <StatusBadge status={currentStatus} />
+                  </div>
+                  <select
+                    value={currentStatus}
+                    onChange={onChangeStatus}
+                    disabled={loading}
+                    className="w-full text-sm font-medium border border-gray-200 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm hover:border-gray-300 transition-colors cursor-pointer"
+                  >
+                    {statusOptions.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
 
-            {/* AI Analysis Button Section */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between">
+            {/* AI Analysis Banner */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
               <div>
-                <h5 className="font-bold text-indigo-900 flex items-center gap-2 mb-1">
+                <h5 className="font-bold text-indigo-900 flex items-center gap-2 mb-0.5">
                   <Sparkles className="w-4 h-4 text-indigo-600" />
                   AI Suitability Check
                 </h5>
-                <p className="text-xs text-indigo-600/80">Evaluate match with job requirements</p>
+                <p className="text-[11px] font-medium text-indigo-600/80 uppercase tracking-wide">Evaluate match with job requirements</p>
               </div>
 
               <button
                 onClick={handleOpenAiAnalysis}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm flex items-center gap-2"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95"
               >
                 <BrainCircuit className="w-4 h-4" />
                 {aiAnalysis ? "View Analysis" : "Run Analysis"}
               </button>
             </div>
 
-            {/* AI Modal */}
+            {/* Modals */}
             <EmployerSuitabilityModal
               isOpen={showAiModal}
               onClose={() => setShowAiModal(false)}
@@ -179,56 +198,37 @@ const ApplicantProfilePreview = ({
               job={selectedApplicant.job}
             />
 
-            <button
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer"
-              onClick={() => setShowInviteModal(true)}
-            >
-              <FileCode className="w-4 h-4" />
-              Invite to Assessment
-            </button>
-
-            <button
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
-              onClick={() =>
-                navigate("/applicant-profile", {
-                  state: { applicantId: selectedApplicant._id },
-                })
-              }
-            >
-              <User className="w-4 h-4" />
-              View Profile
-            </button>
-
-            <button
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-              onClick={() =>
-                handleDownloadResume(selectedApplicant.applicant.resume)
-              }
-            >
-              <Download className="w-4 h-4" />
-              Download Resume
-            </button>
-
-            {/* Status Dropdown */}
-            <div className="mt-4">
-              <label className="block mb-1 text-sm text-gray-700 font-medium">
-                Change Application Status
-              </label>
-              <select
-                value={currentStatus}
-                onChange={onChangeStatus}
-                disabled={loading}
-                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
+            {/* Action Buttons Row */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t border-gray-100 mt-4">
+              <button
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all shadow-md shadow-gray-200 active:scale-[0.98] focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                onClick={() =>
+                  navigate("/applicant-profile", {
+                    state: { applicantId: selectedApplicant._id },
+                  })
+                }
               >
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              {loading && (
-                <p className="text-xs text-gray-500 mt-1">Updating status...</p>
-              )}
+                <User className="w-5 h-5" />
+                View Full Profile
+              </button>
+
+              <button
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-700 font-semibold rounded-xl hover:bg-indigo-50 transition-all shadow-sm active:scale-[0.98] focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+                onClick={() => setShowInviteModal(true)}
+              >
+                <FileCode className="w-5 h-5" />
+                Invite to Assessment
+              </button>
+
+              <button
+                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-50 text-blue-700 font-semibold rounded-xl hover:bg-blue-100 transition-all shadow-sm active:scale-[0.98] focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                onClick={() =>
+                  handleDownloadResume(selectedApplicant.applicant.resume)
+                }
+              >
+                <Download className="w-5 h-5" />
+                Download Resume
+              </button>
             </div>
           </div>
         </div>

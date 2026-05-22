@@ -1,5 +1,6 @@
 import React from 'react';
 import { Target } from 'lucide-react';
+import LocationDetectInput from '../../../../components/Input/LocationDetectInput';
 
 const JobPreferencesSection = ({ user, editing, editData, setEditData }) => {
     // Job preferences are nested in jobPreferences object in User model
@@ -60,24 +61,7 @@ const JobPreferencesSection = ({ user, editing, editData, setEditData }) => {
                     )}
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-violet-50 p-4 rounded-xl border border-purple-100">
-                    <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-2">
-                        Preferred Location
-                    </label>
-                    {editing ? (
-                        <input
-                            type="text"
-                            value={prefs.preferredLocation || ""}
-                            onChange={(e) => handlePrefChange("preferredLocation", e.target.value)}
-                            placeholder="e.g. Remote, Cebu City"
-                            className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-                        />
-                    ) : (
-                        <p className="font-medium text-gray-800">
-                            {prefs.preferredLocation || "Not specified"}
-                        </p>
-                    )}
-                </div>
+
 
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-4 rounded-xl border border-orange-100">
                     <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-2">

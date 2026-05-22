@@ -11,14 +11,18 @@ import toast from "react-hot-toast";
 import InputField from "../../components/Input/InputField";
 import SelectField from "../../components/Input/SelectField";
 import TextAreaField from "../../components/Input/TextAreaField";
+import LocationDetectInput from "../../components/Input/LocationDetectInput";
 import JobPostingPreview from "./components/JobPostingPreview";
 import { useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const JobPostingForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const jobId = location.state?.jobId || null;
 
+  const { user } = useAuth();
+  
   // formData now uses schema keys (title, type)
   const [formData, setFormData] = useState({
     title: "",
@@ -176,12 +180,15 @@ const JobPostingForm = () => {
             toast.error("Failed to fetch job details. Please try again.");
           }
         }
+      } else if (user?.address) {
+        // Pre-fill location from employer profile if creating a new job
+        setFormData(prev => ({ ...prev, location: user.address }));
       }
     };
 
     fetchJobDetails();
     return () => {};
-  }, []);
+  }, [jobId, user?.address]);
 
   if (isPreview) {
     return (
@@ -233,16 +240,23 @@ const JobPostingForm = () => {
               />
 
               {/* Location */}
-              <InputField
-                label="Location"
-                id="location"
-                placeholder="e.g., IT Park, Ayala"
-                value={formData.location}
-                onChange={(e) => handleInputChange("location", e.target.value)}
-                error={errors.location}
-                required
-                icon={MapPin}
-              />
+              <div className="space-y-1">
+                <LocationDetectInput
+                  label="Location"
+                  id="location"
+                  placeholder="e.g., IT Park, Ayala"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange("location", e.target.value)}
+                  error={errors.location}
+                  required
+                />
+                {!user?.address && !jobId && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" />
+                    We recommend setting up your company address in your profile to auto-fill this field.
+                  </p>
+                )}
+              </div>
 
               {/* Category & Job Type */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

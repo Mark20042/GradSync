@@ -38,7 +38,6 @@ import EducationSection from "./components/profile/EducationSection";
 import ExperienceSection from "./components/profile/ExperienceSection";
 import ProjectsSection from "./components/profile/ProjectsSection";
 import CertificationsSection from "./components/profile/CertificationsSection";
-import JobPreferencesSection from "./components/profile/JobPreferencesSection";
 import AccountSettingsSection from "./components/profile/AccountSettingsSection";
 import SkillsSection from "./components/profile/SkillsSection";
 import InterviewScoresSection from "./components/profile/InterviewScoresSection";
@@ -347,7 +346,6 @@ const UserProfile = () => {
     { id: "projects", label: "Projects", icon: Layers },
     { id: "certifications", label: "Certifications & Awards", icon: Award },
     { id: "interviews", label: "Interview Scores", icon: Target },
-    { id: "preferences", label: "Job Preferences", icon: Target },
     { id: "settings", label: "Account Settings", icon: Settings, danger: true },
   ];
 
@@ -575,15 +573,6 @@ const UserProfile = () => {
 
               {activeSection === "certifications" && (
                 <CertificationsSection
-                  user={user}
-                  editing={editing}
-                  editData={editData}
-                  setEditData={setEditData}
-                />
-              )}
-
-              {activeSection === "preferences" && (
-                <JobPreferencesSection
                   user={user}
                   editing={editing}
                   editData={editData}

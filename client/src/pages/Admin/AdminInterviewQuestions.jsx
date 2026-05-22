@@ -18,6 +18,11 @@ const AdminInterviewQuestions = () => {
   const [newRole, setNewRole] = useState({
     roleName: "",
     description: "",
+    maxTabSwitches: 3,
+    maxCopyPastes: 3,
+    maxWindowBlurs: 3,
+    maxRightClicks: 3,
+    maxDevTools: 1,
   });
 
   const [newQuestion, setNewQuestion] = useState({
@@ -51,7 +56,15 @@ const AdminInterviewQuestions = () => {
       await axiosInstance.post(API_PATH.INTERVIEW.GET_ROLES, newRole);
       toast.success("Job Role created successfully!");
       setIsRoleModalOpen(false);
-      setNewRole({ roleName: "", description: "" });
+      setNewRole({ 
+        roleName: "", 
+        description: "",
+        maxTabSwitches: 3,
+        maxCopyPastes: 3,
+        maxWindowBlurs: 3,
+        maxRightClicks: 3,
+        maxDevTools: 1,
+      });
       fetchRoles();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to create role");
@@ -296,6 +309,60 @@ const AdminInterviewQuestions = () => {
                     onChange={(e) => setNewRole({ ...newRole, roleName: e.target.value })}
                   />
                 </div>
+                
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-blue-600">🛡️</span> Integrity Rules Settings
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Tab Switches</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={newRole.maxTabSwitches}
+                        onChange={(e) => setNewRole({ ...newRole, maxTabSwitches: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Copy/Pastes</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={newRole.maxCopyPastes}
+                        onChange={(e) => setNewRole({ ...newRole, maxCopyPastes: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Window Blurs</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={newRole.maxWindowBlurs}
+                        onChange={(e) => setNewRole({ ...newRole, maxWindowBlurs: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Right Clicks</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={newRole.maxRightClicks}
+                        onChange={(e) => setNewRole({ ...newRole, maxRightClicks: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 col-span-2">
+                      <label className="text-sm font-semibold text-gray-600">Max DevTools Opens</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={newRole.maxDevTools}
+                        onChange={(e) => setNewRole({ ...newRole, maxDevTools: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleCreateRole}
                   disabled={loading}
@@ -327,6 +394,60 @@ const AdminInterviewQuestions = () => {
                     onChange={(e) => setSelectedRole({ ...selectedRole, roleName: e.target.value })}
                   />
                 </div>
+
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-blue-600">🛡️</span> Integrity Rules Settings
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Tab Switches</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={selectedRole?.maxTabSwitches ?? 3}
+                        onChange={(e) => setSelectedRole({ ...selectedRole, maxTabSwitches: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Copy/Pastes</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={selectedRole?.maxCopyPastes ?? 3}
+                        onChange={(e) => setSelectedRole({ ...selectedRole, maxCopyPastes: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Window Blurs</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={selectedRole?.maxWindowBlurs ?? 3}
+                        onChange={(e) => setSelectedRole({ ...selectedRole, maxWindowBlurs: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-600">Max Right Clicks</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={selectedRole?.maxRightClicks ?? 3}
+                        onChange={(e) => setSelectedRole({ ...selectedRole, maxRightClicks: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5 col-span-2">
+                      <label className="text-sm font-semibold text-gray-600">Max DevTools Opens</label>
+                      <input
+                        type="number" min="0"
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                        value={selectedRole?.maxDevTools ?? 1}
+                        onChange={(e) => setSelectedRole({ ...selectedRole, maxDevTools: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   onClick={handleUpdateRole}
                   disabled={loading}

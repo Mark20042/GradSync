@@ -9,6 +9,7 @@ import {
   Github,
   Calendar,
 } from "lucide-react";
+import LocationDetectInput from "../../../../components/Input/LocationDetectInput";
 
 const ContactSection = ({ user, editing, editData, handleEditChange }) => {
   return (
@@ -102,13 +103,15 @@ const ContactSection = ({ user, editing, editData, handleEditChange }) => {
                 Address
               </label>
               {editing ? (
-                <input
-                  type="text"
-                  name="address"
-                  value={editData.address || ""}
-                  onChange={handleEditChange}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
-                />
+                <div className="w-full">
+                  <LocationDetectInput
+                    id="address"
+                    name="address"
+                    value={editData.address || ""}
+                    onChange={handleEditChange}
+                    placeholder="e.g. Cebu City, Philippines"
+                  />
+                </div>
               ) : (
                 <p className="font-medium text-gray-800">
                   {user.address || "Not provided"}

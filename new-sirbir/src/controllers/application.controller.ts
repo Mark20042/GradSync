@@ -37,9 +37,168 @@ const getApplicationsByJob = async (req: AuthRequest, res: Response, next: NextF
   try {
     const job = await Job.findById(req.params.jobId);
     if (!job || String(job.company) !== String(req.user._id)) throw new NotFoundError("Not authorized");
-    const apps = await Application.find({ job: req.params.jobId })
-      .populate("job", "title location category type skills requirements")
-      .populate("applicant", "fullName email resume avatar skills major");
+    
+    // Perform Aggregation to rank candidates efficiently
+    const apps = await Application.aggregate([
+      { $match: { job: job._id } },
+      {
+        $lookup: {
+          from: "jobs",
+          localField: "job",
+          foreignField: "_id",
+          as: "job"
+        }
+      },
+      { $unwind: "$job" },
+      {
+        $lookup: {
+          from: "users",
+          localField: "applicant",
+          foreignField: "_id",
+          as: "applicant"
+        }
+      },
+      { $unwind: "$applicant" },
+      {
+        $addFields: {
+          "searchableJobText": {
+            $toLower: {
+              $concat: [
+                {
+                  $reduce: {
+                    input: { $ifNull: ["$job.skills", []] },
+                    initialValue: "",
+                    in: { $concat: ["$$value", " ", "$$this"] }
+                  }
+                },
+                " ",
+                { $ifNull: ["$job.requirements", ""] }
+              ]
+            }
+          },
+          "matchingSkillsCount": {
+            $size: {
+              $filter: {
+                input: { $ifNull: ["$applicant.skills", []] },
+                as: "userSkill",
+                cond: {
+                  $ne: [
+                    { $indexOfCP: ["$searchableJobText", { $toLower: "$$userSkill" }] },
+                    -1
+                  ]
+                }
+              }
+            }
+          },
+          "isTitleMatch": {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ["$applicant.major", null] },
+                  { $ne: ["$applicant.major", ""] },
+                  {
+                    $ne: [
+                      {
+                        $indexOfCP: [
+                          { $toLower: "$job.title" },
+                          { $toLower: "$applicant.major" }
+                        ]
+                      },
+                      -1
+                    ]
+                  }
+                ]
+              },
+              true,
+              false
+            ]
+          }
+        }
+      },
+      {
+        $addFields: {
+          "matchScore": {
+            $add: [
+              { $multiply: ["$matchingSkillsCount", 2] }, // Enhanced: 2 points per matching skill
+              { $cond: ["$isTitleMatch", 3, 0] }          // Enhanced: 3 points for title match
+            ]
+          },
+          "matchReason": {
+            $let: {
+              vars: {
+                reasons: {
+                  $filter: {
+                    input: [
+                      {
+                        $cond: [
+                          { $gt: ["$matchingSkillsCount", 0] },
+                          { $concat: [{ $toString: "$matchingSkillsCount" }, " matching skills"] },
+                          null
+                        ]
+                      },
+                      {
+                        $cond: ["$isTitleMatch", "Matches Major", null]
+                      }
+                    ],
+                    as: "reason",
+                    cond: { $ne: ["$$reason", null] }
+                  }
+                }
+              },
+              in: {
+                $cond: [
+                  { $gt: [{ $size: "$$reasons" }, 0] },
+                  {
+                    $reduce: {
+                      input: "$$reasons",
+                      initialValue: "",
+                      in: {
+                        $cond: [
+                          { $eq: ["$$value", ""] },
+                          "$$this",
+                          { $concat: ["$$value", ", ", "$$this"] }
+                        ]
+                      }
+                    }
+                  },
+                  "General Match"
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          status: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          job: {
+            _id: "$job._id",
+            title: "$job.title",
+            location: "$job.location",
+            category: "$job.category",
+            type: "$job.type",
+            skills: "$job.skills",
+            requirements: "$job.requirements"
+          },
+          applicant: {
+            _id: "$applicant._id",
+            fullName: "$applicant.fullName",
+            email: "$applicant.email",
+            resume: "$applicant.resume",
+            avatar: "$applicant.avatar",
+            skills: "$applicant.skills",
+            major: "$applicant.major"
+          },
+          matchScore: 1,
+          matchReason: 1
+        }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+
     res.status(StatusCodes.OK).json(apps);
   } catch (error) { next(error); }
 };

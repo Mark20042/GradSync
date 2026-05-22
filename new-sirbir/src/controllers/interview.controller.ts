@@ -5,13 +5,13 @@ import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import Interview from "@/models/Interview.model.js";
 import InterviewRole from "@/models/InterviewRole.model.js";
 import { getOllamaService } from "@/services/ai/ollama.service.js";
-import { sendInterviewResultEmail } from "@/utils/email.service.js";
+import { sendInterviewResultEmail, sendAssessmentRejectionEmail } from "@/utils/email.service.js";
 import { interviewGraph } from "@/services/ai/workflows/interview-agent.workflow.js";
 import { HumanMessage } from "@langchain/core/messages";
 
 const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { roleName, answers } = req.body;
+    const { roleName, answers, violations } = req.body;
     const candidateId = req.user._id;
     const userEmail = req.user.email;
     const userName = req.user.fullName;
@@ -22,15 +22,62 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
     const idealMap: Record<string, string> = {};
     roleQuestions.forEach((q) => { idealMap[String(q._id)] = q.idealAnswer || ""; });
 
+    // Evaluate integrity violations
+    const violationCounts: Record<string, number> = { "tab-switch": 0, "copy-paste": 0, "window-blur": 0, "right-click": 0, devtools: 0 };
+    if (Array.isArray(violations)) {
+      violations.forEach((v: any) => {
+        if (violationCounts[v.type] !== undefined) violationCounts[v.type]++;
+      });
+    }
+
+    let isFailed = false;
+    let rejectionReason = "";
+
+    const maxTabSwitches = role?.maxTabSwitches ?? 3;
+    const maxCopyPastes = role?.maxCopyPastes ?? 3;
+    const maxWindowBlurs = role?.maxWindowBlurs ?? 3;
+    const maxRightClicks = role?.maxRightClicks ?? 3;
+    const maxDevTools = role?.maxDevTools ?? 1;
+
+    if (violationCounts["tab-switch"] > maxTabSwitches) {
+      isFailed = true; rejectionReason = `Multiple tab-switching violations detected.`;
+    } else if (violationCounts["copy-paste"] > maxCopyPastes) {
+      isFailed = true; rejectionReason = `Multiple copy-paste violations detected.`;
+    } else if (violationCounts["window-blur"] > maxWindowBlurs) {
+      isFailed = true; rejectionReason = `Multiple window blur violations detected.`;
+    } else if (violationCounts["right-click"] > maxRightClicks) {
+      isFailed = true; rejectionReason = `Multiple right-click violations detected.`;
+    } else if (violationCounts["devtools"] > maxDevTools) {
+      isFailed = true; rejectionReason = `Unauthorized use of developer tools detected.`;
+    }
+
+    const initialStatus = isFailed ? "failed" : "pending";
+
     const interview = await Interview.findOneAndUpdate(
       { candidateId, roleName: roleName || "General" },
-      { $set: { status: "pending", answers: answers.map((a: any) => ({
-          questionId: a.questionId || null, questionText: a.questionText,
-          candidateAnswer: a.candidateAnswer, idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || ""
-        }))
-      }},
+      { $set: { 
+          status: initialStatus, 
+          violations: violations || [],
+          violationCount: Array.isArray(violations) ? violations.length : 0,
+          rejectionReason,
+          answers: answers.map((a: any) => ({
+            questionId: a.questionId || null, questionText: a.questionText,
+            candidateAnswer: a.candidateAnswer, idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || ""
+          }))
+        }
+      },
       { new: true, upsert: true }
     );
+
+    if (isFailed) {
+      await sendAssessmentRejectionEmail(userEmail, userName, `Interview - ${roleName || "General"}`, rejectionReason);
+      res.status(StatusCodes.OK).json({
+        message: "Interview submitted.",
+        status: "rejected",
+        interviewId: interview._id
+      });
+      return;
+    }
 
     res.status(StatusCodes.ACCEPTED).json({
       message: "Interview submitted. Analyzing in background. You will receive an email once complete.",

@@ -33,6 +33,7 @@ import RulesStep from "./components/RulesStep";
 import AgreementStep from "./components/AgreementStep";
 import CameraSetupStep from "./components/CameraSetupStep";
 import SuccessScreen from "./components/SuccessScreen";
+import { showIntegrityWarningToast } from "../../utils/toastUtils";
 
 const InterviewRoom = () => {
   const navigate = useNavigate();
@@ -59,6 +60,9 @@ const InterviewRoom = () => {
   const [setupStep, setSetupStep] = useState(1); // 1=Rules, 2=Agreement, 3=Camera Setup
   const [hasAgreed, setHasAgreed] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Integrity tracking
+  const [violations, setViolations] = useState([]);
 
   const videoRef = useRef(null);
   const previewRef = useRef(null);
@@ -123,6 +127,80 @@ const InterviewRoom = () => {
 
     return recognition;
   }, []); // Dependencies empty because we use Refs for changing values
+
+  // Integrity listeners
+  const recordViolation = useCallback((type) => {
+    if (isSubmitted) return;
+    
+    setViolations((prev) => {
+      const newViolation = {
+        type,
+        timestamp: new Date().toISOString(),
+        questionIndex: currentQIndex,
+      };
+      return [...prev, newViolation];
+    });
+
+    showIntegrityWarningToast();
+  }, [isSubmitted, currentQIndex]);
+
+  useEffect(() => {
+    if (!hasStarted || isSubmitted) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        recordViolation("tab-switch");
+      }
+    };
+
+    const handleBlur = () => {
+      recordViolation("window-blur");
+    };
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      recordViolation("right-click");
+    };
+
+    const handleCopy = (e) => {
+      e.preventDefault();
+      recordViolation("copy-paste");
+    };
+
+    const handlePaste = (e) => {
+      e.preventDefault();
+      recordViolation("copy-paste");
+    };
+
+    const handleKeyDown = (e) => {
+      if (
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "i")) ||
+        (e.ctrlKey && e.shiftKey && (e.key === "J" || e.key === "j")) ||
+        (e.ctrlKey && e.shiftKey && (e.key === "C" || e.key === "c")) ||
+        (e.ctrlKey && (e.key === "U" || e.key === "u")) ||
+        e.key === "F12"
+      ) {
+        e.preventDefault();
+        recordViolation("devtools");
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("copy", handleCopy);
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleBlur);
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("copy", handleCopy);
+      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [hasStarted, isSubmitted, recordViolation]);
 
   // Start listening
   const startListening = useCallback(() => {
@@ -261,7 +339,10 @@ const InterviewRoom = () => {
       setHasStarted(true);
 
       setTimeout(() => {
-        const greeting = `Good day! I am your interviewer for today. We will be conducting a mock interview for the ${jobRole || "General"} position. Let's begin with the first question.`;
+        const firstCategory = shuffled[0].category && shuffled[0].category !== 'General' 
+          ? ` Let's begin with a ${shuffled[0].category} question.` 
+          : " Let's begin with the first question.";
+        const greeting = `Good day! I am your interviewer for today. We will be conducting a mock interview for the ${jobRole || "General"} position.${firstCategory}`;
         askQuestion(greeting, () => {
           setTimeout(() => {
             askQuestion(shuffled[0].question);
@@ -365,7 +446,10 @@ const InterviewRoom = () => {
       setCurrentTranscript("");
       transcriptAccumulatorRef.current = "";
       setTimeout(() => {
-        askQuestion(questions[nextIdx].question);
+        const nextCategory = questions[nextIdx].category && questions[nextIdx].category !== 'General'
+          ? `Moving on to a ${questions[nextIdx].category} question: `
+          : "Next question: ";
+        askQuestion(`${nextCategory}${questions[nextIdx].question}`);
       }, 500);
     } else {
       handleEndInterview();
@@ -399,12 +483,18 @@ const InterviewRoom = () => {
     setIsEvaluating(true);
 
     try {
-      await axiosInstance.post(API_PATH.INTERVIEW.EVALUATE, {
+      const res = await axiosInstance.post(API_PATH.INTERVIEW.EVALUATE, {
         roleName: jobRole || questions[0]?.jobRole || "General",
         answers: finalAnswers,
+        violations: violations,
       });
 
-      toast.success("Interview submitted successfully!");
+      if (res.data?.status === "rejected") {
+        toast.error("Interview failed due to integrity violations.");
+      } else {
+        toast.success("Interview submitted successfully!");
+      }
+      
       setIsSubmitted(true);
       setIsEvaluating(false);
 
@@ -475,8 +565,15 @@ const InterviewRoom = () => {
           {/* AI Interviewer Box */}
           <div className="flex-1 bg-white overflow-hidden relative border-r border-slate-200 flex flex-col items-center justify-center">
             <div className="absolute top-6 left-6 right-6 bg-white/95 backdrop-blur-xl p-6 rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] z-10 transition-all duration-500 translate-y-0 opacity-100">
-              <div className="inline-block bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full mb-3 uppercase tracking-wider">
-                Question {currentQIndex + 1} of {questions.length}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="inline-block bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider">
+                  Question {currentQIndex + 1} of {questions.length}
+                </div>
+                {currentQuestion?.category && (
+                  <div className="inline-block bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider">
+                    {currentQuestion.category}
+                  </div>
+                )}
               </div>
               <h2 className="text-2xl font-semibold leading-relaxed text-slate-900 m-0">
                 "{currentQuestion?.question}"

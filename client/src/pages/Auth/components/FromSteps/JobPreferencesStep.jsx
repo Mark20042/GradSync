@@ -4,6 +4,7 @@ import { FileText, Sparkles } from "lucide-react";
 import axiosInstance from "../../../../utils/axiosInstance";
 import { API_PATH } from "../../../../utils/apiPath";
 import toast from "react-hot-toast";
+import LocationDetectInput from "../../../../components/Input/LocationDetectInput";
 
 const JobPreferencesStep = ({ formData, setFormData }) => {
   const handleJobPreferenceChange = (e) => {
@@ -65,19 +66,7 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Preferred Location
-          </label>
-          <input
-            type="text"
-            name="preferredLocation"
-            value={formData.jobPreferences.preferredLocation}
-            onChange={handleJobPreferenceChange}
-            placeholder="e.g. Cebu City or Remote"
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

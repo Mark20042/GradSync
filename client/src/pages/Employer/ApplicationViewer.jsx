@@ -48,42 +48,9 @@ const ApplicationViewer = () => {
     else navigate("/manage-jobs");
   }, [jobId, navigate]);
 
-  // Group and Score applications by job
   const groupedApplications = useMemo(() => {
-    const scoredApps = applications.map(app => {
-      let score = 0;
-      const reasons = [];
-
-      if (app.job && app.applicant) {
-        const jobSkills = app.job.skills?.map(s => s.toLowerCase()) || [];
-        const jobReq = app.job.requirements?.toLowerCase() || "";
-        const userSkills = app.applicant.skills?.map(s => s.toLowerCase()) || [];
-
-        let skillMatch = 0;
-        jobSkills.forEach(s => { if (userSkills.includes(s)) { score++; skillMatch++; } });
-        userSkills.forEach(us => { if (!jobSkills.includes(us) && jobReq.includes(us)) { score++; skillMatch++; } });
-
-        if (skillMatch > 0) reasons.push(`${skillMatch} matching skills`);
-
-        const desiredTitle = app.applicant.major?.toLowerCase() || "";
-        if (desiredTitle && app.job.title?.toLowerCase().includes(desiredTitle)) {
-          score += 2;
-          reasons.push("Matches Major");
-        }
-      }
-
-      return {
-        ...app,
-        matchScore: score,
-        matchReason: reasons.length > 0 ? reasons.join(", ") : "General Match"
-      };
-    });
-
-    // We don't sort here anymore, we just return the raw scored apps. 
-    // RankedCandidates component will sort them.
-    scoredApps.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    const filtered = scoredApps.filter((app) => app.job && app.job.title);
+    // Backend now provides matchScore and matchReason via aggregation
+    const filtered = applications.filter((app) => app.job && app.job.title);
 
     return filtered.reduce((acc, app) => {
       const jobId = app.job._id;
