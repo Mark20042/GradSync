@@ -52,13 +52,94 @@
 ## 🏗️ System Architecture
 
 ```mermaid
-graph TD
-    User((User)) -->|HTTPS/WS| FE[Client - React/Vite]
-    FE -->|REST API| BE[Server - Express/TypeScript]
-    BE -->|Query| DB[(MongoDB)]
-    BE -->|Evaluation| AI[Ollama AI Service]
-    BE -->|Document Scan| OCR[OCR Engine - Tesseract]
-    FE -->|Native Speech| Browser[Web Speech API]
+flowchart TD
+
+subgraph group_client["React client"]
+node_landing["Landing page<br/>public UI<br/>[LandingPage.jsx]"]
+node_auth["Auth flows<br/>auth UI<br/>[Login.jsx]"]
+node_jobseeker["Job seeker<br/>role UI"]
+node_employer["Employer<br/>role UI"]
+node_admin["Admin<br/>role UI<br/>[AdminDashboard.jsx]"]
+node_assessment_ui["Assessments<br/>workflow UI"]
+node_interview_ui["Interviews<br/>workflow UI<br/>[InterviewRoom.jsx]"]
+node_shared_ui["Shared UI<br/>components"]
+node_client_state(("Auth state<br/>context/routes<br/>[AuthContext.jsx]"))
+end
+
+subgraph group_server["Express API"]
+node_api_routes["HTTP routes<br/>express routes"]
+node_controllers["Controllers<br/>use-cases"]
+node_models[("Mongo models<br/>persistence")]
+node_middlewares["Middleware<br/>policy/ingress"]
+node_services["Services<br/>integrations"]
+end
+
+subgraph group_shared["Cross-cutting"]
+node_ai_workflow{{"AI workflow<br/>ai orchestration"}}
+node_ocr{{"OCR service<br/>document extraction<br/>[ocr.service.ts]"}}
+node_realtime(("Socket channel<br/>realtime<br/>[socket.service.ts]"))
+node_storage{{"File storage<br/>media service"}}
+node_email{{"Email delivery<br/>notifications<br/>[email.service.ts]"}}
+node_db[("MongoDB<br/>database<br/>[db.ts]")]
+end
+
+node_landing -->|"guest access"| node_client_state
+node_auth -->|"login/session"| node_client_state
+node_jobseeker -->|"protected routes"| node_client_state
+node_employer -->|"protected routes"| node_client_state
+node_admin -->|"admin guard"| node_client_state
+node_assessment_ui -->|"authenticated access"| node_client_state
+node_interview_ui -->|"session access"| node_client_state
+node_jobseeker -->|"renders"| node_shared_ui
+node_employer -->|"renders"| node_shared_ui
+node_admin -->|"renders"| node_shared_ui
+node_api_routes -->|"guarded by"| node_middlewares
+node_api_routes -->|"dispatches to"| node_controllers
+node_controllers -->|"reads/writes"| node_models
+node_controllers -->|"orchestrates"| node_services
+node_controllers -->|"sends"| node_email
+node_controllers -->|"publishes"| node_realtime
+node_controllers -->|"uploads"| node_storage
+node_services -->|"runs"| node_ai_workflow
+node_services -->|"extracts text"| node_ocr
+node_models -->|"persists in"| node_db
+node_jobseeker -->|"fetches data"| node_api_routes
+node_employer -->|"manages hiring"| node_api_routes
+node_admin -->|"admin ops"| node_api_routes
+node_assessment_ui -->|"assessment APIs"| node_api_routes
+node_interview_ui -->|"session APIs"| node_api_routes
+
+click node_landing "https://github.com/mark20042/gradsync/blob/main/client/src/pages/LandingPage/LandingPage.jsx"
+click node_auth "https://github.com/mark20042/gradsync/blob/main/client/src/pages/Auth/Login.jsx"
+click node_jobseeker "https://github.com/mark20042/gradsync/blob/main/client/src/pages/JobSeeker/JobSeekerDashboard.jsx"
+click node_employer "https://github.com/mark20042/gradsync/blob/main/client/src/pages/Employer/EmployerDashboard.jsx"
+click node_admin "https://github.com/mark20042/gradsync/blob/main/client/src/pages/Admin/AdminDashboard.jsx"
+click node_assessment_ui "https://github.com/mark20042/gradsync/blob/main/client/src/pages/Assessment/AssessmentTaking.jsx"
+click node_interview_ui "https://github.com/mark20042/gradsync/blob/main/client/src/pages/Interview/InterviewRoom.jsx"
+click node_shared_ui "https://github.com/mark20042/gradsync/tree/main/client/src/components"
+click node_client_state "https://github.com/mark20042/gradsync/blob/main/client/src/context/AuthContext.jsx"
+click node_api_routes "https://github.com/mark20042/gradsync/tree/main/new-sirbir/src/routes"
+click node_controllers "https://github.com/mark20042/gradsync/tree/main/new-sirbir/src/controllers"
+click node_models "https://github.com/mark20042/gradsync/tree/main/new-sirbir/src/models"
+click node_middlewares "https://github.com/mark20042/gradsync/tree/main/new-sirbir/src/middlewares"
+click node_services "https://github.com/mark20042/gradsync/tree/main/new-sirbir/src/services"
+click node_ai_workflow "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/services/ai/workflows/interview-agent.workflow.ts"
+click node_ocr "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/utils/ocr.service.ts"
+click node_realtime "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/services/socket.service.ts"
+click node_storage "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/services/cloudinary.service.ts"
+click node_email "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/utils/email.service.ts"
+click node_db "https://github.com/mark20042/gradsync/blob/main/new-sirbir/src/config/db.ts"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_landing,node_auth,node_jobseeker,node_employer,node_admin,node_assessment_ui,node_interview_ui,node_shared_ui,node_client_state toneBlue
+class node_api_routes,node_controllers,node_models,node_middlewares,node_services toneAmber
+class node_ai_workflow,node_ocr,node_realtime,node_storage,node_email,node_db toneMint
 ```
 
 ---
