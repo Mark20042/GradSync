@@ -6,13 +6,16 @@ import {
   MessageCircle,
   Sparkles,
   Briefcase,
-  DollarSign,
+  PhilippinePeso,
   Calendar,
   CheckCircle,
   Bookmark,
   Archive,
   Share2,
-  Gift
+  Gift,
+  Award,
+  Star,
+  Globe
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
@@ -25,6 +28,7 @@ import moment from "moment";
 import StatusBadge from "../../components/StatusBadge";
 import toast from "react-hot-toast";
 import JobDetailsSkeleton from "./components/skeletons/JobDetailsSkeleton";
+import FormattedText from "../../components/FormattedText";
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -287,7 +291,7 @@ const JobDetails = () => {
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:border-blue-200 transition-colors group">
                 <div className="p-3 bg-green-50 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
-                  <DollarSign className="w-6 h-6" />
+                  <PhilippinePeso className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Salary</p>
@@ -328,9 +332,7 @@ const JobDetails = () => {
                 </div>
                 Job Description
               </h2>
-              <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                {jobDetails.description}
-              </div>
+              <FormattedText text={jobDetails.description} className="text-base" />
             </section>
 
             {/* Requirements */}
@@ -341,10 +343,40 @@ const JobDetails = () => {
                 </div>
                 Requirements
               </h2>
-              <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                {jobDetails.requirements}
-              </div>
+              <FormattedText text={jobDetails.requirements} className="text-base" />
             </section>
+
+            {/* Qualifications */}
+            {jobDetails.qualifications && (
+              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  Qualifications
+                </h2>
+                <FormattedText text={jobDetails.qualifications} className="text-base" />
+              </section>
+            )}
+
+            {/* Skills */}
+            {jobDetails.skills && jobDetails.skills.length > 0 && (
+              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
+                    <Star className="w-5 h-5" />
+                  </div>
+                  Skills Required
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {jobDetails.skills.map((skill, index) => (
+                    <span key={index} className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl text-sm hover:border-gray-300 hover:shadow-sm transition-all">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Benefits */}
             {jobDetails.benefits && (
@@ -355,9 +387,7 @@ const JobDetails = () => {
                   </div>
                   Company Benefits
                 </h2>
-                <div className="prose prose-gray max-w-none text-gray-600 leading-relaxed whitespace-pre-line">
-                  {jobDetails.benefits}
-                </div>
+                <FormattedText text={jobDetails.benefits} className="text-base" />
               </section>
             )}
           </div>
@@ -415,6 +445,28 @@ const JobDetails = () => {
                   </p>
                 </div>
               </div>
+              
+              {jobDetails?.company?.companyDescription && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-sm text-gray-600 whitespace-pre-line">
+                    {jobDetails.company.companyDescription}
+                  </p>
+                </div>
+              )}
+
+              {jobDetails?.company?.website && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <a 
+                    href={jobDetails.company.website.startsWith('http') ? jobDetails.company.website : `https://${jobDetails.company.website}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium"
+                  >
+                    <Globe className="w-4 h-4" />
+                    Visit Website
+                  </a>
+                </div>
+              )}
               {/* Note: Actions moved to Hero for better visibility */}
             </div>
           </div>

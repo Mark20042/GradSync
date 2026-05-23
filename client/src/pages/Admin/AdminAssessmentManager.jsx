@@ -52,6 +52,7 @@ const AdminAssessmentManager = () => {
     options: ["", "", "", ""],
     correctAnswer: "",
     explanation: "",
+    category: "Technical",
   });
 
   useEffect(() => {
@@ -195,6 +196,7 @@ const AdminAssessmentManager = () => {
         options: ["", "", "", ""],
         correctAnswer: "",
         explanation: "",
+        category: "Technical",
       });
       setIsQuestionModalOpen(false);
       fetchAssessments();
@@ -261,6 +263,7 @@ const AdminAssessmentManager = () => {
           options: validOptions,
           correctAnswer: editingQuestion.correctAnswer,
           explanation: editingQuestion.explanation || "",
+          category: editingQuestion.category || "General",
         },
       );
       toast.success("Question updated successfully!");
@@ -705,6 +708,19 @@ const AdminAssessmentManager = () => {
                 <option value="identification">Identification (Type the answer)</option>
               </select>
 
+              <label className="block font-semibold text-gray-700 mb-2">Category</label>
+              <select
+                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                value={newQuestion.category || "Technical"}
+                onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
+              >
+                <option value="Technical">Technical</option>
+                <option value="Behavioral">Behavioral</option>
+                <option value="Communication">Communication</option>
+                <option value="General">General</option>
+                <option value="Logical">Logical</option>
+              </select>
+
               <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>
               <textarea
                 rows={3}
@@ -840,6 +856,19 @@ const AdminAssessmentManager = () => {
                 <option value="multiple-choice">Multiple Choice</option>
                 <option value="true-false">True / False</option>
                 <option value="identification">Identification (Type the answer)</option>
+              </select>
+
+              <label className="block font-semibold text-gray-700 mb-2">Category</label>
+              <select
+                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
+                value={editingQuestion.category || "Technical"}
+                onChange={(e) => setEditingQuestion({ ...editingQuestion, category: e.target.value })}
+              >
+                <option value="Technical">Technical</option>
+                <option value="Behavioral">Behavioral</option>
+                <option value="Communication">Communication</option>
+                <option value="General">General</option>
+                <option value="Logical">Logical</option>
               </select>
 
               <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>

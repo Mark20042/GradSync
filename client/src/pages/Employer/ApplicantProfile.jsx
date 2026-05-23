@@ -28,6 +28,7 @@ const ApplicantProfile = () => {
   const [interviewScores, setInterviewScores] = useState([]);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [selectedSkill, setSelectedSkill] = useState(null);
+  const [assessmentSubmissions, setAssessmentSubmissions] = useState([]);
 
   const fetchApplicant = async () => {
     try {
@@ -60,8 +61,34 @@ const ApplicantProfile = () => {
         console.error("Error fetching interview scores:", error);
       }
     };
+
+    const fetchAssessmentSubmissions = async () => {
+      if (!applicant?.applicant?._id) return;
+      try {
+        const res = await axiosInstance.get(`/api/assessments/submissions/user/${applicant.applicant._id}`);
+        setAssessmentSubmissions(res.data || []);
+      } catch (error) {
+        console.error("Error fetching assessment submissions:", error);
+      }
+    };
+
     fetchInterviewScores();
+    fetchAssessmentSubmissions();
   }, [applicant]);
+
+  // Helper to get submission details for selected skill
+  const getSelectedSkillDetails = () => {
+    if (!selectedSkill) return null;
+    const submission = assessmentSubmissions.find(s => s.assessment?.skill === selectedSkill.skill);
+    return {
+      ...selectedSkill,
+      categoryScores: selectedSkill.categoryScores && Object.keys(selectedSkill.categoryScores).length > 0 
+        ? selectedSkill.categoryScores 
+        : submission?.categoryScores,
+      categoryInterpretation: selectedSkill.categoryInterpretation || submission?.categoryInterpretation
+    };
+  };
+  const activeSkillDetails = getSelectedSkillDetails();
 
   return (
     <DashboardLayout activeMenu="messages">
@@ -717,6 +744,32 @@ const ApplicantProfile = () => {
                       </p>
                     </div>
 
+                    {/* Category Performance */}
+                    {selectedInterview.aiFeedback?.categoryScores && Object.keys(selectedInterview.aiFeedback.categoryScores).length > 0 && (
+                      <div className="mb-6 bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border border-indigo-100 shadow-sm">
+                        <h4 className="text-sm font-bold text-indigo-900 mb-3 uppercase tracking-wider flex items-center gap-2">
+                          <Award className="w-4 h-4" />
+                          Category Performance
+                        </h4>
+                        <div className="flex flex-wrap gap-3 mb-4">
+                          {Object.entries(selectedInterview.aiFeedback.categoryScores).map(([cat, score]) => (
+                            <div key={cat} className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-2 text-sm">
+                              <span className="font-semibold text-indigo-900">{cat}</span>
+                              <div className="w-px h-3 bg-indigo-100"></div>
+                              <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                {score}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {selectedInterview.aiFeedback?.categoryInterpretation && (
+                          <p className="text-sm text-indigo-800 font-medium italic">
+                            💡 "{selectedInterview.aiFeedback.categoryInterpretation}"
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     <div>
                       <h4 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider pl-1">
                         Q&amp;A Breakdown (
@@ -739,9 +792,16 @@ const ApplicantProfile = () => {
                               className={`bg-white rounded-xl p-4 border ${ansColor} shadow-sm transition-all hover:shadow-md`}
                             >
                               <div className="flex justify-between items-start mb-3 gap-3">
-                                <p className="text-sm font-semibold text-gray-800 leading-snug flex-1">
-                                  Q{idx + 1}: {answer.questionText}
-                                </p>
+                                <div className="flex-1">
+                                  <p className="text-sm font-semibold text-gray-800 leading-snug">
+                                    Q{idx + 1}: {answer.questionText}
+                                  </p>
+                                  {answer.category && (
+                                    <span className="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wide">
+                                      {answer.category}
+                                    </span>
+                                  )}
+                                </div>
                                 <span
                                   className={`text-xs font-bold px-2 py-1 rounded ${ansColor.replace("border-", "border").replace(" shadow-sm transition-all hover:shadow-md", "")} flex-shrink-0`}
                                 >
@@ -782,7 +842,7 @@ const ApplicantProfile = () => {
       {/* Skill Details Modal */}
       {selectedSkill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelectedSkill(null)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-blue-600" />
@@ -804,15 +864,41 @@ const ApplicantProfile = () => {
                 <p className="text-gray-900 font-medium">{selectedSkill.level}</p>
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Interpretation</p>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {selectedSkill.level === "Entry" && "Demonstrates fundamental knowledge and basic understanding of core concepts."}
-                  {selectedSkill.level === "Mid" && "Shows practical experience, capable of applying knowledge to solve standard problems independently."}
-                  {selectedSkill.level === "Senior" && "Exhibits advanced expertise, capable of designing solutions and guiding others."}
-                  {selectedSkill.level === "Expert" && "Demonstrates mastery, deep subject matter expertise, and thought leadership in this area."}
-                </p>
-              </div>
+              {activeSkillDetails?.categoryScores && Object.keys(activeSkillDetails.categoryScores).length > 0 ? (
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border border-indigo-100 shadow-sm mt-4">
+                  <h4 className="text-sm font-bold text-indigo-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    Category Performance
+                  </h4>
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    {Object.entries(activeSkillDetails.categoryScores).map(([cat, score]) => (
+                      <div key={cat} className="bg-white px-3 py-2 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-3 text-sm flex-1 min-w-[140px] justify-between">
+                        <span className="font-semibold text-indigo-900">{cat}</span>
+                        <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {score}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {activeSkillDetails.categoryInterpretation && (
+                    <div className="bg-white/60 p-3 rounded-lg border border-indigo-50">
+                      <p className="text-sm text-indigo-800 font-medium leading-relaxed">
+                        💡 {activeSkillDetails.categoryInterpretation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Interpretation</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {selectedSkill.level === "Entry" && "Demonstrates fundamental knowledge and basic understanding of core concepts."}
+                    {selectedSkill.level === "Mid" && "Shows practical experience, capable of applying knowledge to solve standard problems independently."}
+                    {selectedSkill.level === "Senior" && "Exhibits advanced expertise, capable of designing solutions and guiding others."}
+                    {selectedSkill.level === "Expert" && "Demonstrates mastery, deep subject matter expertise, and thought leadership in this area."}
+                  </p>
+                </div>
+              )}
               
               {selectedSkill.assessmentTitle && (
                 <div>

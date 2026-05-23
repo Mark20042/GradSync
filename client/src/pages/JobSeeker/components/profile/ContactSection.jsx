@@ -21,6 +21,55 @@ const ContactSection = ({ user, editing, editData, handleEditChange }) => {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-5">
+          {editing && (
+            <>
+              <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <User className="w-5 h-5 text-gray-500 mt-1" />
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={editData.firstName || ""}
+                    onChange={handleEditChange}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <User className="w-5 h-5 text-gray-500 mt-1" />
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-1">
+                    Middle Name
+                  </label>
+                  <input
+                    type="text"
+                    name="middleName"
+                    value={editData.middleName || ""}
+                    onChange={handleEditChange}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <User className="w-5 h-5 text-gray-500 mt-1" />
+                <div className="flex-1">
+                  <label className="text-xs text-gray-500 uppercase tracking-wide font-semibold block mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={editData.lastName || ""}
+                    onChange={handleEditChange}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </>
+          )}
           <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
             <Mail className="w-5 h-5 text-blue-500 mt-1" />
             <div className="flex-1">

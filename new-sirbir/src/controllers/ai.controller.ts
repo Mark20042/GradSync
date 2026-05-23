@@ -38,7 +38,7 @@ export const checkSuitability = async (
     }
 
     // 2. Fetch Job Details
-    const job = await Job.findById(jobId).select('title description requirements');
+    const job = await Job.findById(jobId).select('title description requirements qualifications skills');
     if (!job) {
       res.status(404).json({ message: 'Job not found' });
       return;
@@ -220,7 +220,7 @@ export const checkCandidateSuitability = async (
     }
 
     // 2. Fetch Job Details
-    const job = await Job.findById(jobId).select('title description requirements');
+    const job = await Job.findById(jobId).select('title description requirements qualifications skills');
     if (!job) {
       res.status(404).json({ message: 'Job not found' });
       return;
@@ -262,7 +262,7 @@ export const askMentor = async (
     let jobContext = '';
     if (referenceJobId) {
       const job = await Job.findById(referenceJobId).select(
-        'title description requirements skills company'
+        'title description requirements qualifications skills company'
       );
       if (job) {
         const companyObj = job.company as { companyName?: string } | undefined;
@@ -272,6 +272,7 @@ export const askMentor = async (
         Company: ${companyObj?.companyName ?? 'Unknown'}
         Description: ${job.description}
         Requirements: ${job.requirements}
+        Qualifications: ${job.qualifications || 'N/A'}
         Required Skills: ${job.skills?.join(', ') ?? 'N/A'}
         `;
       }

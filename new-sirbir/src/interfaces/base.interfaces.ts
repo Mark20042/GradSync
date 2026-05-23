@@ -73,6 +73,9 @@ export interface ILanguage {
 /** Core User document interface (mirrors Mongoose schema) */
 export interface IUser extends Document {
   _id: Types.ObjectId;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   fullName: string;
   email: string;
   password: string;
@@ -145,6 +148,7 @@ export interface IJob extends Document {
   title: string;
   description: string;
   requirements: string;
+  qualifications?: string;
   benefits?: string;
   company: Types.ObjectId | { companyName?: string };
   location?: string;

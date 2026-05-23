@@ -16,6 +16,8 @@ const jobSchema = new Schema<IJob>(
       type: String,
       required: [true, "Job requirements are required"],
     },
+    qualifications: String,
+    skills: [String],
     benefits: String,
     company: {
       type: Schema.Types.ObjectId,

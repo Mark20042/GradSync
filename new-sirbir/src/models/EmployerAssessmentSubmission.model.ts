@@ -22,6 +22,8 @@ export interface IEmployerAssessmentSubmission extends Document {
   violationCount: number;
   timeSpent: number;
   forcedSubmission: boolean;
+  categoryScores?: Record<string, number>;
+  categoryInterpretation?: string;
   status: "under-review" | "approved" | "rejected" | "released";
   reviewedAt?: Date | null;
   rejectionReason?: string | null;
@@ -56,6 +58,8 @@ const employerAssessmentSubmissionSchema = new Schema<IEmployerAssessmentSubmiss
     violationCount: { type: Number, default: 0 },
     timeSpent: { type: Number, default: 0 },
     forcedSubmission: { type: Boolean, default: false },
+    categoryScores: { type: Map, of: Number, default: {} },
+    categoryInterpretation: { type: String, default: '' },
     status: {
       type: String,
       enum: ["under-review", "approved", "rejected", "released"],

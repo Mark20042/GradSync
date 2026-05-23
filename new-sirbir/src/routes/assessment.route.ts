@@ -11,6 +11,8 @@ router.get("/", authenticationMiddleware, ctrl.getAll);
 router.get("/detail/:id", authenticationMiddleware, ctrl.getDetail);
 router.post("/", authenticationMiddleware, ctrl.create);
 router.post("/submit", authenticationMiddleware, ctrl.submit as any);
+router.get("/submissions/me", authenticationMiddleware, ctrl.getMySubmissions as any);
+router.get("/submissions/user/:userId", authenticationMiddleware, ctrl.getSubmissionsByUser as any);
 router.get(
   "/submissions/review",
   authenticationMiddleware,

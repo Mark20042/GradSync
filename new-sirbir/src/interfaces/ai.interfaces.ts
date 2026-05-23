@@ -44,6 +44,7 @@ export interface JobDetailsForAI {
   title: string;
   description: string;
   requirements: string;
+  qualifications?: string;
   skills?: string[];
   company?: { companyName?: string } | Types.ObjectId;
 }

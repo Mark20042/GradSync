@@ -22,6 +22,8 @@ export interface IAssessmentSubmission extends Document {
   violationCount: number;
   timeSpent: number;
   forcedSubmission: boolean;
+  categoryScores?: Record<string, number>;
+  categoryInterpretation?: string;
   status: "approved" | "rejected";
   rejectionReason?: string | null;
   submittedAt?: Date;
@@ -55,6 +57,8 @@ const assessmentSubmissionSchema = new Schema<IAssessmentSubmission>(
     violationCount: { type: Number, default: 0 },
     timeSpent: { type: Number, default: 0 },
     forcedSubmission: { type: Boolean, default: false },
+    categoryScores: { type: Map, of: Number, default: {} },
+    categoryInterpretation: { type: String, default: '' },
     status: {
       type: String,
       enum: ["approved", "rejected"],

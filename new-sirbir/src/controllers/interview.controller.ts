@@ -119,31 +119,73 @@ const save = async (req: Request, res: Response, next: NextFunction) => {
   catch (error) { next(error); }
 };
 
+const patchCategories = async (interviews: any[]) => {
+  const roles = await InterviewRole.find({}).lean();
+  const roleMap: Record<string, any[]> = {};
+  roles.forEach(r => { roleMap[r.roleName] = r.questions; });
+
+  interviews.forEach(interview => {
+    const roleQuestions = roleMap[interview.roleName] || [];
+    interview.answers?.forEach((ans: any) => {
+      let cat = ans.category || "General";
+      if (!ans.category || ans.category === "General") {
+        if (String(ans.questionId).startsWith("intro_1")) cat = "Communication";
+        else if (String(ans.questionId).startsWith("intro_2")) cat = "General";
+        else if (String(ans.questionId).startsWith("intro_3")) cat = "Behavioral";
+        else {
+          const matchedQ = roleQuestions.find((rq: any) => String(rq._id) === String(ans.questionId));
+          if (matchedQ && matchedQ.category) cat = matchedQ.category;
+          else if (!ans.questionId) {
+              if (ans.questionText.includes("plan to handle the responsibilities")) cat = "Communication";
+              else if (ans.questionText.includes("specific skills or software")) cat = "General";
+              else if (ans.questionText.includes("stay organized and continuously improve")) cat = "Behavioral";
+          }
+        }
+        ans.category = cat;
+      }
+    });
+  });
+  return interviews;
+};
+
 const getUserInterviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try { res.status(StatusCodes.OK).json(await Interview.find({ candidateId: req.user.id }).sort({ createdAt: -1 })); }
+  try { 
+    const interviews = await Interview.find({ candidateId: req.user.id }).sort({ createdAt: -1 }).lean();
+    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+  }
   catch (error) { next(error); }
 };
 
 const getAllScores = async (_req: Request, res: Response, next: NextFunction) => {
-  try { res.status(StatusCodes.OK).json(await Interview.find({ status: "evaluated" }).populate("candidateId", "fullName email avatar degree").sort({ createdAt: -1 })); }
+  try { 
+    const interviews = await Interview.find({ status: "evaluated" }).populate("candidateId", "fullName email avatar degree").sort({ createdAt: -1 }).lean();
+    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+  }
   catch (error) { next(error); }
 };
 
 const getGraduateInterviews = async (req: Request, res: Response, next: NextFunction) => {
-  try { res.status(StatusCodes.OK).json(await Interview.find({ candidateId: req.params.userId, status: "evaluated" }).sort({ createdAt: -1 })); }
+  try { 
+    const interviews = await Interview.find({ candidateId: req.params.userId, status: "evaluated" }).sort({ createdAt: -1 }).lean();
+    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+  }
   catch (error) { next(error); }
 };
 
 const getInterviewAll = async (_req: Request, res: Response, next: NextFunction) => {
-  try { res.status(StatusCodes.OK).json(await Interview.find().populate("candidateId", "fullName email avatar").sort({ createdAt: -1 })); }
+  try { 
+    const interviews = await Interview.find().populate("candidateId", "fullName email avatar").sort({ createdAt: -1 }).lean();
+    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+  }
   catch (error) { next(error); }
 };
 
 const getById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const i = await Interview.findById(req.params.id).populate("candidateId", "fullName email avatar");
+    const i = await Interview.findById(req.params.id).populate("candidateId", "fullName email avatar").lean();
     if (!i) throw new NotFoundError("Interview not found");
-    res.status(StatusCodes.OK).json(i);
+    const patched = await patchCategories([i]);
+    res.status(StatusCodes.OK).json(patched[0]);
   } catch (error) { next(error); }
 };
 
@@ -179,17 +221,78 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
     const result: any = await interviewGraph.invoke({ messages: [new HumanMessage(message)] }, config);
     if (result.isFinished && result.evaluations && result.evaluations.length > 0) {
+      
+      const role = await InterviewRole.findOne({ roleName });
+      const roleQuestions = role ? role.questions : [];
+
       const evals = result.evaluations.map((e: any) => {
         const evalCopy = { ...e };
+        
+        let cat = "General";
+        if (evalCopy.questionId) {
+          if (String(evalCopy.questionId).startsWith("intro_1")) cat = "Communication";
+          else if (String(evalCopy.questionId).startsWith("intro_2")) cat = "General";
+          else if (String(evalCopy.questionId).startsWith("intro_3")) cat = "Behavioral";
+          else {
+            const matchedQ = roleQuestions.find((rq: any) => String(rq._id) === String(evalCopy.questionId));
+            if (matchedQ && matchedQ.category) cat = matchedQ.category;
+          }
+        }
+        evalCopy.category = cat;
+
         if (evalCopy.questionId && String(evalCopy.questionId).startsWith("intro")) delete evalCopy.questionId;
         return evalCopy;
       });
+
       const totalScore = evals.reduce((sum: number, ev: any) => sum + ev.score, 0);
       const avgScore = evals.length > 0 ? Math.round(totalScore / evals.length) : 0;
+      
+      const categoryTotals: Record<string, number> = {};
+      const categoryCounts: Record<string, number> = {};
+      evals.forEach((ev: any) => {
+         const c = ev.category || "General";
+         if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+         categoryTotals[c] += ev.score;
+         categoryCounts[c] += 1;
+      });
+      const categoryScores: Record<string, number> = {};
+      let highestCategory = { name: "", score: -1 };
+      let lowestCategory = { name: "", score: 101 };
+      Object.keys(categoryTotals).forEach(c => {
+         const avg = Math.round(categoryTotals[c] / categoryCounts[c]);
+         categoryScores[c] = avg;
+         if (avg > highestCategory.score) highestCategory = { name: c, score: avg };
+         if (avg < lowestCategory.score) lowestCategory = { name: c, score: avg };
+      });
+      
+      let categoryInterpretation = `The candidate showed a balanced performance across all evaluated areas.`;
+      if (highestCategory.name && lowestCategory.name && highestCategory.name !== lowestCategory.name) {
+         if (highestCategory.score >= 80 && lowestCategory.score < 60) {
+            categoryInterpretation = `The candidate excelled remarkably in ${highestCategory.name} but exhibited significant gaps in ${lowestCategory.name}.`;
+         } else if (highestCategory.score - lowestCategory.score >= 15) {
+            categoryInterpretation = `The candidate is strongest in ${highestCategory.name} but lacks slightly in ${lowestCategory.name}.`;
+         }
+      }
+
       const ollama = getOllamaService();
       const summaryRes = await ollama.evaluateFullInterview(roleName, evals.map((e: any) => ({ questionId: e.questionId, questionText: e.questionText, candidateAnswer: e.candidateAnswer, idealAnswer: e.idealAnswer })));
-      await Interview.create({ candidateId, roleName, status: "evaluated", answers: evals, aiScore: avgScore,
-        aiFeedback: { overallScore: avgScore, totalQuestions: evals.length, summary: summaryRes.summary, strengths: summaryRes.strengths, areasForImprovement: summaryRes.areasForImprovement } });
+      
+      await Interview.create({ 
+        candidateId, 
+        roleName, 
+        status: "evaluated", 
+        answers: evals, 
+        aiScore: avgScore,
+        aiFeedback: { 
+          overallScore: avgScore, 
+          totalQuestions: evals.length, 
+          summary: summaryRes.summary, 
+          strengths: summaryRes.strengths, 
+          areasForImprovement: summaryRes.areasForImprovement,
+          categoryScores,
+          categoryInterpretation
+        } 
+      });
       await sendInterviewResultEmail(req.user.email, req.user.fullName, roleName, avgScore, summaryRes.summary);
     }
     const lastMessage = result.messages[result.messages.length - 1];

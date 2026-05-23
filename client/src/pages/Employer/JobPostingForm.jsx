@@ -31,6 +31,8 @@ const JobPostingForm = () => {
     type: "",
     description: "",
     requirements: "",
+    qualifications: "",
+    skills: "",
     benefits: "",
     salaryMin: "",
     salaryMax: "",
@@ -71,6 +73,8 @@ const JobPostingForm = () => {
       type: formData.type,
       description: formData.description,
       requirements: formData.requirements,
+      qualifications: formData.qualifications,
+      skills: formData.skills ? formData.skills.split(",").map(s => s.trim()).filter(Boolean) : [],
       benefits: formData.benefits,
       salaryMin: formData.salaryMin,
       salaryMax: formData.salaryMax,
@@ -92,6 +96,8 @@ const JobPostingForm = () => {
           type: "",
           description: "",
           requirements: "",
+          qualifications: "",
+          skills: "",
           benefits: "",
           salaryMin: "",
           salaryMax: "",
@@ -133,6 +139,12 @@ const JobPostingForm = () => {
     if (!formData.requirements.trim()) {
       errors.requirements = "Requirements are required";
     }
+    if (!formData.qualifications?.trim()) {
+      errors.qualifications = "Qualifications are required";
+    }
+    if (!formData.skills?.trim()) {
+      errors.skills = "Skills are required";
+    }
 
     if (!formData.salaryMin || !formData.salaryMax) {
       errors.salary = "Both minimum and maximum salary are required";
@@ -165,6 +177,8 @@ const JobPostingForm = () => {
               type: jobData.type,
               description: jobData.description,
               requirements: jobData.requirements,
+              qualifications: jobData.qualifications || "",
+              skills: Array.isArray(jobData.skills) ? jobData.skills.join(", ") : (jobData.skills || ""),
               benefits: jobData.benefits || "",
               salaryMin: jobData.salaryMin,
               salaryMax: jobData.salaryMax,
@@ -298,18 +312,45 @@ const JobPostingForm = () => {
                 }
                 error={errors.description}
                 required
+                allowBullets={true}
               />
 
               {/* Requirements */}
               <TextAreaField
                 label="Requirements"
                 id="requirements"
-                placeholder="List key qualifications and skills..."
+                placeholder="e.g., Willing to work on weekends, minimum 3 years experience..."
                 value={formData.requirements}
                 onChange={(e) =>
                   handleInputChange("requirements", e.target.value)
                 }
                 error={errors.requirements}
+                required
+                allowBullets={true}
+              />
+
+              {/* Qualifications */}
+              <TextAreaField
+                label="Qualifications"
+                id="qualifications"
+                placeholder="e.g., Bachelor's Degree in Computer Science, Master's is a plus..."
+                value={formData.qualifications}
+                onChange={(e) =>
+                  handleInputChange("qualifications", e.target.value)
+                }
+                error={errors.qualifications}
+                required
+                allowBullets={true}
+              />
+
+              {/* Skills */}
+              <InputField
+                label="Skills"
+                id="skills"
+                placeholder="e.g., React, Node.js, Project Management (comma separated)"
+                value={formData.skills}
+                onChange={(e) => handleInputChange("skills", e.target.value)}
+                error={errors.skills}
                 required
               />
 
@@ -323,6 +364,7 @@ const JobPostingForm = () => {
                   handleInputChange("benefits", e.target.value)
                 }
                 error={errors.benefits}
+                allowBullets={true}
               />
 
               {/* Salary Range */}

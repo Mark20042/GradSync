@@ -62,6 +62,54 @@ const InterviewScoresSection = () => {
     return "Needs Work";
   };
 
+  const getDisplayCategoryScores = (interview) => {
+    if (!interview) return null;
+    if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
+      return interview.aiFeedback.categoryScores;
+    }
+    
+    // Fallback calculation for old interviews
+    if (!interview.answers || interview.answers.length === 0) return null;
+    
+    const categoryTotals = {};
+    const categoryCounts = {};
+    interview.answers.forEach(ans => {
+      const c = ans.category || 'General';
+      if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+      categoryTotals[c] += ans.score || 0;
+      categoryCounts[c] += 1;
+    });
+    
+    const calculated = {};
+    Object.keys(categoryTotals).forEach(c => {
+      calculated[c] = Math.round(categoryTotals[c] / categoryCounts[c]);
+    });
+    
+    return Object.keys(calculated).length > 0 ? calculated : null;
+  };
+
+  const getDisplayCategoryInterpretation = (interview, scores) => {
+    if (!interview || !scores) return null;
+    if (interview.aiFeedback?.categoryInterpretation) return interview.aiFeedback.categoryInterpretation;
+    
+    let highest = { name: "", score: -1 };
+    let lowest = { name: "", score: 101 };
+    
+    Object.entries(scores).forEach(([name, score]) => {
+      if (score > highest.score) highest = { name, score };
+      if (score < lowest.score) lowest = { name, score };
+    });
+    
+    if (highest.name && lowest.name && highest.name !== lowest.name) {
+      if (highest.score >= 80 && lowest.score < 60) {
+        return `The candidate excelled remarkably in ${highest.name} but exhibited significant gaps in ${lowest.name}.`;
+      } else if (highest.score - lowest.score >= 15) {
+        return `The candidate is strongest in ${highest.name} but lacks slightly in ${lowest.name}.`;
+      }
+    }
+    return `The candidate showed a balanced performance across all evaluated areas.`;
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -193,6 +241,25 @@ const InterviewScoresSection = () => {
                         {interview.aiFeedback.summary}
                       </p>
                     )}
+                    
+                    {getDisplayCategoryScores(interview) && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {Object.entries(getDisplayCategoryScores(interview)).map(([cat, score]) => (
+                            <div key={cat} className="flex items-center gap-1.5 bg-white border border-gray-100 shadow-sm rounded-lg px-2.5 py-1">
+                              <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{cat}</span>
+                              <span className={`text-xs font-extrabold ${getScoreColor(score)}`}>{score}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {getDisplayCategoryInterpretation(interview, getDisplayCategoryScores(interview)) && (
+                          <p className="text-xs text-indigo-700 bg-indigo-50 p-2.5 rounded-lg border border-indigo-100 font-medium leading-relaxed">
+                            💡 {getDisplayCategoryInterpretation(interview, getDisplayCategoryScores(interview))}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     <div className="space-y-3">
                       {interview.answers?.map((answer, idx) => (
                         <div key={idx} className="flex items-center gap-3">
@@ -201,6 +268,11 @@ const InterviewScoresSection = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-gray-700 truncate font-medium">
+                              {answer.category && (
+                                <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[9px] uppercase tracking-widest rounded mr-1.5 align-middle">
+                                  {answer.category}
+                                </span>
+                              )}
                               {answer.questionText}
                             </p>
                             <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1">

@@ -37,7 +37,14 @@ const updateProfile = async (
       if (pid) await deleteFromCloudinary(pid, "image");
     }
 
-    user.fullName = body.fullName || user.fullName;
+    if (body.firstName !== undefined || body.middleName !== undefined || body.lastName !== undefined) {
+      if (body.firstName !== undefined) user.firstName = body.firstName;
+      if (body.middleName !== undefined) user.middleName = body.middleName;
+      if (body.lastName !== undefined) user.lastName = body.lastName;
+      user.fullName = [user.firstName, user.middleName, user.lastName].filter(Boolean).join(" ");
+    } else if (body.fullName !== undefined) {
+      user.fullName = body.fullName;
+    }
     user.email = body.email || user.email;
     user.avatar = body.avatar || user.avatar;
     user.bio = body.bio !== undefined ? body.bio : user.bio;

@@ -36,7 +36,9 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     email: "",
     password: "",
     role: "",
@@ -108,7 +110,8 @@ const SignUp = () => {
 
   const validateForm = () => {
     let errors = {
-      fullName: !formData.fullName.trim() ? "Full Name is required." : "",
+      firstName: !formData.firstName.trim() ? "First Name is required." : "",
+      lastName: !formData.lastName.trim() ? "Last Name is required." : "",
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
       role: !formData.role ? "Please select a role." : "",
@@ -183,7 +186,9 @@ const SignUp = () => {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("firstName", formData.firstName);
+      formDataToSend.append("middleName", formData.middleName);
+      formDataToSend.append("lastName", formData.lastName);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("password", formData.password);
       formDataToSend.append("role", formData.role);
@@ -374,30 +379,76 @@ const SignUp = () => {
           >
             {/* Left Column */}
             <div className="space-y-4 sm:space-y-5">
-              {/* Full Name */}
+              {/* First Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name *
+                  First Name *
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     type="text"
-                    name="fullName"
-                    value={formData.fullName}
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleInputChange}
-                    placeholder="Enter your full name"
+                    placeholder="Enter your first name"
                     className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg border ${
-                      formState.error.fullName
+                      formState.error.firstName
                         ? "border-red-500"
                         : "border-gray-300"
                     } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
                   />
                 </div>
-                {formState.error.fullName && (
+                {formState.error.firstName && (
                   <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center">
                     <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    {formState.error.fullName}
+                    {formState.error.firstName}
+                  </p>
+                )}
+              </div>
+
+              {/* Middle Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Middle Name (Optional)
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <input
+                    type="text"
+                    name="middleName"
+                    value={formData.middleName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your middle name"
+                    className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
+                  />
+                </div>
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your last name"
+                    className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg border ${
+                      formState.error.lastName
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all`}
+                  />
+                </div>
+                {formState.error.lastName && (
+                  <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center">
+                    <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    {formState.error.lastName}
                   </p>
                 )}
               </div>

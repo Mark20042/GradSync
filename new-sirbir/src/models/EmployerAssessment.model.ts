@@ -9,6 +9,7 @@ export interface IEmployerAssessmentQuestion {
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  category?: string;
 }
 
 export interface IEmployerAssessment extends Document {
@@ -35,6 +36,7 @@ const questionSchema = new Schema({
   options: [{ type: String, required: true }],
   correctAnswer: { type: String, required: true },
   explanation: { type: String, default: '' },
+  category: { type: String, default: 'General' },
 });
 
 const employerAssessmentSchema = new Schema<IEmployerAssessment>(

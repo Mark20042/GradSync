@@ -143,20 +143,52 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
     }
 
     let correct = 0;
+    const categoryTotals: Record<string, number> = {};
+    const categoryCounts: Record<string, number> = {};
+
     assessment.questions.forEach((q: any) => {
+      const c = q.category || 'General';
+      if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+      categoryCounts[c] += 1;
+
       const ua = answers.find((a: any) => a.questionId === String(q._id));
       if (ua) {
+        let isCorrect = false;
         if (q.type === 'identification') {
-          if (ua.selectedOption.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) correct++;
+          if (ua.selectedOption.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()) isCorrect = true;
         } else {
-          if (ua.selectedOption.trim() === q.correctAnswer.trim()) correct++;
+          if (ua.selectedOption.trim() === q.correctAnswer.trim()) isCorrect = true;
+        }
+        if (isCorrect) {
+           correct++;
+           categoryTotals[c] += 100;
         }
       }
     });
 
+    const categoryScores: Record<string, number> = {};
+    let highestCategory = { name: "", score: -1 };
+    let lowestCategory = { name: "", score: 101 };
+    
+    Object.keys(categoryTotals).forEach(c => {
+      const avg = Math.round(categoryTotals[c] / categoryCounts[c]);
+      categoryScores[c] = avg;
+      if (avg > highestCategory.score) highestCategory = { name: c, score: avg };
+      if (avg < lowestCategory.score) lowestCategory = { name: c, score: avg };
+    });
+    
+    let categoryInterpretation = `The candidate showed a balanced performance across all evaluated areas.`;
+    if (highestCategory.name && lowestCategory.name && highestCategory.name !== lowestCategory.name) {
+      if (highestCategory.score >= 80 && lowestCategory.score < 60) {
+        categoryInterpretation = `The candidate excelled remarkably in ${highestCategory.name} but exhibited significant gaps in ${lowestCategory.name}.`;
+      } else if (highestCategory.score - lowestCategory.score >= 15) {
+        categoryInterpretation = `The candidate is strongest in ${highestCategory.name} but lacks slightly in ${lowestCategory.name}.`;
+      }
+    }
+
     const score = (correct / (assessment.questions.length || 1)) * 100;
     const passed = score >= assessment.passingScore;
-    const status = passed ? "under-review" : "rejected"; // Employers will review passed ones
+    const status = passed ? "under-review" : "rejected";
 
     await EmployerAssessmentSubmission.create({
       employerAssessment: assessment._id,
@@ -168,6 +200,8 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
       violationCount,
       timeSpent,
       forcedSubmission,
+      categoryScores,
+      categoryInterpretation,
       status,
     });
 

@@ -1,4 +1,5 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, List } from "lucide-react";
+import { useRef } from "react";
 
 const TextAreaField = ({
   label,
@@ -11,18 +12,95 @@ const TextAreaField = ({
   required = false,
   disabled = false,
   rows = 6,
+  allowBullets = false,
   ...props
 }) => {
+  const textareaRef = useRef(null);
+
+  const handleKeyDown = (e) => {
+    if (!allowBullets) return;
+    
+    if (e.key === "Enter") {
+      const textarea = textareaRef.current;
+      const cursorPosition = textarea.selectionStart;
+      const textBeforeCursor = value.substring(0, cursorPosition);
+      const currentLine = textBeforeCursor.split('\n').pop();
+      
+      if (currentLine.trim().startsWith("•")) {
+        e.preventDefault();
+        
+        // If it's an empty bullet, remove it
+        if (currentLine.trim() === "•") {
+          const newValue = value.substring(0, cursorPosition - currentLine.length) + value.substring(cursorPosition);
+          onChange({ target: { name: props.name || id, value: newValue } });
+          // Note: Selection restoration needs a small timeout due to React state update
+          setTimeout(() => {
+            if (textareaRef.current) {
+              textareaRef.current.selectionStart = textareaRef.current.selectionEnd = cursorPosition - currentLine.length;
+            }
+          }, 0);
+          return;
+        }
+
+        // Add bullet to new line
+        const insertText = "\n• ";
+        const newValue = value.substring(0, cursorPosition) + insertText + value.substring(cursorPosition);
+        onChange({ target: { name: props.name || id, value: newValue } });
+        
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.selectionStart = textareaRef.current.selectionEnd = cursorPosition + insertText.length;
+          }
+        }, 0);
+      }
+    }
+  };
+
+  const insertBullet = () => {
+    if (!textareaRef.current) return;
+    const textarea = textareaRef.current;
+    const cursorPosition = textarea.selectionStart;
+    
+    let insertText = "• ";
+    // If not at the beginning of a line and not following a newline, add a newline first
+    if (cursorPosition > 0 && value[cursorPosition - 1] !== '\n') {
+      insertText = "\n• ";
+    }
+    
+    const newValue = value.substring(0, cursorPosition) + insertText + value.substring(cursorPosition);
+    onChange({ target: { name: props.name || id, value: newValue } });
+    
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = cursorPosition + insertText.length;
+    }, 0);
+  };
+
   return (
-    <div className="spacce-y-2">
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </label>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        {allowBullets && (
+          <button
+            type="button"
+            onClick={insertBullet}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+            title="Add Bullet Point"
+          >
+            <List className="w-3.5 h-3.5" />
+            Add Bullet
+          </button>
+        )}
+      </div>
       <textarea
         id={id}
+        ref={textareaRef}
         placeholder={placeholder}
         onChange={onChange}
+        onKeyDown={handleKeyDown}
         value={value}
         disabled={disabled}
         rows={rows}

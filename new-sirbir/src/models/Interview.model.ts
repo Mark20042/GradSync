@@ -7,6 +7,7 @@ export interface IAnswerDetail {
   candidateAnswer?: string;
   score: number;
   feedback?: string;
+  category?: string;
 }
 
 export interface IAiFeedback {
@@ -15,6 +16,8 @@ export interface IAiFeedback {
   strengths?: string[];
   areasForImprovement?: string[];
   summary?: string;
+  categoryScores?: Record<string, number>;
+  categoryInterpretation?: string;
 }
 
 export interface IInterview extends Document {
@@ -42,6 +45,7 @@ const answerDetailSchema = new Schema({
   candidateAnswer: { type: String, default: '' },
   score: { type: Number, min: 0, max: 100, default: 0 },
   feedback: { type: String, default: '' },
+  category: { type: String, default: 'General' },
 });
 
 const interviewSchema = new Schema<IInterview>(

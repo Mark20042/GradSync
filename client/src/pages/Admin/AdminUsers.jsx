@@ -22,6 +22,8 @@ const AdminUsers = () => {
     const [imageUploading, setImageUploading] = useState(false);
     const [showPermitModal, setShowPermitModal] = useState(false);
     const [selectedPermitUrl, setSelectedPermitUrl] = useState(null);
+    const [userToDelete, setUserToDelete] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -58,16 +60,18 @@ const AdminUsers = () => {
         setShowViewModal(true);
     };
 
-    const handleDelete = async (userId) => {
-        if (!window.confirm("Are you sure you want to delete this user?")) return;
-
+    const handleDelete = async () => {
+        if (!userToDelete) return;
         try {
-            await axiosInstance.delete(API_PATH.ADMIN.DELETE_USER(userId));
-            setUsers(users.filter((user) => user._id !== userId));
+            await axiosInstance.delete(API_PATH.ADMIN.DELETE_USER(userToDelete));
+            setUsers(users.filter((user) => user._id !== userToDelete));
             toast.success("User deleted successfully");
         } catch (error) {
             console.error("Error deleting user:", error);
             toast.error("Failed to delete user");
+        } finally {
+            setShowDeleteModal(false);
+            setUserToDelete(null);
         }
     };
 
@@ -311,7 +315,10 @@ const AdminUsers = () => {
                                             )}
                                             {!user.isAdmin && (
                                                 <button
-                                                    onClick={() => handleDelete(user._id)}
+                                                    onClick={() => {
+                                                        setUserToDelete(user._id);
+                                                        setShowDeleteModal(true);
+                                                    }}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 hover:scale-110"
                                                     title="Delete User"
                                                 >
@@ -340,11 +347,30 @@ const AdminUsers = () => {
                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b pb-2">Basic Information</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                                     <input
                                         type="text"
-                                        value={editingUser.fullName}
-                                        onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                                        value={editingUser.firstName || ""}
+                                        onChange={(e) => setEditingUser({ ...editingUser, firstName: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+                                    <input
+                                        type="text"
+                                        value={editingUser.middleName || ""}
+                                        onChange={(e) => setEditingUser({ ...editingUser, middleName: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                                    <input
+                                        type="text"
+                                        value={editingUser.lastName || ""}
+                                        onChange={(e) => setEditingUser({ ...editingUser, lastName: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         required
                                     />
@@ -1680,6 +1706,37 @@ const AdminUsers = () => {
                                 className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium"
                             >
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Delete User</h3>
+                        <p className="text-gray-500 text-sm mb-6">
+                            Are you sure you want to delete this user? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setUserToDelete(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 px-4 py-2.5 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                            >
+                                Yes, Delete
                             </button>
                         </div>
                     </div>

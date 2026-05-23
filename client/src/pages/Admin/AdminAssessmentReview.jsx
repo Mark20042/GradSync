@@ -428,6 +428,34 @@ const AdminAssessmentReview = () => {
                     </div>
                   </div>
 
+                  {/* Category Performance */}
+                  {selectedSubmission.categoryScores && Object.keys(selectedSubmission.categoryScores).length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <Award className="w-5 h-5 text-indigo-600" />
+                        Category Performance
+                      </h4>
+                      <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-2xl border border-indigo-100">
+                        <div className="flex flex-wrap gap-3 mb-4">
+                          {Object.entries(selectedSubmission.categoryScores).map(([cat, score]) => (
+                            <div key={cat} className="bg-white px-4 py-2 rounded-xl shadow-sm border border-indigo-50 flex items-center gap-3">
+                              <span className="font-semibold text-indigo-900">{cat}</span>
+                              <div className="w-px h-4 bg-indigo-100"></div>
+                              <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                {score}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {selectedSubmission.categoryInterpretation && (
+                          <p className="text-sm text-indigo-800 font-medium italic">
+                            💡 "{selectedSubmission.categoryInterpretation}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Answers & Scoring */}
                   <div className="mb-6">
                     <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -465,6 +493,11 @@ const AdminAssessmentReview = () => {
                                     {question?.questionText ||
                                       "Question text unavailable"}
                                   </p>
+                                  {question?.category && (
+                                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 mb-2 uppercase tracking-wide">
+                                      {question.category}
+                                    </span>
+                                  )}
                                   <p className="text-xs text-gray-500 mb-2">
                                     Selected: {selected || "No answer"}
                                   </p>

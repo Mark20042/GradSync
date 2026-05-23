@@ -71,6 +71,54 @@ const AdminInterviewScores = () => {
     return "bg-red-100 text-red-800";
   };
 
+  const getDisplayCategoryScores = (interview) => {
+    if (!interview) return null;
+    if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
+      return interview.aiFeedback.categoryScores;
+    }
+    
+    // Fallback calculation for old interviews
+    if (!interview.answers || interview.answers.length === 0) return null;
+    
+    const categoryTotals = {};
+    const categoryCounts = {};
+    interview.answers.forEach(ans => {
+      const c = ans.category || 'General';
+      if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+      categoryTotals[c] += ans.score || 0;
+      categoryCounts[c] += 1;
+    });
+    
+    const calculated = {};
+    Object.keys(categoryTotals).forEach(c => {
+      calculated[c] = Math.round(categoryTotals[c] / categoryCounts[c]);
+    });
+    
+    return Object.keys(calculated).length > 0 ? calculated : null;
+  };
+
+  const getDisplayCategoryInterpretation = (interview, scores) => {
+    if (!interview || !scores) return null;
+    if (interview.aiFeedback?.categoryInterpretation) return interview.aiFeedback.categoryInterpretation;
+    
+    let highest = { name: "", score: -1 };
+    let lowest = { name: "", score: 101 };
+    
+    Object.entries(scores).forEach(([name, score]) => {
+      if (score > highest.score) highest = { name, score };
+      if (score < lowest.score) lowest = { name, score };
+    });
+    
+    if (highest.name && lowest.name && highest.name !== lowest.name) {
+      if (highest.score >= 80 && lowest.score < 60) {
+        return `The candidate excelled remarkably in ${highest.name} but exhibited significant gaps in ${lowest.name}.`;
+      } else if (highest.score - lowest.score >= 15) {
+        return `The candidate is strongest in ${highest.name} but lacks slightly in ${lowest.name}.`;
+      }
+    }
+    return `The candidate showed a balanced performance across all evaluated areas.`;
+  };
+
   return (
     <DashboardLayout activeMenu="admin-interview-scores">
       <div className="min-h-screen bg-gray-100 p-10">
@@ -233,6 +281,27 @@ const AdminInterviewScores = () => {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   {selectedInterviewForDetails.aiFeedback?.summary || "No summary available."}
                 </p>
+
+                {getDisplayCategoryScores(selectedInterviewForDetails) && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Category Performance</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      {Object.entries(getDisplayCategoryScores(selectedInterviewForDetails)).map(([cat, score]) => (
+                        <div key={cat} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 truncate">{cat}</p>
+                          <p className={`text-lg font-extrabold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {score}<span className="text-xs text-gray-400 font-medium">/100</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {getDisplayCategoryInterpretation(selectedInterviewForDetails, getDisplayCategoryScores(selectedInterviewForDetails)) && (
+                      <p className="text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg font-medium border border-indigo-100 leading-relaxed">
+                        💡 {getDisplayCategoryInterpretation(selectedInterviewForDetails, getDisplayCategoryScores(selectedInterviewForDetails))}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               
               <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest px-1">
@@ -243,6 +312,11 @@ const AdminInterviewScores = () => {
                   <div key={idx} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
                     <div className="flex justify-between items-start mb-3 gap-4">
                       <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
+                        {answer.category && (
+                          <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
+                            {answer.category}
+                          </span>
+                        )}
                         Q{idx + 1}: {answer.questionText}
                       </p>
                       <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 ${getScoreColor(answer.score)}`}>

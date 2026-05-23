@@ -161,7 +161,26 @@ const EmployerAssessmentTaking = () => {
       const res = await axiosInstance.get(
         `/api/employer-assessments/detail/${assessmentId}`,
       );
-      setAssessment(res.data);
+      
+      const assessmentData = res.data;
+      
+      // Shuffle questions
+      if (assessmentData.questions && assessmentData.questions.length > 0) {
+        assessmentData.questions = [...assessmentData.questions].sort(() => Math.random() - 0.5);
+        
+        // Shuffle options for each question
+        assessmentData.questions = assessmentData.questions.map(q => {
+          if (q.options && q.options.length > 0) {
+            return {
+              ...q,
+              options: [...q.options].sort(() => Math.random() - 0.5)
+            };
+          }
+          return q;
+        });
+      }
+
+      setAssessment(assessmentData);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch assessment", error);
@@ -453,6 +472,11 @@ const EmployerAssessmentTaking = () => {
               <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">
                 Question {currentIndex + 1} of {assessment.questions.length}
               </span>
+              {currentQuestion.category && (
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full uppercase tracking-wide">
+                  {currentQuestion.category}
+                </span>
+              )}
             </div>
 
             <h2 className="text-2xl font-bold text-gray-900 mb-8 leading-relaxed">
@@ -495,9 +519,9 @@ const EmployerAssessmentTaking = () => {
                       className={`text-left p-5 rounded-xl border-2 font-medium transition-all flex items-center gap-4 hover:border-blue-500 hover:bg-slate-50 ${isSelected ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
                     >
                       <span
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${isSelected ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500"}`}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-transparent"}`}
                       >
-                        {String.fromCharCode(65 + index)}
+                        {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                       </span>
                       {option}
                     </button>

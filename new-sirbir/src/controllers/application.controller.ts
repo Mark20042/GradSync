@@ -72,6 +72,8 @@ const getApplicationsByJob = async (req: AuthRequest, res: Response, next: NextF
                   }
                 },
                 " ",
+                { $ifNull: ["$job.qualifications", ""] },
+                " ",
                 { $ifNull: ["$job.requirements", ""] }
               ]
             }
@@ -181,6 +183,7 @@ const getApplicationsByJob = async (req: AuthRequest, res: Response, next: NextF
             category: "$job.category",
             type: "$job.type",
             skills: "$job.skills",
+            qualifications: "$job.qualifications",
             requirements: "$job.requirements"
           },
           applicant: {

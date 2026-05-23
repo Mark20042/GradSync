@@ -51,6 +51,18 @@ const projectSchema = new Schema({
 
 const userSchema = new Schema<IUser>(
   {
+    firstName: {
+      type: String,
+      trim: true,
+    },
+    middleName: {
+      type: String,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
     fullName: {
       type: String,
       required: [true, "Full name is required"],
@@ -181,6 +193,12 @@ const userSchema = new Schema<IUser>(
         earnedAt: { type: Date, default: Date.now },
         badgeIcon: { type: String, default: "" },
         score: { type: Number, default: 0 },
+        categoryScores: {
+          type: Map,
+          of: Number,
+          default: {},
+        },
+        categoryInterpretation: { type: String, default: "" },
       },
     ],
 

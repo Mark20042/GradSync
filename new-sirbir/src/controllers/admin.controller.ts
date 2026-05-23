@@ -133,7 +133,16 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     const user = await User.findById(req.params.id);
     if (!user) throw new NotFoundError("User not found");
     const body = req.body;
-    user.fullName = body.fullName || user.fullName;
+
+    if (body.firstName !== undefined || body.middleName !== undefined || body.lastName !== undefined) {
+      if (body.firstName !== undefined) user.firstName = body.firstName;
+      if (body.middleName !== undefined) user.middleName = body.middleName;
+      if (body.lastName !== undefined) user.lastName = body.lastName;
+      user.fullName = [user.firstName, user.middleName, user.lastName].filter(Boolean).join(" ");
+    } else if (body.fullName !== undefined) {
+      user.fullName = body.fullName;
+    }
+
     user.email = body.email || user.email;
     user.role = body.role || user.role;
     user.phone = body.phone || user.phone;
@@ -198,7 +207,10 @@ export const updateJob = async (req: any, res: Response, next: NextFunction) => 
     if (!job) throw new NotFoundError("Job not found");
     const body = req.body;
     job.title = body.title || job.title; job.description = body.description || job.description;
-    job.requirements = body.requirements || job.requirements; job.category = body.category || job.category;
+    job.requirements = body.requirements || job.requirements; 
+    job.qualifications = body.qualifications || job.qualifications;
+    job.skills = body.skills || job.skills;
+    job.category = body.category || job.category;
     job.type = body.type || job.type;
     job.salaryMin = body.salaryMin !== undefined ? body.salaryMin : job.salaryMin;
     job.salaryMax = body.salaryMax !== undefined ? body.salaryMax : job.salaryMax;
@@ -306,6 +318,9 @@ export const createUser = async (req: any, res: Response, next: NextFunction) =>
     const { email, role } = req.body;
     if (await User.findOne({ email })) throw new BadRequestError("User already exists");
     const userData = { ...req.body };
+    if (userData.firstName || userData.lastName) {
+      userData.fullName = [userData.firstName, userData.middleName, userData.lastName].filter(Boolean).join(" ");
+    }
     if (role === "graduate" && !userData.degree) userData.degree = "Not Specified";
     if (role === "employer" && !userData.companyName) userData.companyName = "Not Specified";
     if (role === "employer") ["degree","university","major","graduationYear","jobPreferences","skills","experiences","internships","education","awards","certifications","projects","languages"].forEach(f => delete userData[f]);

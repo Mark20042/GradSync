@@ -61,6 +61,8 @@ export class OllamaService {
     - Title: {jobTitle}
     - Description: {jobDescription}
     - Requirements: {jobRequirements}
+    - Qualifications: {jobQualifications}
+    - Required Skills: {jobSkills}
 
     CRITICAL INSTRUCTION: You MUST calculate the score using this EXACT objective rubric (Max 100 points):
     
@@ -109,6 +111,8 @@ export class OllamaService {
         'jobTitle',
         'jobDescription',
         'jobRequirements',
+        'jobQualifications',
+        'jobSkills',
       ],
     });
 
@@ -121,6 +125,8 @@ export class OllamaService {
         jobTitle: jobDetails.title,
         jobDescription: jobDetails.description,
         jobRequirements: jobDetails.requirements,
+        jobQualifications: jobDetails.qualifications || 'N/A',
+        jobSkills: jobDetails.skills?.join(', ') || 'N/A',
       });
 
       console.log('📡 Sending prompt to Local AI (Ollama)...');

@@ -13,6 +13,9 @@ const EmployerProfilePage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
     companyName: "",
     companyDescription: "",
     website: "",
@@ -23,6 +26,9 @@ const EmployerProfilePage = () => {
   useEffect(() => {
     if (user) {
       setFormData({
+        firstName: user.firstName || "",
+        middleName: user.middleName || "",
+        lastName: user.lastName || "",
         companyName: user.companyName || "",
         companyDescription: user.companyDescription || "",
         website: user.website || "",
@@ -137,9 +143,46 @@ const EmployerProfilePage = () => {
             </div>
           </div>
 
-          {/* Right Column - Form */}
           <div className="md:col-span-2 space-y-8">
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Personal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+                  <input
+                    type="text"
+                    name="middleName"
+                    value={formData.middleName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Middle name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 pt-4">Company Details</h3>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Company Name

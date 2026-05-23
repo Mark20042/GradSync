@@ -8,6 +8,9 @@ import {
   Briefcase,
   MapPin,
   Building2,
+  Award,
+  X,
+  Eye,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +28,9 @@ const AssessmentList = () => {
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState([]);
   const [userSkills, setUserSkills] = useState([]);
+  const [mySubmissions, setMySubmissions] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -44,6 +49,13 @@ const AssessmentList = () => {
       setUserSkills(userRes.data.verifiedSkills || []);
     } catch (error) {
       console.error("Error fetching user skills", error);
+    }
+
+    try {
+      const subRes = await axiosInstance.get("/api/assessments/submissions/me");
+      setMySubmissions(subRes.data || []);
+    } catch (error) {
+      console.error("Error fetching submissions", error);
     }
 
     try {
@@ -112,6 +124,7 @@ const AssessmentList = () => {
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                 <Briefcase size={24} className="text-purple-500" />
               </div>
+
               <div className="flex-1">
                 <h4 className="font-bold text-gray-900 mb-1">
                   {role.roleName}
@@ -193,15 +206,25 @@ const AssessmentList = () => {
                   className="bg-white rounded-xl border border-gray-200 p-6 transition-all duration-300 relative hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
                 >
                   {verified && BadgeComponent && (
-                    <div className="absolute top-4 right-4 flex flex-col items-center gap-2">
+                    <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
                       <BadgeComponent size={32} />
                       <span className="text-xs font-bold text-gray-600">
                         {verified.level}
                       </span>
+                      <button 
+                        onClick={() => {
+                          const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
+                          if (submission) setSelectedSubmission(submission);
+                        }}
+                        className="flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-full mt-0.5 transition-colors font-medium border border-blue-100"
+                        title="View Results"
+                      >
+                        <Eye size={12} /> Results
+                      </button>
                     </div>
                   )}
                   <h3 className="font-bold text-lg mb-2 pr-16">
-                    {assessment.title}
+                    {assessment.skill}
                   </h3>
                   <p className="text-gray-500 text-sm mb-2">
                     {assessment.difficulty} • {assessment.timeLimit || 15} mins
@@ -211,21 +234,25 @@ const AssessmentList = () => {
                     {assessment.questions?.length || 0} questions
                   </p>
                   <button
-                    disabled={!!verified}
-                    onClick={() =>
-                      !verified &&
-                      navigate("/assessment-taking", {
-                        state: {
-                          assessmentId: assessment._id,
-                          skill: assessment.skill,
-                        },
-                      })
-                    }
-                    className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${
-                      verified
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
+                    onClick={() => {
+                      if (verified) {
+                        const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
+                        if (submission) {
+                          setSelectedSubmission(submission);
+                        }
+                      } else {
+                        navigate("/assessment-taking", {
+                          state: {
+                            assessmentId: assessment._id,
+                            skill: assessment.skill,
+                          },
+                        });
+                      }
+                    }}
+                    className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${verified
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
                   >
                     {verified ? (
                       "✓ Verified"
@@ -245,6 +272,70 @@ const AssessmentList = () => {
           )}
         </div>
       </div>
+
+      {selectedSubmission && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setSelectedSubmission(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50">
+              <h3 className="text-xl font-bold text-gray-900">
+                {selectedSubmission.assessment?.skill || "Assessment"} Results
+              </h3>
+              <button
+                onClick={() => setSelectedSubmission(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full h-fit transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                  <p className="text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
+                  <p className="text-3xl font-black text-blue-700">{selectedSubmission.score}%</p>
+                </div>
+                <div className="flex-1 bg-green-50 border border-green-100 rounded-xl p-4 text-center">
+                  <p className="text-sm font-bold text-green-600 mb-1 uppercase tracking-wider">Status</p>
+                  <p className="text-xl font-bold text-green-700 capitalize">Verified</p>
+                </div>
+              </div>
+
+              {selectedSubmission.categoryScores && Object.keys(selectedSubmission.categoryScores).length > 0 && (
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border border-indigo-100 shadow-sm">
+                  <h4 className="text-sm font-bold text-indigo-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <Award className="w-4 h-4" />
+                    Category Performance
+                  </h4>
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    {Object.entries(selectedSubmission.categoryScores).map(([cat, score]) => (
+                      <div key={cat} className="bg-white px-3 py-2 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-3 text-sm flex-1 min-w-[140px] justify-between">
+                        <span className="font-semibold text-indigo-900">{cat}</span>
+                        <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {score}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedSubmission.categoryInterpretation && (
+                    <div className="bg-white/60 p-3 rounded-lg border border-indigo-50">
+                      <p className="text-sm text-indigo-800 font-medium leading-relaxed">
+                        💡 {selectedSubmission.categoryInterpretation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

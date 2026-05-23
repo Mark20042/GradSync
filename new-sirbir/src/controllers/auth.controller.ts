@@ -35,7 +35,8 @@ const bufferToTempFile = (buffer: Buffer, originalname: string): string => {
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { fullName, email, password, role, degree, companyName } = req.body;
+    const { firstName, middleName, lastName, email, password, role, degree, companyName } = req.body;
+    const fullName = [firstName, middleName, lastName].filter(Boolean).join(" ");
 
     const userExists = await User.findOne({ email });
     if (userExists) throw new BadRequestError("User already exists");
@@ -79,6 +80,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     const isEmployer = role === "employer";
 
     const user = new User({
+      firstName,
+      middleName,
+      lastName,
       fullName,
       email,
       password,
@@ -292,35 +296,54 @@ const setupProfileGrad = async (
       projects,
       languages,
       jobPreferences,
+      firstName,
+      middleName,
+      lastName,
     } = req.body;
+    
+    // Construct fullName if any name part is provided
+    let updateFields: any = {
+      degree,
+      university,
+      universityAddress,
+      birthdate,
+      graduationYear,
+      portfolio,
+      linkedin,
+      github,
+      resume,
+      skills,
+      bio,
+      address,
+      phone,
+      website,
+      major,
+      experiences,
+      internships,
+      education,
+      awards,
+      certifications,
+      projects,
+      languages,
+      jobPreferences,
+      isProfileComplete: true,
+    };
+
+    if (firstName !== undefined || middleName !== undefined || lastName !== undefined) {
+      if (firstName !== undefined) updateFields.firstName = firstName;
+      if (middleName !== undefined) updateFields.middleName = middleName;
+      if (lastName !== undefined) updateFields.lastName = lastName;
+      
+      const currentFirstName = firstName !== undefined ? firstName : req.user.firstName;
+      const currentMiddleName = middleName !== undefined ? middleName : req.user.middleName;
+      const currentLastName = lastName !== undefined ? lastName : req.user.lastName;
+      
+      updateFields.fullName = [currentFirstName, currentMiddleName, currentLastName].filter(Boolean).join(" ");
+    }
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      {
-        degree,
-        university,
-        universityAddress,
-        birthdate,
-        graduationYear,
-        portfolio,
-        linkedin,
-        github,
-        resume,
-        skills,
-        bio,
-        address,
-        phone,
-        website,
-        major,
-        experiences,
-        internships,
-        education,
-        awards,
-        certifications,
-        projects,
-        languages,
-        jobPreferences,
-        isProfileComplete: true,
-      },
+      updateFields,
       { new: true },
     ).select("-password");
     res.status(StatusCodes.OK).json(user);
