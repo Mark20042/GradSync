@@ -22,7 +22,7 @@ import EmployerDashboard from "./pages/Employer/EmployerDashboard";
 import ApplicationViewer from "./pages/Employer/ApplicationViewer";
 import EmployerProfilePage from "./pages/Employer/EmployerProfilePage";
 import ApplicantProfile from "./pages/Employer/ApplicantProfile";
-import EmployerInterviews from "./pages/Employer/EmployerInterviews";
+
 import EmployerAutoPilot from "./pages/Employer/EmployerAutoPilot";
 import EmployerAssessments from "./pages/Employer/EmployerAssessments";
 import EmployerAssessmentBuilder from "./pages/Employer/EmployerAssessmentBuilder";
@@ -118,7 +118,7 @@ const App = () => {
               />
               <Route path="/employer-messages" element={<EmployerMessages />} />
               <Route path="/company/:id" element={<CompanyProfileView />} />
-              <Route path="/employer-interviews" element={<EmployerInterviews />} />
+
               <Route path="/employer-auto-pilot" element={<EmployerAutoPilot />} />
               <Route path="/employer-assessments" element={<EmployerAssessments />} />
               <Route path="/employer-assessment-builder" element={<EmployerAssessmentBuilder />} />

@@ -19,16 +19,16 @@ const TextAreaField = ({
 
   const handleKeyDown = (e) => {
     if (!allowBullets) return;
-    
+
     if (e.key === "Enter") {
       const textarea = textareaRef.current;
       const cursorPosition = textarea.selectionStart;
       const textBeforeCursor = value.substring(0, cursorPosition);
       const currentLine = textBeforeCursor.split('\n').pop();
-      
+
       if (currentLine.trim().startsWith("•")) {
         e.preventDefault();
-        
+
         // If it's an empty bullet, remove it
         if (currentLine.trim() === "•") {
           const newValue = value.substring(0, cursorPosition - currentLine.length) + value.substring(cursorPosition);
@@ -46,7 +46,7 @@ const TextAreaField = ({
         const insertText = "\n• ";
         const newValue = value.substring(0, cursorPosition) + insertText + value.substring(cursorPosition);
         onChange({ target: { name: props.name || id, value: newValue } });
-        
+
         setTimeout(() => {
           if (textareaRef.current) {
             textareaRef.current.selectionStart = textareaRef.current.selectionEnd = cursorPosition + insertText.length;
@@ -60,16 +60,16 @@ const TextAreaField = ({
     if (!textareaRef.current) return;
     const textarea = textareaRef.current;
     const cursorPosition = textarea.selectionStart;
-    
+
     let insertText = "• ";
     // If not at the beginning of a line and not following a newline, add a newline first
     if (cursorPosition > 0 && value[cursorPosition - 1] !== '\n') {
       insertText = "\n• ";
     }
-    
+
     const newValue = value.substring(0, cursorPosition) + insertText + value.substring(cursorPosition);
     onChange({ target: { name: props.name || id, value: newValue } });
-    
+
     setTimeout(() => {
       textarea.focus();
       textarea.selectionStart = textarea.selectionEnd = cursorPosition + insertText.length;
@@ -91,7 +91,7 @@ const TextAreaField = ({
             title="Add Bullet Point"
           >
             <List className="w-3.5 h-3.5" />
-            Add Bullet
+            Bullet Format
           </button>
         )}
       </div>
@@ -105,11 +105,10 @@ const TextAreaField = ({
         disabled={disabled}
         rows={rows}
         className={`w-full px-3 py-2.5 border rounded-lg text-base transition-colors 
-            duration-200 resize-y disabled:bg-gray-50 disabled:text-gray-50 ${
-              error
-                ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-            } focus:outline-none focus:ring-2 focus:ring-opacity-20
+            duration-200 resize-y disabled:bg-gray-50 disabled:text-gray-50 ${error
+            ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+            : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+          } focus:outline-none focus:ring-2 focus:ring-opacity-20
             `}
         style={{ minHeight: "150px" }}
         {...props}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   User,
@@ -58,6 +58,22 @@ const SignUp = () => {
     showErrorModal: false,
     errorMessage: "",
   });
+
+  const [degreeSearchTerm, setDegreeSearchTerm] = useState("");
+  const [showDegreeDropdown, setShowDegreeDropdown] = useState(false);
+  const degreeDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (degreeDropdownRef.current && !degreeDropdownRef.current.contains(event.target)) {
+        setShowDegreeDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -629,27 +645,61 @@ const SignUp = () => {
                     animate={{ opacity: 1, height: "auto" }}
                     className="space-y-4 sm:space-y-5"
                   >
-                    <div>
+                    <div ref={degreeDropdownRef} className="relative">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Select Your Degree *
                       </label>
-                      <select
-                        name="degree"
-                        value={formData.degree}
-                        onChange={handleInputChange}
+                      <input
+                        type="text"
+                        placeholder="Search for a degree..."
+                        value={showDegreeDropdown ? degreeSearchTerm : formData.degree}
+                        onChange={(e) => {
+                          setDegreeSearchTerm(e.target.value);
+                          setShowDegreeDropdown(true);
+                          if (formData.degree) {
+                            handleInputChange({ target: { name: 'degree', value: '' } });
+                          }
+                        }}
+                        onFocus={() => {
+                          setDegreeSearchTerm("");
+                          setShowDegreeDropdown(true);
+                        }}
                         className={`w-full px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg border ${
                           formState.error.degree
                             ? "border-red-500"
                             : "border-gray-300"
                         } focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bg-white`}
-                      >
-                        <option value="">Choose Degree</option>
-                        {Object.keys(Degrees).map((key) => (
-                          <option key={key} value={Degrees[key]}>
-                            {Degrees[key]}
-                          </option>
-                        ))}
-                      </select>
+                      />
+                      
+                      {showDegreeDropdown && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          {Object.keys(Degrees)
+                            .filter((degree) =>
+                              degree.toLowerCase().includes(degreeSearchTerm.toLowerCase())
+                            )
+                            .map((key) => (
+                              <div
+                                key={key}
+                                onClick={() => {
+                                  handleInputChange({ target: { name: 'degree', value: key } });
+                                  setDegreeSearchTerm("");
+                                  setShowDegreeDropdown(false);
+                                }}
+                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm sm:text-base text-gray-700"
+                              >
+                                {key}
+                              </div>
+                            ))}
+                          {Object.keys(Degrees).filter((degree) =>
+                            degree.toLowerCase().includes(degreeSearchTerm.toLowerCase())
+                          ).length === 0 && (
+                            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                              No degrees found
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {formState.error.degree && (
                         <p className="text-xs sm:text-sm text-red-500 mt-1 flex items-center">
                           <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />

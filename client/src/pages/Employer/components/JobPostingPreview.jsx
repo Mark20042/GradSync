@@ -244,9 +244,7 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-gray-900">About the Company</h3>
-                <button disabled className="p-2 text-gray-400 opacity-50 cursor-not-allowed">
-                  <Share2 className="w-4 h-4" />
-                </button>
+
               </div>
 
               <div className="flex items-center gap-3 mb-2">
@@ -271,7 +269,7 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
                   </p>
                 </div>
               </div>
-              
+
               {user?.companyDescription && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <p className="text-sm text-gray-600 whitespace-pre-line">
@@ -282,9 +280,9 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
 
               {user?.website && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <a 
-                    href={user.website.startsWith('http') ? user.website : `https://${user.website}`} 
-                    target="_blank" 
+                  <a
+                    href={user.website.startsWith('http') ? user.website : `https://${user.website}`}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-2 font-medium"
                   >

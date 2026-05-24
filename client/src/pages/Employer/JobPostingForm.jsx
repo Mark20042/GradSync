@@ -91,7 +91,7 @@ const JobPostingForm = () => {
         );
         setFormData({
           title: "",
-          location: "",
+          location: user?.address || "",
           category: "",
           type: "",
           description: "",
