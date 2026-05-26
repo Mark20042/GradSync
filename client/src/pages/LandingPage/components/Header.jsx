@@ -28,7 +28,7 @@ const Header = () => {
           <nav className="hidden md:flex items-center space-x-4">
             <a
               onClick={() => {
-                if (isAuthenticated && user?.role === "graduate") {
+                if (isAuthenticated && (user?.role === "graduate" || user?.role === "jobseeker")) {
                   navigate("/find-jobs");
                 } else {
                   const jobsSection = document.getElementById('jobs-section');

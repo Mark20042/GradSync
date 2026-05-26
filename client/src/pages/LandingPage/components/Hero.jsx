@@ -74,7 +74,7 @@ const Hero = () => {
             >
               <button
                 onClick={() => {
-                  if (isAuthenticated && user?.role === "graduate") {
+                  if (isAuthenticated && (user?.role === "graduate" || user?.role === "jobseeker")) {
                     navigate("/find-jobs");
                   } else {
                     const jobsSection = document.getElementById("jobs-section");

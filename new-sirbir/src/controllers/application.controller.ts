@@ -8,7 +8,7 @@ import { createNotification } from "@/utils/notification.helper.js";
 
 const applyToJob = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    if (req.user.role !== "graduate") throw new UnauthorizedError("Only graduates can apply");
+    if (req.user.role !== "graduate" && req.user.role !== "jobseeker") throw new UnauthorizedError("Only graduates and job seekers can apply");
     const existing = await Application.findOne({ job: req.params.jobId, applicant: req.user._id });
     if (existing) throw new BadRequestError("Already applied");
     const application = await Application.create({ job: req.params.jobId, applicant: req.user._id, resume: req.user.resume });

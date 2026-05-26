@@ -53,7 +53,7 @@ const updateProfile = async (
     user.website = body.website !== undefined ? body.website : user.website;
     user.resume = body.resume !== undefined ? body.resume : user.resume;
 
-    if (user.role === "graduate") {
+    if (user.role === "graduate" || user.role === "jobseeker") {
       user.degree = body.degree || user.degree;
       user.university =
         body.university !== undefined ? body.university : user.university;
@@ -84,13 +84,21 @@ const updateProfile = async (
       if (body.projects !== undefined) user.projects = body.projects;
       if (body.jobPreferences !== undefined)
         user.jobPreferences = body.jobPreferences;
-      user.isProfileComplete = Boolean(
-        user.university &&
-        user.graduationYear &&
-        user.degree &&
-        user.skills &&
-        user.skills.length > 0,
-      );
+      if (user.role === "graduate") {
+        user.isProfileComplete = Boolean(
+          user.university &&
+          user.graduationYear &&
+          user.degree &&
+          user.skills &&
+          user.skills.length > 0,
+        );
+      } else {
+        user.isProfileComplete = Boolean(
+          user.skills &&
+          user.skills.length > 0 &&
+          user.bio,
+        );
+      }
     }
 
     if (user.role === "employer") {
@@ -154,7 +162,7 @@ const deleteProfile = async (
     }
     await Promise.allSettled(cleanups);
 
-    if (user.role === "graduate") {
+    if (user.role === "graduate" || user.role === "jobseeker") {
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
       await Assessment.deleteMany({ user: userId });
@@ -194,8 +202,8 @@ const deleteResume = async (
   try {
     const user = await User.findById(req.user._id);
     if (!user) throw new NotFoundError("User not found");
-    if (user.role !== "graduate")
-      throw new UnauthorizedError("Only jobseekers can delete resumes");
+    if (user.role !== "graduate" && user.role !== "jobseeker")
+      throw new UnauthorizedError("Only graduates and job seekers can delete resumes");
 
     // Delete from Cloudinary
     if (user.resume) {
