@@ -17,7 +17,7 @@ const SetupProfileGrad = () => {
   const [success, setSuccess] = useState(false);
   const [userData, setUserData] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5; // Reduced steps since Job Prefs and Resume are removed
+  const totalSteps = 6; // Basic Info, Education, Experience, Skills, Projects, Bio & Summary
 
   const [formData, setFormData] = useState({
     university: "",

@@ -12,6 +12,7 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import SetupProfileGrad from "./pages/Auth/SetupProfileGrad";
+import SetupProfileJobseeker from "./pages/Auth/SetupProfileJobseeker";
 import JobSeekerDashboard from "./pages/JobSeeker/JobSeekerDashboard";
 import JobDetails from "./pages/JobSeeker/JobDetails";
 import SavedJobs from "./pages/JobSeeker/SavedJobs";
@@ -79,11 +80,15 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
 
-            {/* Protected Routes for Graduates */}
-            <Route element={<ProtectedRoute requiredRole="graduate" />}>
+            {/* Protected Routes for Graduates & Job Seekers */}
+            <Route element={<ProtectedRoute requiredRoles={["graduate", "jobseeker"]} />}>
               <Route
                 path="/setup-profile-grad"
                 element={<SetupProfileGrad />}
+              />
+              <Route
+                path="/setup-profile-jobseeker"
+                element={<SetupProfileJobseeker />}
               />
               <Route path="/find-jobs" element={<JobSeekerDashboard />} />
               <Route path="/job/:jobId" element={<JobDetails />} />

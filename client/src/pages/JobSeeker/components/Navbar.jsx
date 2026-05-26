@@ -76,7 +76,7 @@ const Navbar = () => {
             {user && (
               <>
                 {/* Graduate-specific navigation */}
-                {user?.role === "graduate" && (
+                {(user?.role === "graduate" || user?.role === "jobseeker") && (
                   <>
                     {/* Skill Center */}
                     <button
@@ -221,7 +221,7 @@ const Navbar = () => {
 
       <div className="md:hidden border-t border-gray-100 bg-white overflow-x-auto">
         <div className="flex items-center justify-around p-2">
-          {user?.role === "graduate" && (
+          {(user?.role === "graduate" || user?.role === "jobseeker") && (
             <>
               <button onClick={() => navigate("/assessments")} className="flex flex-col items-center p-2 text-gray-500 hover:text-yellow-600">
                 <Award className="w-5 h-5" />

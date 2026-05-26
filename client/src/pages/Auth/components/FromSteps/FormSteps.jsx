@@ -5,6 +5,7 @@ import EducationStep from "./EducationStep";
 import ExperienceStep from "./ExperienceStep";
 import SkillsStep from "./SkillsStep";
 import ProjectsStep from "./ProjectsStep";
+import JobPreferencesStep from "./JobPreferencesStep";
 
 const stepTitles = [
   "Basic Information",
@@ -12,6 +13,7 @@ const stepTitles = [
   "Experience",
   "Skills & Certifications",
   "Projects",
+  "Bio & Summary",
 ];
 
 const FormSteps = ({
@@ -41,6 +43,8 @@ const FormSteps = ({
         return <SkillsStep {...commonProps} />;
       case 5:
         return <ProjectsStep {...commonProps} />;
+      case 6:
+        return <JobPreferencesStep {...commonProps} />;
 
       default:
         return <BasicInfoStep {...commonProps} />;

@@ -78,6 +78,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const isEmployer = role === "employer";
+    const isJobSeeker = role === "jobseeker";
 
     const user = new User({
       firstName,
@@ -93,14 +94,15 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       companyLogo: isEmployer ? avatarUrl : "",
       tor: torUrl,
       businessPermit: businessPermitUrl,
-      verified: false,
-      verificationStatus: "pending",
-      verificationMessage: "Your document is currently being reviewed.",
+      verified: isJobSeeker ? true : false,
+      verificationStatus: isJobSeeker ? "verified" : "pending",
+      verificationMessage: isJobSeeker ? "Job Seeker account created successfully." : "Your document is currently being reviewed.",
     });
     await user.save();
 
     // Background OCR Processing
     const runBackgroundVerification = async () => {
+      if (isJobSeeker) return;
       try {
         let ocrResult = { verified: false, message: "No document uploaded." };
 
@@ -187,6 +189,22 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
     runBackgroundVerification();
 
+    if (isJobSeeker) {
+      generateTokens(user, res);
+      res.status(StatusCodes.CREATED).json({
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        verified: true,
+        verificationPending: false,
+        isProfileComplete: false,
+        autoLogin: true,
+        message: "Registration successful.",
+      });
+      return;
+    }
+
     res.status(StatusCodes.CREATED).json({
       _id: user._id,
       fullName: user.fullName,
@@ -194,8 +212,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       role: user.role,
       verified: false,
       verificationPending: true,
-      message:
-        "Registration successful. Please wait for an email to get verified.",
+      message: "Registration successful. Please wait for an email to get verified.",
     });
   } catch (error) {
     next(error);
@@ -219,10 +236,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     generateTokens(user, res);
 
-    const isProfileComplete =
-      user.role === "graduate"
-        ? !!(user.university && user.university.trim() !== "")
-        : user.isProfileComplete || true;
+    let isProfileComplete = user.isProfileComplete || true;
+    if (user.role === "graduate") {
+      isProfileComplete = !!(user.university && user.university.trim() !== "");
+    } else if (user.role === "jobseeker") {
+      isProfileComplete = user.isProfileComplete || false;
+    }
 
     res.status(StatusCodes.OK).json({
       _id: user._id,
@@ -269,8 +288,8 @@ const setupProfileGrad = async (
   next: NextFunction,
 ) => {
   try {
-    if (req.user.role !== "graduate") {
-      throw new BadRequestError("Only graduates can update this profile");
+    if (req.user.role !== "graduate" && req.user.role !== "jobseeker") {
+      throw new BadRequestError("Only graduates and job seekers can update this profile");
     }
     const {
       university,

@@ -118,6 +118,8 @@ const Login = () => {
           redirectPath = "/employer-dashboard";
         } else if (role === "graduate" && !isProfileComplete) {
           redirectPath = "/setup-profile-grad";
+        } else if (role === "jobseeker" && !isProfileComplete) {
+          redirectPath = "/setup-profile-jobseeker";
         }
 
         window.location.href = redirectPath;

@@ -79,7 +79,7 @@ export interface IUser extends Document {
   fullName: string;
   email: string;
   password: string;
-  role: "graduate" | "employer";
+  role: "graduate" | "employer" | "jobseeker";
 
   // Personal
   avatar?: string;

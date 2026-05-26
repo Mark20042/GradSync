@@ -32,13 +32,14 @@ const ProfileDropdown = ({
     };
   }, [isOpen, onClose]);
 
-  const displayRole = isAdmin ? "Administrator" : (userRole?.toLowerCase() === "graduate" ? "Graduate" : "Employer");
+  const isGradOrSeeker = userRole?.toLowerCase() === "graduate" || userRole?.toLowerCase() === "jobseeker";
+  const displayRole = isAdmin ? "Administrator" : (isGradOrSeeker ? (userRole?.toLowerCase() === "jobseeker" ? "Job Seeker" : "Graduate") : "Employer");
 
   const handleProfileClick = () => {
     if (isAdmin) {
       navigate("/admin-dashboard");
     } else {
-      navigate(userRole === "graduate" ? "/profile" : "/company-profile");
+      navigate(isGradOrSeeker ? "/profile" : "/company-profile");
     }
   };
 
@@ -58,7 +59,7 @@ const ProfileDropdown = ({
         ) : (
           <div className="h-9 w-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
             <span className="font-semibold text-white text-sm">
-              {(userRole?.toLowerCase() === "graduate" ? fullName : companyName)
+              {(isGradOrSeeker ? fullName : companyName)
                 ?.charAt(0)
                 .toUpperCase()}
             </span>
@@ -67,7 +68,7 @@ const ProfileDropdown = ({
 
         <div className="hidden sm:block text-left">
           <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
-            {userRole?.toLowerCase() === "graduate" ? fullName : companyName}
+            {isGradOrSeeker ? fullName : companyName}
           </p>
           <p className="text-xs text-gray-500">
             {displayRole}
@@ -84,7 +85,7 @@ const ProfileDropdown = ({
         <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {userRole?.toLowerCase() === "graduate" ? fullName : companyName}
+              {isGradOrSeeker ? fullName : companyName}
             </p>
             <p className="text-xs text-gray-500 truncate">{email}</p>
           </div>

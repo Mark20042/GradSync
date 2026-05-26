@@ -261,15 +261,14 @@ const SignUp = () => {
         return; // Don't proceed with login
       }
 
-      // If not pending, process as a direct success
-      // For graduates: Extract token and user data from response
-      const { token, ...userData } = response.data;
-
-      if (!token && !response.data.verificationPending) {
-        throw new Error("No token received from server");
+      // If autoLogin is true (for Job Seekers), log them in and navigate to setup
+      if (response.data.autoLogin) {
+        login(response.data);
+        navigate("/setup-profile-jobseeker");
+        return;
       }
 
-      // Show success state
+      // Show success state for others (Graduate / Employer)
       setFormState((prev) => ({
         ...prev,
         loading: false,
@@ -547,7 +546,7 @@ const SignUp = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   I am a *
                 </label>
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
                   <button
                     type="button"
                     onClick={() => handleRoleChange("graduate")}
@@ -574,6 +573,20 @@ const SignUp = () => {
                     <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
                     <div className="font-medium text-xs sm:text-sm">
                       Employer
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRoleChange("jobseeker")}
+                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 sm:gap-2 ${
+                      formData.role === "jobseeker"
+                        ? "border-blue-500 bg-blue-50 text-blue-700 shadow-sm"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600"
+                    }`}
+                  >
+                    <User className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <div className="font-medium text-xs sm:text-sm text-center">
+                      Job Seeker
                     </div>
                   </button>
                 </div>
@@ -739,6 +752,23 @@ const SignUp = () => {
                           {formState.error.tor}
                         </p>
                       )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Job Seeker Info */}
+                {formData.role === "jobseeker" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="p-4 bg-blue-50 rounded-lg border border-blue-100 text-blue-800 text-sm"
+                  >
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 flex-shrink-0 text-blue-500 mt-0.5" />
+                      <div>
+                        <p className="font-semibold mb-1">Fast-Track Registration</p>
+                        <p>No document upload required. You'll complete your profile setup in the next step.</p>
+                      </div>
                     </div>
                   </motion.div>
                 )}

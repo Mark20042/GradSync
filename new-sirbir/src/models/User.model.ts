@@ -82,7 +82,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       required: [true, "Role is required"],
-      enum: ["graduate", "employer"],
+      enum: ["graduate", "employer", "jobseeker"],
     },
 
     // Personal Information

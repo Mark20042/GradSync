@@ -171,7 +171,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
           {/* Job Seeker Navigation - Only if NOT admin */}
           {!user?.isAdmin &&
-            user?.role === "graduate" &&
+            (user?.role === "graduate" || user?.role === "jobseeker") &&
             JOB_SEEKER_MENU.map((item) => (
               <NavigationItem
                 key={item.id}
