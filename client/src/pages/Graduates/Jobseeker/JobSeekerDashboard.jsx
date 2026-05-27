@@ -11,18 +11,18 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import FilterContent from "./components/FilterContent";
 import SearchHeader from "./components/SearchHeader";
 import Navbar from "./components/Navbar";
-import JobCard, { JobCardSkeleton } from "../../components/Cards/JobCard";
+import JobCard, { JobCardSkeleton } from "../../../components/Cards/JobCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { CATEGORIES, JOB_TYPES } from "../../utils/data";
-import SalaryRangeSlider from "../../components/Input/SalaryRangeSlider";
+import { CATEGORIES, JOB_TYPES } from "../../../utils/data";
+import SalaryRangeSlider from "../../../components/Input/SalaryRangeSlider";
 import RecommendedJobs from "./components/RecommendedJobs";
 
 const FilterDropdown = ({

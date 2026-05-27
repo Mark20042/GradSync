@@ -23,9 +23,9 @@ import {
   MapPin,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
-import { useAuth } from "../../context/AuthContext";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
+import { useAuth } from "../../../context/AuthContext";
 import UserProfileSkeleton from "./components/skeletons/UserProfileSkeleton";
 import { pdf } from "@react-pdf/renderer";
 import ResumePDFx from "./ResumePDFx";

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../../context/AuthContext";
 
-import ProfileDropdown from "./../../../components/layout/ProfileDropdpwn";
-import NotificationDropdown from "../../../components/NotificationDropdown";
-import axiosInstance from "../../../utils/axiosInstance";
-import { API_PATH } from "../../../utils/apiPath";
+import ProfileDropdown from ".././../../../components/layout/ProfileDropdpwn";
+import NotificationDropdown from "../../../../components/NotificationDropdown";
+import axiosInstance from "../../../../utils/axiosInstance";
+import { API_PATH } from "../../../../utils/apiPath";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();

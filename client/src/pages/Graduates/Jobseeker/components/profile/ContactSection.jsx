@@ -9,7 +9,7 @@ import {
   Github,
   Calendar,
 } from "lucide-react";
-import LocationDetectInput from "../../../../components/Input/LocationDetectInput";
+import LocationDetectInput from "../../../../../components/Input/LocationDetectInput";
 
 const ContactSection = ({ user, editing, editData, handleEditChange }) => {
   return (

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "./../../utils/axiosInstance";
-import { API_PATH, BASE_URL } from "./../../utils/apiPath";
-import { fixLegacyUrls } from "./../../utils/axiosInstance";
+import { useAuth } from "../../../context/AuthContext";
+import axiosInstance from ".././../../utils/axiosInstance";
+import { API_PATH, BASE_URL } from ".././../../utils/apiPath";
+import { fixLegacyUrls } from ".././../../utils/axiosInstance";
 import io from "socket.io-client";
 import Navbar from "./components/Navbar";
 import { Send, ArrowLeft, MessageCircleDashed, Building2, Briefcase } from "lucide-react";

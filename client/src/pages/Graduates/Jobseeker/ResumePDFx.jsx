@@ -1,11 +1,11 @@
 import React from 'react';
 import { Page, Document, View, Text as PDFText, Link } from '@react-pdf/renderer';
-import { Heading } from '../../components/pdfx/heading/pdfx-heading';
-import { Text } from '../../components/pdfx/text/pdfx-text';
-import { Section } from '../../components/pdfx/section/pdfx-section';
-import { Divider } from '../../components/pdfx/divider/pdfx-divider';
-import { KeyValue } from '../../components/pdfx/key-value/pdfx-key-value';
-import { theme } from '../../lib/pdfx-theme';
+import { Heading } from '../../../components/pdfx/heading/pdfx-heading';
+import { Text } from '../../../components/pdfx/text/pdfx-text';
+import { Section } from '../../../components/pdfx/section/pdfx-section';
+import { Divider } from '../../../components/pdfx/divider/pdfx-divider';
+import { KeyValue } from '../../../components/pdfx/key-value/pdfx-key-value';
+import { theme } from '../../../lib/pdfx-theme';
 
 // Helper to format dates
 const formatDate = (dateString) => {

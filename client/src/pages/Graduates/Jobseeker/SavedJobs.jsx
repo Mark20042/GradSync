@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bookmark, ArrowLeft } from "lucide-react";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
-import JobCard from "../../components/Cards/JobCard";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
+import JobCard from "../../../components/Cards/JobCard";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 import SavedJobsSkeleton from "./components/skeletons/SavedJobsSkeleton";
 
 import Navbar from "./components/Navbar";

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Target } from 'lucide-react';
-import LocationDetectInput from '../../../../components/Input/LocationDetectInput';
+import LocationDetectInput from '../../../../../components/Input/LocationDetectInput';
 
 const JobPreferencesSection = ({ user, editing, editData, setEditData }) => {
     // Job preferences are nested in jobPreferences object in User model

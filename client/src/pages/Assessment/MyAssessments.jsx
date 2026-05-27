@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Clock, Target, Calendar, CheckCircle, FileCode, ArrowRight, ArrowLeft } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../JobSeeker/components/Navbar";
+import Navbar from "../Graduates/Jobseeker/components/Navbar";
 import moment from "moment";
 
 const MyAssessments = () => {

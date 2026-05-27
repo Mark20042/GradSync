@@ -14,10 +14,10 @@ import {
     Filter,
     ArrowLeft
 } from "lucide-react";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import Navbar from "./components/Navbar";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import MyApplicationsSkeleton from "./components/skeletons/MyApplicationsSkeleton";
 

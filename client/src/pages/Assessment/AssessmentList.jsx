@@ -15,7 +15,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { API_PATH } from "../../utils/apiPath";
-import Navbar from "../JobSeeker/components/Navbar";
+import Navbar from "../Graduates/Jobseeker/components/Navbar";
 import {
   EntryBadge,
   MidBadge,

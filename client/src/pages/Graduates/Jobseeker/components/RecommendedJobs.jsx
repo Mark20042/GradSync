@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Briefcase } from "lucide-react";
-import JobCard, { JobCardSkeleton } from "../../../components/Cards/JobCard";
+import JobCard, { JobCardSkeleton } from "../../../../components/Cards/JobCard";
 import { useNavigate } from "react-router-dom";
 
 const RecommendedJobs = ({

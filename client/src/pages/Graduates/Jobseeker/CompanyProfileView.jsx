@@ -14,10 +14,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CompanyProfileSkeleton from "./components/skeletons/CompanyProfileSkeleton";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import Navbar from "./components/Navbar";
-import JobCard from "../../components/Cards/JobCard";
+import JobCard from "../../../components/Cards/JobCard";
 import toast from "react-hot-toast";
 
 const CompanyProfileView = () => {

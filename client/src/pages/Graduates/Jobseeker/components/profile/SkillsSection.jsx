@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Code, Lock, Plus, X, Globe } from 'lucide-react';
-import { getBadgeComponent } from '../../../../components/Badges/SkillBadges';
+import { getBadgeComponent } from '../../../../../components/Badges/SkillBadges';
 
 const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditData }) => {
     const navigate = useNavigate();

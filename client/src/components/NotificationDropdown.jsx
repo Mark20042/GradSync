@@ -5,7 +5,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { API_PATH } from "../utils/apiPath";
 import { useAuth } from "../context/AuthContext";
 import moment from "moment";
-import NotificationListSkeleton from "../pages/JobSeeker/components/skeletons/NotificationListSkeleton";
+import NotificationListSkeleton from "../pages/Graduates/Jobseeker/components/skeletons/NotificationListSkeleton";
 
 const NotificationDropdown = ({ onClose }) => {
     const navigate = useNavigate();

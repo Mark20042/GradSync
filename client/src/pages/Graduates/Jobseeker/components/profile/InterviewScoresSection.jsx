@@ -10,8 +10,8 @@ import {
   Target,
   TrendingUp,
 } from "lucide-react";
-import axiosInstance from "../../../../utils/axiosInstance";
-import { API_PATH } from "../../../../utils/apiPath";
+import axiosInstance from "../../../../../utils/axiosInstance";
+import { API_PATH } from "../../../../../utils/apiPath";
 
 const InterviewScoresSection = () => {
   const navigate = useNavigate();

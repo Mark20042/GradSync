@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import { useAuth } from "../../../context/AuthContext";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import Navbar from "./components/Navbar";
 import { MessageCircleDashed, Building2, ArrowLeft, User, MessageSquare, Briefcase, Users } from "lucide-react";
 import moment from "moment";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 import { motion, AnimatePresence } from "framer-motion";
 import ConversationListSkeleton from "./components/skeletons/ConversationListSkeleton";
 

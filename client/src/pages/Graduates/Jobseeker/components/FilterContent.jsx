@@ -1,6 +1,6 @@
 import { ChevronDown, Briefcase, DollarSign, FolderOpen, Sparkles } from "lucide-react";
-import { CATEGORIES, JOB_TYPES } from "../../../utils/data";
-import SalaryRangeSlider from "./../../../components/Input/SalaryRangeSlider";
+import { CATEGORIES, JOB_TYPES } from "../../../../utils/data";
+import SalaryRangeSlider from ".././../../../components/Input/SalaryRangeSlider";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Reusable Filter Section with cleaner design

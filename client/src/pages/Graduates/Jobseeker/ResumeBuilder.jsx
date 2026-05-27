@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Printer, ArrowLeft, Save } from "lucide-react";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import ResumeBuilderSkeleton from "./components/skeletons/ResumeBuilderSkeleton";
 import { pdf } from "@react-pdf/renderer";
 import ResumePDFx from "./ResumePDFx";

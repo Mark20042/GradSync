@@ -17,18 +17,18 @@ import {
   Star,
   Globe
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import { useParams, useNavigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATH } from "../../utils/apiPath";
+import axiosInstance from "../../../utils/axiosInstance";
+import { API_PATH } from "../../../utils/apiPath";
 import { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import SuitabilityModal from "./components/SuitabilityModal";
 import moment from "moment";
-import StatusBadge from "../../components/StatusBadge";
+import StatusBadge from "../../../components/StatusBadge";
 import toast from "react-hot-toast";
 import JobDetailsSkeleton from "./components/skeletons/JobDetailsSkeleton";
-import FormattedText from "../../components/FormattedText";
+import FormattedText from "../../../components/FormattedText";
 
 const JobDetails = () => {
   const { jobId } = useParams();
