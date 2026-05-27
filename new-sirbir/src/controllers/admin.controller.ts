@@ -20,6 +20,7 @@ export const getAnalytics = async (req: any, res: Response, next: NextFunction) 
     const totalUsers = await User.countDocuments();
     const totalGraduates = await User.countDocuments({ role: "graduate" });
     const totalEmployers = await User.countDocuments({ role: "employer" });
+    const totalJobSeekers = await User.countDocuments({ role: "jobseeker" });
     const totalJobs = await Job.countDocuments();
     const activeJobs = await Job.countDocuments({ isClosed: false });
     const totalApplications = await Application.countDocuments();
@@ -55,7 +56,7 @@ export const getAnalytics = async (req: any, res: Response, next: NextFunction) 
       { $limit: 5 }
     ]);
 
-    res.json({ counts: { totalUsers, totalGraduates, totalEmployers, totalJobs, activeJobs, totalApplications, hiredApplications, rejectedApplications, pendingApplications, appliedApplications }, recentUsers, jobCategories, applicationsPerCategory, topCompaniesByApplications, topJobsByApplications });
+    res.json({ counts: { totalUsers, totalGraduates, totalEmployers, totalJobSeekers, totalJobs, activeJobs, totalApplications, hiredApplications, rejectedApplications, pendingApplications, appliedApplications }, recentUsers, jobCategories, applicationsPerCategory, topCompaniesByApplications, topJobsByApplications });
   } catch (error) { next(error); }
 };
 
