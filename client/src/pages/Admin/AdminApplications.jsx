@@ -205,11 +205,6 @@ const AdminApplications = () => {
                                     <td className="px-6 py-5">
                                         <div className="font-medium text-gray-900">{app.job?.title}</div>
                                         <div className="text-xs text-gray-500 mb-1">{app.job?.company?.companyName}</div>
-                                        {app.matchScore > 0 && (
-                                            <div className="text-[10px] text-emerald-700 font-bold bg-emerald-50 border border-emerald-100 w-fit px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                                                <span>⭐</span> Score: {app.matchScore} ({app.matchReason})
-                                            </div>
-                                        )}
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border w-fit ${getStatusStyle(app.status)}`}>

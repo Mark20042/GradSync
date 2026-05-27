@@ -6,7 +6,8 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { Trash2, Search, Briefcase, Edit, Eye, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "./components/AdminModal";
-
+import TextAreaField from "../../components/Input/TextAreaField";
+import { CATEGORIES } from "../../utils/data";
 const AdminJobs = () => {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -94,6 +95,9 @@ const AdminJobs = () => {
             isClosed: false,
             description: "",
             requirements: "",
+            qualifications: "",
+            benefits: "",
+            skills: [],
             company: "", // Should be a dropdown in real app, or auto-assigned if context known. 
             // For admin, we might want to select company.
             autoReplyMessage: ""
@@ -266,7 +270,15 @@ const AdminJobs = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
                                     <select
                                         value={editingJob.company}
-                                        onChange={(e) => setEditingJob({ ...editingJob, company: e.target.value })}
+                                        onChange={(e) => {
+                                            const companyId = e.target.value;
+                                            const selectedEmployer = employers.find(emp => emp._id === companyId);
+                                            setEditingJob({ 
+                                                ...editingJob, 
+                                                company: companyId,
+                                                location: selectedEmployer?.address || editingJob.location || ""
+                                            });
+                                        }}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         required
                                     >
@@ -279,13 +291,17 @@ const AdminJobs = () => {
                             )}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                <input
-                                    type="text"
+                                <select
                                     value={editingJob.category}
                                     onChange={(e) => setEditingJob({ ...editingJob, category: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     required
-                                />
+                                >
+                                    <option value="" disabled>Select Category</option>
+                                    {CATEGORIES.map(cat => (
+                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
@@ -342,21 +358,51 @@ const AdminJobs = () => {
                                 </select>
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
+                                <TextAreaField
+                                    label="Description"
+                                    id="description"
                                     value={editingJob.description}
                                     onChange={(e) => setEditingJob({ ...editingJob, description: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all h-32 resize-none"
                                     required
+                                    allowBullets={true}
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
-                                <textarea
+                                <TextAreaField
+                                    label="Requirements"
+                                    id="requirements"
                                     value={editingJob.requirements || ""}
                                     onChange={(e) => setEditingJob({ ...editingJob, requirements: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all h-32 resize-none"
                                     required
+                                    allowBullets={true}
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <TextAreaField
+                                    label="Qualifications"
+                                    id="qualifications"
+                                    value={editingJob.qualifications || ""}
+                                    onChange={(e) => setEditingJob({ ...editingJob, qualifications: e.target.value })}
+                                    allowBullets={true}
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <TextAreaField
+                                    label="Company Benefits (Optional)"
+                                    id="benefits"
+                                    value={editingJob.benefits || ""}
+                                    onChange={(e) => setEditingJob({ ...editingJob, benefits: e.target.value })}
+                                    allowBullets={true}
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Skills (Comma separated)</label>
+                                <input
+                                    type="text"
+                                    value={editingJob.skills ? editingJob.skills.join(", ") : ""}
+                                    onChange={(e) => setEditingJob({ ...editingJob, skills: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                    placeholder="e.g. React, Node.js, Python"
                                 />
                             </div>
                         </div>
@@ -445,6 +491,34 @@ const AdminJobs = () => {
                                 {viewingJob.requirements}
                             </div>
                         </div>
+                        {viewingJob.qualifications && (
+                            <div>
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Qualifications</h4>
+                                <div className="bg-gray-50 rounded-xl p-5 text-gray-700 whitespace-pre-wrap leading-relaxed border border-gray-100">
+                                    {viewingJob.qualifications}
+                                </div>
+                            </div>
+                        )}
+                        {viewingJob.benefits && (
+                            <div>
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Company Benefits</h4>
+                                <div className="bg-gray-50 rounded-xl p-5 text-gray-700 whitespace-pre-wrap leading-relaxed border border-gray-100">
+                                    {viewingJob.benefits}
+                                </div>
+                            </div>
+                        )}
+                        {viewingJob.skills && viewingJob.skills.length > 0 && (
+                            <div>
+                                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Skills</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {viewingJob.skills.map((skill, index) => (
+                                        <span key={index} className="px-3 py-1 bg-blue-50 text-blue-700 text-sm font-medium rounded-full border border-blue-100">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex items-center justify-between pt-4 border-t border-gray-100 text-sm text-gray-500">
                             <div>

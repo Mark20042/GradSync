@@ -15,6 +15,8 @@ import {
     PieChart,
     Pie,
     Cell,
+    AreaChart,
+    Area,
 } from "recharts";
 import { Users, Briefcase, FileText, CheckCircle, XCircle, Clock, Send } from "lucide-react";
 
@@ -82,7 +84,7 @@ const AdminDashboard = () => {
 
     if (!analytics) return null;
 
-    const { counts, jobCategories } = analytics;
+    const { counts, jobCategories, applicationsPerCategory, topCompaniesByApplications, topJobsByApplications } = analytics;
 
     const mainStats = [
         {
@@ -151,7 +153,7 @@ const AdminDashboard = () => {
         { name: "Employers", value: counts.totalEmployers },
     ];
 
-    const COLORS = ["#3B82F6", "#10B981"];
+    const COLORS = ["#4F46E5", "#10B981"];
 
     const StatCard = ({ stat }) => {
         const Icon = stat.icon;
@@ -200,12 +202,31 @@ const AdminDashboard = () => {
                             Jobs by Category
                         </h2>
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={jobCategories}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="_id" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                            <BarChart data={jobCategories} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                <defs>
+                                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.9}/>
+                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0.2}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis 
+                                    dataKey="_id" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: "#6B7280" }} 
+                                    dy={10} 
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: "#6B7280" }} 
+                                />
+                                <Tooltip 
+                                    cursor={{ fill: '#F3F4F6' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                />
+                                <Bar dataKey="count" fill="url(#colorCount)" radius={[6, 6, 0, 0]} maxBarSize={50} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -221,22 +242,121 @@ const AdminDashboard = () => {
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={100}
-                                    fill="#8884d8"
-                                    paddingAngle={5}
+                                    innerRadius={70}
+                                    outerRadius={95}
+                                    paddingAngle={8}
                                     dataKey="value"
+                                    stroke="none"
                                 >
                                     {pieData.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={COLORS[index % COLORS.length]}
+                                            cornerRadius={8}
                                         />
                                     ))}
                                 </Pie>
-                                <Tooltip />
-                                <Legend />
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                />
+                                <Legend 
+                                    iconType="circle"
+                                    layout="horizontal"
+                                    verticalAlign="bottom"
+                                    align="center"
+                                    wrapperStyle={{ paddingTop: "20px" }}
+                                />
                             </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Applications by Category Chart */}
+                <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                        Applications by Category
+                    </h2>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <AreaChart data={applicationsPerCategory || []} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                            <defs>
+                                <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                            <XAxis 
+                                dataKey="_id" 
+                                axisLine={false} 
+                                tickLine={false} 
+                                tick={{ fontSize: 12, fill: "#6B7280" }} 
+                                dy={10} 
+                            />
+                            <YAxis 
+                                axisLine={false} 
+                                tickLine={false} 
+                                tick={{ fontSize: 12, fill: "#6B7280" }} 
+                            />
+                            <Tooltip 
+                                cursor={{ stroke: '#9CA3AF', strokeWidth: 1, strokeDasharray: '3 3' }}
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                            />
+                            <Area type="monotone" dataKey="count" name="Applications" stroke="#10B981" strokeWidth={3} fill="url(#colorApps)" activeDot={{ r: 8, fill: "#10B981", stroke: "#fff", strokeWidth: 2 }} />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Leaderboards Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    {/* Top Companies Chart */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                            Top Companies by Applications
+                        </h2>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={topCompaniesByApplications} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorCompanies" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.9}/>
+                                        <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.6}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E5E7EB" />
+                                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6B7280" }} />
+                                <YAxis type="category" dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#374151", fontWeight: 500 }} width={120} tickFormatter={(v) => v?.length > 15 ? v.substring(0, 15) + '...' : v} />
+                                <Tooltip 
+                                    cursor={{ fill: '#F3F4F6' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                    formatter={(value) => [value, "Applications"]}
+                                />
+                                <Bar dataKey="count" fill="url(#colorCompanies)" radius={[0, 6, 6, 0]} barSize={24} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Top Jobs Chart */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-6">
+                            Most Applied Job Titles
+                        </h2>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={topJobsByApplications} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorJobs" x1="0" y1="0" x2="1" y2="0">
+                                        <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.9}/>
+                                        <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.6}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#E5E7EB" />
+                                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6B7280" }} />
+                                <YAxis type="category" dataKey="_id" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#374151", fontWeight: 500 }} width={140} tickFormatter={(v) => v?.length > 20 ? v.substring(0, 20) + '...' : v} />
+                                <Tooltip 
+                                    cursor={{ fill: '#F3F4F6' }}
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                    formatter={(value) => [value, "Applications"]}
+                                />
+                                <Bar dataKey="count" fill="url(#colorJobs)" radius={[0, 6, 6, 0]} barSize={24} />
+                            </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>

@@ -18,7 +18,7 @@ const DashboardAreaChart = ({ data }) => {
       <ResponsiveContainer width="100%" height={320}>
         <AreaChart
           data={data}
-          margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+          margin={{ top: 10, right: 30, left: 30, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis
@@ -26,6 +26,8 @@ const DashboardAreaChart = ({ data }) => {
             tick={{ fontSize: 12, fill: "#6b7280" }}
             axisLine={false}
             tickLine={false}
+            interval="preserveStartEnd"
+            tickFormatter={(value) => value?.length > 18 ? value.substring(0, 18) + '...' : value}
           />
           <YAxis
             tick={{ fontSize: 12, fill: "#6b7280" }}

@@ -1,4 +1,5 @@
 import type { Response, NextFunction } from "express";
+import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import { NotFoundError, BadRequestError } from "@/errors/index.js";
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
@@ -26,23 +27,79 @@ export const getAnalytics = async (req: any, res: Response, next: NextFunction) 
     const rejectedApplications = await Application.countDocuments({ status: "Rejected" });
     const pendingApplications = await Application.countDocuments({ status: "In Review" });
     const appliedApplications = await Application.countDocuments({ status: "Applied" });
-    const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5).select("fullName email role createdAt");
+    const recentUsers = await User.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $limit: 5 },
+      { $project: { fullName: 1, email: 1, role: 1, createdAt: 1 } }
+    ]);
     const jobCategories = await Job.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }]);
-    res.json({ counts: { totalUsers, totalGraduates, totalEmployers, totalJobs, activeJobs, totalApplications, hiredApplications, rejectedApplications, pendingApplications, appliedApplications }, recentUsers, jobCategories });
+    const applicationsPerCategory = await Application.aggregate([
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "jobData" } },
+      { $unwind: "$jobData" },
+      { $group: { _id: "$jobData.category", count: { $sum: 1 } } }
+    ]);
+    const topCompaniesByApplications = await Application.aggregate([
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "jobData" } },
+      { $unwind: "$jobData" },
+      { $lookup: { from: "users", localField: "jobData.company", foreignField: "_id", as: "companyData" } },
+      { $unwind: "$companyData" },
+      { $group: { _id: "$companyData.companyName", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+    const topJobsByApplications = await Application.aggregate([
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "jobData" } },
+      { $unwind: "$jobData" },
+      { $group: { _id: "$jobData.title", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({ counts: { totalUsers, totalGraduates, totalEmployers, totalJobs, activeJobs, totalApplications, hiredApplications, rejectedApplications, pendingApplications, appliedApplications }, recentUsers, jobCategories, applicationsPerCategory, topCompaniesByApplications, topJobsByApplications });
   } catch (error) { next(error); }
 };
 
 export const getAllApplications = async (_req: any, res: Response, next: NextFunction) => {
   try {
-    const applications = await Application.find()
-      .populate({
-        path: "job",
-        select: "title company category type location requirements skills",
-        populate: { path: "company", select: "companyName companyLogo" }
-      })
-      .populate("applicant", "fullName email avatar role skills major")
-      .sort({ createdAt: -1 });
-
+    const applications = await Application.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "jobDetails" } },
+      { $unwind: { path: "$jobDetails", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "users", localField: "jobDetails.company", foreignField: "_id", as: "companyDetails" } },
+      { $unwind: { path: "$companyDetails", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "users", localField: "applicant", foreignField: "_id", as: "applicantDetails" } },
+      { $unwind: { path: "$applicantDetails", preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          job: {
+            _id: "$jobDetails._id",
+            title: "$jobDetails.title",
+            company: {
+              _id: "$companyDetails._id",
+              companyName: "$companyDetails.companyName",
+              companyLogo: "$companyDetails.companyLogo"
+            },
+            category: "$jobDetails.category",
+            type: "$jobDetails.type",
+            location: "$jobDetails.location",
+            requirements: "$jobDetails.requirements",
+            skills: "$jobDetails.skills"
+          },
+          applicant: {
+            _id: "$applicantDetails._id",
+            fullName: "$applicantDetails.fullName",
+            email: "$applicantDetails.email",
+            avatar: "$applicantDetails.avatar",
+            role: "$applicantDetails.role",
+            skills: "$applicantDetails.skills",
+            major: "$applicantDetails.major"
+          }
+        }
+      },
+      {
+        $project: { jobDetails: 0, companyDetails: 0, applicantDetails: 0 }
+      }
+    ]);
     res.json(applications);
   } catch (error) { next(error); }
 };
@@ -64,7 +121,13 @@ export const deleteApplication = async (req: any, res: Response, next: NextFunct
 };
 
 export const getAllUsers = async (_req: any, res: Response, next: NextFunction) => {
-  try { res.json(await User.find().select("-password").sort({ createdAt: -1 })); }
+  try { 
+    const users = await User.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $project: { password: 0 } } // Exclude password, return all other fields
+    ]);
+    res.json(users);
+  }
   catch (error) { next(error); }
 };
 
@@ -98,7 +161,7 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
     }
     await Promise.allSettled(cleanups);
 
-    if (user.role === "graduate") {
+    if (user.role === "graduate" || user.role === "jobseeker") {
       // Delete graduate's applications, saved jobs, assessments
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
@@ -149,7 +212,7 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     user.address = body.address || user.address;
     user.website = body.website || user.website;
     user.verified = body.verified !== undefined ? body.verified : user.verified;
-    if (user.role === "graduate") {
+    if (user.role === "graduate" || user.role === "jobseeker") {
       user.university = body.university || user.university;
       user.degree = body.degree || user.degree;
       user.major = body.major || user.major;
@@ -177,13 +240,59 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
 
 export const getUserSavedJobs = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const savedJobs = await SavedJob.find({ graduate: req.params.id }).populate({ path: "job", populate: { path: "company", select: "companyName" } });
+    const savedJobs = await SavedJob.aggregate([
+      { $match: { graduate: new mongoose.Types.ObjectId(req.params.id) } },
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "jobDetails" } },
+      { $unwind: { path: "$jobDetails", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "users", localField: "jobDetails.company", foreignField: "_id", as: "companyDetails" } },
+      { $unwind: { path: "$companyDetails", preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          job: {
+            _id: "$jobDetails._id",
+            title: "$jobDetails.title",
+            company: { _id: "$companyDetails._id", companyName: "$companyDetails.companyName" }
+          }
+        }
+      },
+      { $project: { jobDetails: 0, companyDetails: 0 } }
+    ]);
     res.json(savedJobs);
   } catch (error) { next(error); }
 };
 
 export const getAllJobs = async (_req: any, res: Response, next: NextFunction) => {
-  try { res.json(await Job.find().populate("company", "companyName email").sort({ createdAt: -1 })); }
+  try {
+    const jobs = await Job.aggregate([
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "company",
+          foreignField: "_id",
+          as: "companyDetails"
+        }
+      },
+      {
+        $unwind: { path: "$companyDetails", preserveNullAndEmptyArrays: true }
+      },
+      {
+        $addFields: {
+          company: {
+            _id: "$companyDetails._id",
+            companyName: "$companyDetails.companyName",
+            email: "$companyDetails.email"
+          }
+        }
+      },
+      {
+        $project: {
+          companyDetails: 0
+        }
+      }
+    ]);
+    res.json(jobs);
+  }
   catch (error) { next(error); }
 };
 
@@ -209,6 +318,7 @@ export const updateJob = async (req: any, res: Response, next: NextFunction) => 
     job.title = body.title || job.title; job.description = body.description || job.description;
     job.requirements = body.requirements || job.requirements; 
     job.qualifications = body.qualifications || job.qualifications;
+    job.benefits = body.benefits !== undefined ? body.benefits : job.benefits;
     job.skills = body.skills || job.skills;
     job.category = body.category || job.category;
     job.type = body.type || job.type;
@@ -224,17 +334,51 @@ export const updateJob = async (req: any, res: Response, next: NextFunction) => 
 export const getReports = async (_req: any, res: Response, next: NextFunction) => {
   try {
     const [users, jobs, applications, faqs, jobFaqs, employerSettings] = await Promise.all([
-      User.find().select("-password"), Job.find().populate("company", "companyName"),
-      Application.find().populate("applicant", "fullName email").populate({ path: "job", select: "title company", populate: { path: "company", select: "companyName" } }),
-      FAQ.find().sort({ order: 1 }), JobFAQ.find().populate("employer", "fullName companyName").populate("job", "title"),
-      EmployerSettings.find().populate("user", "fullName companyName email"),
+      User.aggregate([{ $project: { password: 0 } }]),
+      Job.aggregate([
+        { $lookup: { from: "users", localField: "company", foreignField: "_id", as: "c" } },
+        { $unwind: { path: "$c", preserveNullAndEmptyArrays: true } },
+        { $addFields: { company: { _id: "$c._id", companyName: "$c.companyName" } } },
+        { $project: { c: 0 } }
+      ]),
+      Application.aggregate([
+        { $lookup: { from: "users", localField: "applicant", foreignField: "_id", as: "a" } },
+        { $unwind: { path: "$a", preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "j" } },
+        { $unwind: { path: "$j", preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: "users", localField: "j.company", foreignField: "_id", as: "jc" } },
+        { $unwind: { path: "$jc", preserveNullAndEmptyArrays: true } },
+        { $addFields: { 
+            applicant: { _id: "$a._id", fullName: "$a.fullName", email: "$a.email" },
+            job: { _id: "$j._id", title: "$j.title", company: { _id: "$jc._id", companyName: "$jc.companyName" } }
+        }},
+        { $project: { a: 0, j: 0, jc: 0 } }
+      ]),
+      FAQ.aggregate([{ $sort: { order: 1 } }]),
+      JobFAQ.aggregate([
+        { $lookup: { from: "users", localField: "employer", foreignField: "_id", as: "e" } },
+        { $unwind: { path: "$e", preserveNullAndEmptyArrays: true } },
+        { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "j" } },
+        { $unwind: { path: "$j", preserveNullAndEmptyArrays: true } },
+        { $addFields: { 
+            employer: { _id: "$e._id", fullName: "$e.fullName", companyName: "$e.companyName" },
+            job: { _id: "$j._id", title: "$j.title" }
+        }},
+        { $project: { e: 0, j: 0 } }
+      ]),
+      EmployerSettings.aggregate([
+        { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "u" } },
+        { $unwind: { path: "$u", preserveNullAndEmptyArrays: true } },
+        { $addFields: { user: { _id: "$u._id", fullName: "$u.fullName", companyName: "$u.companyName", email: "$u.email" } } },
+        { $project: { u: 0 } }
+      ])
     ]);
     res.json({ users, jobs, applications, faqs, jobFaqs, employerSettings });
   } catch (error) { next(error); }
 };
 
 export const getFAQs = async (_req: any, res: Response, next: NextFunction) => {
-  try { res.json(await FAQ.find().sort({ order: 1 })); } catch (error) { next(error); }
+  try { res.json(await FAQ.aggregate([{ $sort: { order: 1 } }])); } catch (error) { next(error); }
 };
 export const createFAQ = async (req: any, res: Response, next: NextFunction) => {
   try { const faq = new FAQ(req.body); res.status(201).json(await faq.save()); } catch (error) { next(error); }
@@ -258,7 +402,20 @@ export const deleteFAQ = async (req: any, res: Response, next: NextFunction) => 
   } catch (error) { next(error); }
 };
 export const getJobFAQs = async (_req: any, res: Response, next: NextFunction) => {
-  try { res.json(await JobFAQ.find().populate("employer", "fullName email companyName").populate("job", "title").sort({ createdAt: -1 })); }
+  try { 
+    res.json(await JobFAQ.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $lookup: { from: "users", localField: "employer", foreignField: "_id", as: "e" } },
+      { $unwind: { path: "$e", preserveNullAndEmptyArrays: true } },
+      { $lookup: { from: "jobs", localField: "job", foreignField: "_id", as: "j" } },
+      { $unwind: { path: "$j", preserveNullAndEmptyArrays: true } },
+      { $addFields: { 
+          employer: { _id: "$e._id", fullName: "$e.fullName", email: "$e.email", companyName: "$e.companyName" },
+          job: { _id: "$j._id", title: "$j.title" }
+      }},
+      { $project: { e: 0, j: 0 } }
+    ])); 
+  }
   catch (error) { next(error); }
 };
 export const createJobFAQ = async (req: any, res: Response, next: NextFunction) => {
@@ -290,7 +447,14 @@ export const deleteJobFAQ = async (req: any, res: Response, next: NextFunction) 
   } catch (error) { next(error); }
 };
 export const getAllEmployerSettings = async (_req: any, res: Response, next: NextFunction) => {
-  try { res.json(await EmployerSettings.find().populate("user", "fullName email companyName")); }
+  try { 
+    res.json(await EmployerSettings.aggregate([
+      { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "u" } },
+      { $unwind: { path: "$u", preserveNullAndEmptyArrays: true } },
+      { $addFields: { user: { _id: "$u._id", fullName: "$u.fullName", email: "$u.email", companyName: "$u.companyName" } } },
+      { $project: { u: 0 } }
+    ])); 
+  }
   catch (error) { next(error); }
 };
 export const createEmployerSettings = async (req: any, res: Response, next: NextFunction) => {
@@ -321,7 +485,12 @@ export const createUser = async (req: any, res: Response, next: NextFunction) =>
     if (userData.firstName || userData.lastName) {
       userData.fullName = [userData.firstName, userData.middleName, userData.lastName].filter(Boolean).join(" ");
     }
-    if (role === "graduate" && !userData.degree) userData.degree = "Not Specified";
+    // Auto-verify when created by admin so tor/permit are not required
+    userData.verified = true;
+    userData.verificationStatus = "verified";
+    userData.approvalStatus = "approved";
+
+    if ((role === "graduate" || role === "jobseeker") && !userData.degree) userData.degree = "Not Specified";
     if (role === "employer" && !userData.companyName) userData.companyName = "Not Specified";
     if (role === "employer") ["degree","university","major","graduationYear","jobPreferences","skills","experiences","internships","education","awards","certifications","projects","languages"].forEach(f => delete userData[f]);
     const user = await User.create(userData);
