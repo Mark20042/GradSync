@@ -10,7 +10,7 @@ const creators = [
     role: "Fullstack Developer",
     // TODO: Attach your actual image here. You can import it at the top or put it in the public folder.
     // Example: image: "/assets/mark-image.jpg"
-    image: pototImage, 
+    image: pototImage,
     description: "Architecting scalable systems and crafting seamless user experiences across the stack.",
     socials: {
       github: "#",
@@ -48,7 +48,7 @@ const Creators = () => {
       <div className="max-w-7xl mx-auto z-10 w-full">
         {/* Section Header */}
         <div className="text-center mb-20">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -57,7 +57,7 @@ const Creators = () => {
           >
             Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">Minds</span> Behind It
           </motion.h2>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -77,14 +77,12 @@ const Creators = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: index * 0.2, type: "spring", stiffness: 50 }}
               viewport={{ once: true, margin: "-100px" }}
-              className="group relative bg-white rounded-3xl p-[2px] shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
+              className="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
             >
-              {/* Gradient Border Effect */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${creator.color} opacity-0 group-hover:opacity-100 transition-all duration-500`}></div>
               
-              <div className="relative h-full bg-white rounded-[22px] p-8 md:p-10 flex flex-col items-center text-center z-10">
+              <div className="relative h-full bg-white p-8 md:p-10 flex flex-col items-center text-center z-10">
                 {/* Image Container with Hover Effects */}
-                <div className="relative w-40 h-40 md:w-48 md:h-48 mb-8 rounded-full p-1.5 bg-gradient-to-br from-gray-100 to-gray-200 group-hover:from-purple-100 group-hover:to-blue-100 transition-all duration-500">
+                <div className="relative w-40 h-40 md:w-48 md:h-48 mb-8 rounded-full p-1.5 bg-gray-100 transition-all duration-500">
                   <div className="w-full h-full rounded-full overflow-hidden border-4 border-white shadow-md relative z-10 bg-white">
                     <img
                       src={creator.image}
@@ -92,23 +90,18 @@ const Creators = () => {
                       className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                     />
                   </div>
-                  
+
                   {/* Glowing blur behind image */}
                   <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${creator.color} opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500`}></div>
-                  
-                  {/* Decorative badge */}
-                  <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-full bg-gradient-to-br ${creator.color} flex items-center justify-center shadow-lg border-2 border-white transform scale-0 group-hover:scale-100 transition-transform duration-500 delay-100`}>
-                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
+
+
                 </div>
 
                 {/* Content */}
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 group-hover:text-purple-700 transition-colors duration-300">
                   {creator.name}
                 </h3>
-                
+
                 <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide uppercase mb-3 bg-gradient-to-r ${creator.color} text-transparent bg-clip-text bg-gray-50 border border-gray-100`}>
                   {creator.role}
                 </span>
