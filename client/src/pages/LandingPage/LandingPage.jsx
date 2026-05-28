@@ -6,17 +6,21 @@ import Features from "./components/Features";
 import HowItWorks from "./components/HowItWorks";
 import PublicJobSection from "./components/PublicJobSection";
 import About from "./components/About";
+import Creators from "./components/Creators";
 import Contact from "./components/Contact";
 const LandingPage = () => {
   return (
     <div className="min-h-screen ">
       <Header />
+
       <Hero />
+      <Creators />
       <CompanyShowcase />
       <HowItWorks />
       <Features />
       <PublicJobSection />
       <About />
+
       <Contact />
     </div>
   );
