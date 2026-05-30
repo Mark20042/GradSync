@@ -14,13 +14,13 @@ const LandingPage = () => {
       <Header />
 
       <Hero />
-      <Creators />
+
       <CompanyShowcase />
       <HowItWorks />
       <Features />
       <PublicJobSection />
       <About />
-
+      <Creators />
       <Contact />
     </div>
   );
