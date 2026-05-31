@@ -13,6 +13,7 @@ import SavedJob from "@/models/SavedJob.model.js";
 import Conversation from "@/models/Conversation.model.js";
 import Message from "@/models/Message.model.js";
 import Assessment from "@/models/Assessment.model.js";
+import InterviewDraft from "@/models/InterviewDraft.model.js";
 import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/services/cloudinary.service.js";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
@@ -125,7 +126,30 @@ export const getAllUsers = async (_req: any, res: Response, next: NextFunction) 
   try { 
     const users = await User.aggregate([
       { $sort: { createdAt: -1 } },
-      { $project: { password: 0 } } // Exclude password, return all other fields
+      {
+        $lookup: {
+          from: "assessments",
+          localField: "_id",
+          foreignField: "candidateId",
+          as: "assessments"
+        }
+      },
+      {
+        $addFields: {
+          assessmentCount: { $size: "$assessments" },
+          generatedSkills: {
+            $map: {
+              input: "$assessments",
+              as: "a",
+              in: { skill: "$$a.skill", status: "$$a.status" }
+            }
+          },
+          isGenerating: {
+            $in: ["generating", "$assessments.status"]
+          }
+        }
+      },
+      { $project: { password: 0, assessments: 0 } } // Exclude password and heavy assessments array
     ]);
     res.json(users);
   }
@@ -163,10 +187,12 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
     await Promise.allSettled(cleanups);
 
     if (user.role === "graduate" || user.role === "jobseeker") {
-      // Delete graduate's applications, saved jobs, assessments
+      // Delete graduate's applications, saved jobs, assessments, and interview drafts
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
       await Assessment.deleteMany({ user: userId });
+      await Assessment.deleteMany({ candidateId: userId });
+      await InterviewDraft.deleteMany({ candidateId: userId });
     }
 
     if (user.role === "employer") {

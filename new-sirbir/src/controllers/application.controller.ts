@@ -210,7 +210,7 @@ const getApplicationById = async (req: AuthRequest, res: Response, next: NextFun
   try {
     const app = await Application.findById(req.params.id)
       .populate("job", "title company")
-      .populate("applicant", "fullName degree email avatar bio resume skills verifiedSkills experiences internships education projects portfolio linkedin phone address awards certifications languages");
+      .populate("applicant", "fullName degree email avatar bio resume skills verifiedSkills experiences internships education projects portfolio linkedin phone address awards certifications languages github website");
     if (!app) throw new NotFoundError("Application not found");
     res.status(StatusCodes.OK).json(app);
   } catch (error) { next(error); }

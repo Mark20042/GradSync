@@ -273,12 +273,8 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
 
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{selectedSkill.skill}</h3>
                             <p className="text-gray-500 text-sm mb-4">{selectedSkill.assessmentTitle || `${selectedSkill.skill} Assessment`}</p>
-                            <div className={`text-sm font-bold px-3 py-1 rounded-full mb-6 ${selectedSkill.level === 'Expert' ? 'bg-orange-100 text-orange-700' :
-                                selectedSkill.level === 'Senior' ? 'bg-purple-100 text-purple-700' :
-                                    selectedSkill.level === 'Mid' ? 'bg-blue-100 text-blue-700' :
-                                        'bg-green-100 text-green-700'
-                                }`}>
-                                {selectedSkill.level} Level Verified
+                            <div className="text-sm font-bold px-3 py-1 rounded-full mb-6 bg-green-100 text-green-700">
+                                Verified
                             </div>
 
                             <div className="w-full bg-gray-50 rounded-xl p-4 border border-gray-100">

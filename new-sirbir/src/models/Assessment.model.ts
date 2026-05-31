@@ -10,10 +10,12 @@ export interface IAssessmentQuestion {
   correctAnswer: string;
   explanation?: string;
   category?: string;
+  difficulty?: 'Entry' | 'Mid' | 'Senior' | 'Expert';
 }
 
 export interface IAssessment extends Document {
   _id: Types.ObjectId;
+  candidateId?: Types.ObjectId;
   skill: string;
   title: string;
   difficulty: 'Entry' | 'Mid' | 'Senior' | 'Expert';
@@ -25,6 +27,7 @@ export interface IAssessment extends Document {
   maxRightClicks: number;
   maxDevTools: number;
   questions: IAssessmentQuestion[];
+  status?: 'pending review' | 'approved' | 'generating';
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -38,11 +41,13 @@ const questionSchema = new Schema({
   correctAnswer: { type: String, required: true },
   explanation: { type: String, default: '' },
   category: { type: String, default: 'General' },
+  difficulty: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Expert'], default: 'Entry' },
 });
 
 const assessmentSchema = new Schema<IAssessment>(
   {
-    skill: { type: String, required: true, unique: true },
+    candidateId: { type: Schema.Types.ObjectId, ref: 'User' },
+    skill: { type: String, required: true },
     title: { type: String, required: true },
     difficulty: { type: String, enum: ['Entry', 'Mid', 'Senior', 'Expert'], default: 'Entry' },
     timeLimit: { type: Number, default: 15 },
@@ -53,6 +58,7 @@ const assessmentSchema = new Schema<IAssessment>(
     maxRightClicks: { type: Number, default: 3 },
     maxDevTools: { type: Number, default: 1 },
     questions: [questionSchema],
+    status: { type: String, enum: ['pending review', 'approved', 'generating'], default: 'pending review' },
   },
   { timestamps: true }
 );

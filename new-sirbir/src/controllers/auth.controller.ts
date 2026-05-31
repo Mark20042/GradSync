@@ -19,6 +19,7 @@ import {
   sendVerificationSuccessEmail,
   sendVerificationFailedEmail,
 } from "@/utils/email.service.js";
+import { autoGenerateForUser } from "@/services/generation.service.js";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -365,6 +366,18 @@ const setupProfileGrad = async (
       updateFields,
       { new: true },
     ).select("-password");
+
+    // Auto-generate AI questions in the background (interview first, then assessments)
+    const skillsArray = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
+    const allSkills = Array.from(new Set(
+      skillsArray.map((s: any) => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s)
+        .filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
+    )) as string[];
+
+    // Queue this user — interview questions generated FIRST (based on desired job title),
+    // then assessments for each skill. Multiple users are processed one at a time.
+    autoGenerateForUser(req.user._id.toString(), allSkills);
+
     res.status(StatusCodes.OK).json(user);
   } catch (error) {
     next(error);

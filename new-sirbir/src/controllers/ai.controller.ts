@@ -2,16 +2,20 @@ import type { Response } from 'express';
 import User from '@/models/User.model.js';
 import Job from '@/models/Job.model.js';
 import { getOllamaService } from '@/services/ai/ollama.service.js';
+import { getGeminiService } from '@/services/ai/gemini.service.js';
+import { env } from '@/config/environment.js';
 import { createNotification } from '@/utils/notification.helper.js';
 import type { AuthenticatedRequest } from '@/interfaces/base.interfaces.js';
 import type {
   SuitabilityRequestBody,
   CandidateSuitabilityRequestBody,
-  MentorRequestBody,
   UserProfileForAI,
 } from '@/interfaces/ai.interfaces.js';
 
-const ollama = getOllamaService();
+// Choose AI service dynamically
+const getAIService = () => {
+  return getGeminiService();
+};
 
 // ─── Check Job Suitability ──────────────────────────────────────────────
 
@@ -30,7 +34,7 @@ export const checkSuitability = async (
 
     // 1. Fetch User Profile
     const user = await User.findById(userId).select(
-      'degree major skills experiences education'
+      'degree major skills experiences education verifiedSkills'
     );
     if (!user) {
       res.status(404).json({ message: 'User not found' });
@@ -45,7 +49,8 @@ export const checkSuitability = async (
     }
 
     // 3. Call AI Service
-    const result = await ollama.analyzeJobSuitability(
+    const aiService = getAIService();
+    const result = await aiService.analyzeJobSuitability(
       user as unknown as UserProfileForAI,
       job
     );
@@ -72,7 +77,7 @@ export const generateSummary = async (
     const userId = req.user._id;
 
     const user = await User.findById(userId).select(
-      'degree major skills experiences education'
+      'degree major skills experiences education verifiedSkills'
     );
 
     if (!user) {
@@ -80,7 +85,8 @@ export const generateSummary = async (
       return;
     }
 
-    const result = await ollama.generateAISummary(
+    const aiService = getAIService();
+    const result = await aiService.generateAISummary(
       user as unknown as UserProfileForAI
     );
 
@@ -107,7 +113,7 @@ export const scanForMatches = async (
 
     // 1. Fetch User Profile (including job preferences)
     const user = await User.findById(userId).select(
-      'degree major skills experiences education jobPreferences lastScanDate'
+      'degree major skills experiences education jobPreferences lastScanDate verifiedSkills'
     );
 
     if (!user) {
@@ -156,7 +162,8 @@ export const scanForMatches = async (
     // 5. Analyze each job
     for (const job of recentJobs) {
       try {
-        const analysis = await ollama.analyzeJobSuitability(
+        const aiService = getAIService();
+        const analysis = await aiService.analyzeJobSuitability(
           user as unknown as UserProfileForAI,
           job
         );
@@ -212,7 +219,7 @@ export const checkCandidateSuitability = async (
 
     // 1. Fetch Candidate Profile
     const user = await User.findById(candidateId).select(
-      'degree major skills experiences education'
+      'degree major skills experiences education verifiedSkills'
     );
     if (!user) {
       res.status(404).json({ message: 'Candidate not found' });
@@ -227,7 +234,8 @@ export const checkCandidateSuitability = async (
     }
 
     // 3. Call AI Service
-    const result = await ollama.analyzeJobSuitability(
+    const aiService = getAIService();
+    const result = await aiService.analyzeJobSuitability(
       user as unknown as UserProfileForAI,
       job
     );
@@ -239,58 +247,3 @@ export const checkCandidateSuitability = async (
   }
 };
 
-// ─── AI Career Mentor ───────────────────────────────────────────────────
-
-/**
- * @desc    Ask the AI Career Mentor
- * @route   POST /api/ai/mentor
- * @access  Private
- */
-export const askMentor = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const { referenceJobId, question } = req.body as MentorRequestBody;
-    const userId = req.user._id;
-
-    // 1. Fetch User Context
-    const user = await User.findById(userId).select(
-      'skills experiences education degree major'
-    );
-
-    let jobContext = '';
-    if (referenceJobId) {
-      const job = await Job.findById(referenceJobId).select(
-        'title description requirements qualifications skills company'
-      );
-      if (job) {
-        const companyObj = job.company as { companyName?: string } | undefined;
-        jobContext = `
-        CONTEXT: The user is asking about a specific job:
-        Title: ${job.title}
-        Company: ${companyObj?.companyName ?? 'Unknown'}
-        Description: ${job.description}
-        Requirements: ${job.requirements}
-        Qualifications: ${job.qualifications || 'N/A'}
-        Required Skills: ${job.skills?.join(', ') ?? 'N/A'}
-        `;
-      }
-    }
-
-    const userContext = `
-    USER PROFILE:
-    Degree: ${user?.degree ?? 'N/A'} in ${user?.major ?? 'N/A'}
-    Skills: ${user?.skills?.join(', ') ?? 'N/A'}
-    Experience: ${user?.experiences?.map((e) => `${e.title} at ${e.company}`).join(', ') ?? 'N/A'}
-    `;
-
-    // 2. Call AI Mentor
-    const result = await ollama.askMentor(question, userContext, jobContext);
-
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('AI Mentor Error:', error);
-    res.status(500).json({ message: 'Failed to get mentor response' });
-  }
-};

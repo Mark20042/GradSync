@@ -26,6 +26,9 @@ const ApplicantProfilePreview = ({
   const [showAiModal, setShowAiModal] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [customReason, setCustomReason] = useState("");
 
   const navigate = useNavigate();
 
@@ -51,30 +54,50 @@ const ApplicantProfilePreview = ({
   };
 
 
-  const onChangeStatus = async (e) => {
-    const newStatus = e.target.value;
+  const updateStatusAPI = async (newStatus, reason = null) => {
     setCurrentStatus(newStatus);
     setLoading(true);
 
     try {
+      const payload = { status: newStatus };
+      if (reason) payload.rejectionReason = reason;
+
       const response = await axiosInstance.put(
         API_PATH.APPLICATIONS.UPDATE_STATUS(selectedApplicant._id),
-        { status: newStatus }
+        payload
       );
 
       if (response.status === 200) {
-        //Update local state after successful update
         setSelectedApplicant({ ...selectedApplicant, status: newStatus });
         toast.success("Application status updated successfully");
       }
     } catch (err) {
       console.error("Error updating application status:", err);
-      //Optionally revert status back if failed
       setCurrentStatus(selectedApplicant.status);
       toast.error("Something went wrong! Try again later");
     } finally {
       setLoading(false);
     }
+  };
+
+  const onChangeStatus = async (e) => {
+    const newStatus = e.target.value;
+    if (newStatus === "Rejected") {
+      setShowRejectionModal(true);
+      return;
+    }
+    await updateStatusAPI(newStatus);
+  };
+
+  const handleRejectConfirm = async () => {
+    let finalReason = rejectionReason;
+    if (rejectionReason === "Others") {
+      finalReason = customReason;
+    }
+    await updateStatusAPI("Rejected", finalReason);
+    setShowRejectionModal(false);
+    setRejectionReason("");
+    setCustomReason("");
   };
 
   return (
@@ -141,7 +164,7 @@ const ApplicantProfilePreview = ({
                     {moment(selectedApplicant.createdAt).format("MMM Do, YYYY")}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
                     <StatusBadge status={currentStatus} />
@@ -233,6 +256,70 @@ const ApplicantProfilePreview = ({
           </div>
         </div>
       </div>
+
+      {/* Rejection Reason Modal */}
+      {showRejectionModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Reason for Rejection</h3>
+              <button onClick={() => setShowRejectionModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Providing a reason helps candidates improve and leaves a good impression. This is optional.
+            </p>
+            <div className="space-y-3 mb-6">
+              {[
+                "Lack of required skills or experience",
+                "Better suited candidates found",
+                "Position closed or on hold",
+                "Did not meet requirements required",
+                "Others"
+              ].map(reason => (
+                <label key={reason} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                  <input
+                    type="radio"
+                    name="rejectionReason"
+                    value={reason}
+                    checked={rejectionReason === reason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    className="text-blue-600 focus:ring-blue-500"
+                  />
+                  {reason}
+                </label>
+              ))}
+
+              {rejectionReason === "Others" && (
+                <textarea
+                  placeholder="Please specify the reason (optional)..."
+                  value={customReason}
+                  onChange={(e) => setCustomReason(e.target.value)}
+                  className="w-full mt-2 border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  rows="3"
+                />
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRejectionModal(false)}
+                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectConfirm}
+                disabled={loading}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

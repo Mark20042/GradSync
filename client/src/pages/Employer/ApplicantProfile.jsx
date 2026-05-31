@@ -15,8 +15,12 @@ import {
   X,
   Eye,
   MapPin,
+  Sparkles,
+  BrainCircuit,
 } from "lucide-react";
 import { getBadgeComponent } from "../../components/Badges/SkillBadges";
+import EmployerSuitabilityModal from "./components/EmployerSuitabilityModal";
+import toast from "react-hot-toast";
 
 const ApplicantProfile = () => {
   const location = useLocation();
@@ -28,6 +32,31 @@ const ApplicantProfile = () => {
   const [interviewScores, setInterviewScores] = useState([]);
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [selectedSkill, setSelectedSkill] = useState(null);
+
+  // AI Suitability
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const handleOpenAiAnalysis = async () => {
+    setShowAiModal(true);
+    if (!aiAnalysis) {
+      setIsAiLoading(true);
+      try {
+        const response = await axiosInstance.post(API_PATH.AI.CHECK_CANDIDATE_SUITABILITY, {
+          jobId: applicant.job._id,
+          candidateId: applicant.applicant._id
+        });
+        setAiAnalysis(response.data);
+      } catch (error) {
+        console.error("Analysis failed:", error);
+        toast.error("Failed to analyze candidate");
+        setShowAiModal(false);
+      } finally {
+        setIsAiLoading(false);
+      }
+    }
+  };
   const [assessmentSubmissions, setAssessmentSubmissions] = useState([]);
 
   const fetchApplicant = async () => {
@@ -207,6 +236,24 @@ const ApplicantProfile = () => {
                 </p>
               </div>
             )}
+
+            {/* AI Analysis Banner */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm mb-6">
+              <div>
+                <h5 className="text-lg font-bold text-indigo-900 flex items-center gap-2 mb-1">
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  AI Suitability Check
+                </h5>
+                <p className="text-sm font-medium text-indigo-600/80 uppercase tracking-wide">Evaluate match with job requirements</p>
+              </div>
+              <button
+                onClick={handleOpenAiAnalysis}
+                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95"
+              >
+                <BrainCircuit className="w-5 h-5" />
+                {aiAnalysis ? "View Analysis" : "Run Analysis"}
+              </button>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Left Column - Main Info */}
@@ -431,6 +478,16 @@ const ApplicantProfile = () => {
                             <p className="text-gray-400 text-xs">
                               {moment(cert.date).format("MMM YYYY")}
                             </p>
+                            {cert.credentialURL && (
+                              <a
+                                href={cert.credentialURL.startsWith('http') ? cert.credentialURL : `https://${cert.credentialURL}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline inline-flex items-center mt-1"
+                              >
+                                View Credential
+                              </a>
+                            )}
                           </div>
                         ),
                       )}
@@ -483,12 +540,38 @@ const ApplicantProfile = () => {
                       <div>
                         <p className="text-gray-500">LinkedIn</p>
                         <a
-                          href={applicant.applicant.linkedin}
+                          href={applicant.applicant.linkedin.startsWith('http') ? applicant.applicant.linkedin : `https://${applicant.applicant.linkedin}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:underline truncate block"
                         >
                           View Profile
+                        </a>
+                      </div>
+                    )}
+                    {applicant.applicant.github && (
+                      <div>
+                        <p className="text-gray-500">GitHub</p>
+                        <a
+                          href={applicant.applicant.github.startsWith('http') ? applicant.applicant.github : `https://${applicant.applicant.github}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline truncate block"
+                        >
+                          View GitHub
+                        </a>
+                      </div>
+                    )}
+                    {applicant.applicant.website && (
+                      <div>
+                        <p className="text-gray-500">Website</p>
+                        <a
+                          href={applicant.applicant.website.startsWith('http') ? applicant.applicant.website : `https://${applicant.applicant.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline truncate block"
+                        >
+                          View Website
                         </a>
                       </div>
                     )}
@@ -511,24 +594,6 @@ const ApplicantProfile = () => {
                               v.skill?.toLowerCase() === skill?.toLowerCase(),
                           );
                         const isVerified = !!verifiedSkill;
-                        const BadgeIcon = verifiedSkill
-                          ? getBadgeComponent(verifiedSkill.level)
-                          : null;
-
-                        const getBadgeColor = (level) => {
-                          switch (level) {
-                            case "Entry":
-                              return "from-green-400 to-green-600";
-                            case "Mid":
-                              return "from-blue-400 to-blue-600";
-                            case "Senior":
-                              return "from-purple-400 to-purple-600";
-                            case "Expert":
-                              return "from-orange-400 to-orange-600";
-                            default:
-                              return "from-gray-400 to-gray-600";
-                          }
-                        };
 
                         return (
                           <div
@@ -536,7 +601,7 @@ const ApplicantProfile = () => {
                             onClick={() => isVerified && setSelectedSkill(verifiedSkill)}
                             className={`relative px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 ${
                               isVerified
-                                ? `bg-gradient-to-r ${getBadgeColor(verifiedSkill.level)} text-white shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all`
+                                ? "bg-green-600 text-white shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all"
                                 : "bg-gray-100 text-gray-600 border border-gray-200 cursor-default"
                             }`}
                             title={
@@ -545,15 +610,12 @@ const ApplicantProfile = () => {
                                 : "Unverified Skill"
                             }
                           >
-                            {isVerified && BadgeIcon ? (
-                              <BadgeIcon size={16} />
+                            {isVerified ? (
+                              <CheckCircle className="w-3.5 h-3.5 text-white" />
                             ) : (
                               <XCircle className="w-3.5 h-3.5 text-gray-400" />
                             )}
                             <span>{skill}</span>
-                            {isVerified && (
-                              <CheckCircle className="w-3.5 h-3.5 ml-0.5" />
-                            )}
                           </div>
                         );
                       })}
@@ -854,14 +916,17 @@ const ApplicantProfile = () => {
             </div>
             
             <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
-                <p className="text-sm text-blue-600 font-semibold mb-1">Assessment Score</p>
-                <p className="text-3xl font-black text-blue-700">{selectedSkill.score || 0}%</p>
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Proficiency Level</p>
-                <p className="text-gray-900 font-medium">{selectedSkill.level}</p>
+              <div className="flex items-center gap-4">
+                <div className="flex-1 bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
+                  <p className="text-sm text-blue-600 font-bold mb-1 uppercase tracking-wider">Assessment Score</p>
+                  <p className="text-3xl font-black text-blue-700">{selectedSkill.score || 0}%</p>
+                </div>
+                <div className="flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center bg-green-50 border-green-100">
+                  <p className="text-sm font-bold mb-1 uppercase tracking-wider text-green-600">Status</p>
+                  <div className="flex items-center justify-center gap-2 text-xl font-bold capitalize text-green-700">
+                    <CheckCircle size={22} /> Passed
+                  </div>
+                </div>
               </div>
 
               {activeSkillDetails?.categoryScores && Object.keys(activeSkillDetails.categoryScores).length > 0 ? (
@@ -911,6 +976,15 @@ const ApplicantProfile = () => {
         </div>
       )}
 
+      {/* Suitability Modal */}
+      <EmployerSuitabilityModal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        loading={isAiLoading}
+        result={aiAnalysis}
+        candidateName={applicant?.applicant?.fullName}
+        jobTitle={applicant?.job?.title}
+      />
     </DashboardLayout>
   );
 };

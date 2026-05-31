@@ -13,11 +13,6 @@ export interface CandidateSuitabilityRequestBody {
   candidateId: string;
 }
 
-/** POST /api/ai/mentor */
-export interface MentorRequestBody {
-  referenceJobId?: string;
-  question: string;
-}
 
 // ─── Service Input Types ────────────────────────────────────────────────
 
@@ -35,6 +30,12 @@ export interface UserProfileForAI {
   education?: Array<{
     school: string;
     degree?: string;
+  }>;
+  verifiedSkills?: Array<{
+    skill: string;
+    score: number;
+    assessmentTitle?: string;
+    categoryScores?: Record<string, number>;
   }>;
 }
 
@@ -70,10 +71,6 @@ export interface InterviewEvalResult {
   feedback: string;
 }
 
-/** Result from AI mentor */
-export interface MentorResult {
-  answer: string;
-}
 
 /** Result from scan-matches endpoint */
 export interface ScanMatchesResult {

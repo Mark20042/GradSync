@@ -164,10 +164,25 @@ const AssessmentTaking = () => {
       
       const assessmentData = res.data;
       
-      // Shuffle questions
+      // Group by category and shuffle questions within each category
       if (assessmentData.questions && assessmentData.questions.length > 0) {
-        assessmentData.questions = [...assessmentData.questions].sort(() => Math.random() - 0.5);
+        const groupedQuestions = {};
+        assessmentData.questions.forEach(q => {
+          const cat = q.category || "General";
+          if (!groupedQuestions[cat]) groupedQuestions[cat] = [];
+          groupedQuestions[cat].push(q);
+        });
+
+        const sortedCategories = Object.keys(groupedQuestions).sort();
+        let shuffledGroupedQuestions = [];
         
+        sortedCategories.forEach(cat => {
+          const shuffledInCategory = [...groupedQuestions[cat]].sort(() => Math.random() - 0.5);
+          shuffledGroupedQuestions = [...shuffledGroupedQuestions, ...shuffledInCategory];
+        });
+
+        assessmentData.questions = shuffledGroupedQuestions;
+
         // Shuffle options for each question
         assessmentData.questions = assessmentData.questions.map(q => {
           if (q.options && q.options.length > 0) {

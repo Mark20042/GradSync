@@ -5,9 +5,13 @@ import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import Interview from "@/models/Interview.model.js";
 import InterviewRole from "@/models/InterviewRole.model.js";
 import { getOllamaService } from "@/services/ai/ollama.service.js";
+import { getGeminiService } from "@/services/ai/gemini.service.js";
+import { env } from "@/config/environment.js";
 import { sendInterviewResultEmail, sendAssessmentRejectionEmail } from "@/utils/email.service.js";
 import { interviewGraph } from "@/services/ai/workflows/interview-agent.workflow.js";
 import { HumanMessage } from "@langchain/core/messages";
+import mongoose from "mongoose";
+import InterviewDraft from "@/models/InterviewDraft.model.js";
 
 const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -17,10 +21,21 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
     const userName = req.user.fullName;
     if (!answers || !Array.isArray(answers) || answers.length === 0) throw new BadRequestError("No answers provided");
 
-    const role = await InterviewRole.findOne({ roleName });
+    let role: any = null;
+    let roleNameForDisplay = roleName || "General";
+    
+    if (mongoose.isValidObjectId(roleName)) {
+      role = await InterviewDraft.findById(roleName);
+      if (role) roleNameForDisplay = "Tailored Interview";
+    }
+    
+    if (!role) {
+      role = await InterviewRole.findOne({ roleName });
+    }
+    
     const roleQuestions = role ? role.questions : [];
     const idealMap: Record<string, string> = {};
-    roleQuestions.forEach((q) => { idealMap[String(q._id)] = q.idealAnswer || ""; });
+    roleQuestions.forEach((q: any) => { idealMap[String(q._id)] = q.idealAnswer || ""; });
 
     // Evaluate integrity violations
     const violationCounts: Record<string, number> = { "tab-switch": 0, "copy-paste": 0, "window-blur": 0, "right-click": 0, devtools: 0 };
@@ -86,9 +101,9 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
 
     (async () => {
       try {
-        const ollama = getOllamaService();
+        const aiService = getGeminiService();
         console.log(`🧠 Background evaluation started for user: ${userName} (${roleName})`);
-        const bulkResult = await ollama.evaluateFullInterview(
+        const bulkResult = await aiService.evaluateFullInterview(
           roleName || "General",
           answers.map((a: any) => ({ questionId: String(a.questionId), questionText: a.questionText,
             idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || "", candidateAnswer: a.candidateAnswer }))
@@ -204,16 +219,28 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const config = { configurable: { thread_id } };
 
     if (!message) {
-      const role = await InterviewRole.findOne({ roleName });
+      let role: any = null;
+      let roleNameForDisplay = roleName;
+      
+      if (mongoose.isValidObjectId(roleName)) {
+        role = await InterviewDraft.findById(roleName);
+        if (role) roleNameForDisplay = "Tailored Interview";
+      }
+      
+      if (!role) {
+        role = await InterviewRole.findOne({ roleName });
+      }
+
       if (!role) throw new NotFoundError("Role not found");
       const mappedQuestions = role.questions.map((q: any) => ({ questionId: String(q._id), text: q.questionText, idealAnswer: q.idealAnswer || "" }));
       const introQuestions = [
-        { questionId: "intro_1", text: `Hello! I'm your GradSync AI Interviewer. To start, how do you plan to handle the responsibilities of the ${roleName} role as a fresh graduate?`, idealAnswer: `The candidate should confidently explain their readiness and motivation for the ${roleName} role.` },
-        { questionId: "intro_2", text: `What specific skills or software have you learned during your studies that will directly help you succeed as a ${roleName}?`, idealAnswer: `The candidate should highlight relevant academic projects, software, or coursework that align with the ${roleName}.` },
-        { questionId: "intro_3", text: `Transitioning into a professional ${roleName} environment can be challenging. How will you stay organized and continuously improve your skills on the job?`, idealAnswer: `The candidate should discuss adaptive strategies, problem-solving, and a willingness to learn continuously.` }
+        { questionId: "intro_1", text: `Hello! I'm your GradSync AI Interviewer. To start, how do you plan to handle the responsibilities of the ${roleNameForDisplay} role as a fresh graduate?`, idealAnswer: `The candidate should confidently explain their readiness and motivation for the ${roleNameForDisplay} role.` },
+        { questionId: "intro_2", text: `What specific skills or software have you learned during your studies that will directly help you succeed as a ${roleNameForDisplay}?`, idealAnswer: `The candidate should highlight relevant academic projects, software, or coursework that align with the ${roleNameForDisplay}.` },
+        { questionId: "intro_3", text: `Transitioning into a professional ${roleNameForDisplay} environment can be challenging. How will you stay organized and continuously improve your skills on the job?`, idealAnswer: `The candidate should discuss adaptive strategies, problem-solving, and a willingness to learn continuously.` }
       ];
       mappedQuestions.unshift(...introQuestions);
-      const result: any = await interviewGraph.invoke({ roleName, questions: mappedQuestions, messages: [] }, config);
+      const result: any = await interviewGraph.invoke({ roleName: roleNameForDisplay, questions: mappedQuestions, messages: [] }, config);
+
       const lastMessage = result.messages[result.messages.length - 1];
       res.json({ aiMessage: lastMessage.content, isFinished: result.isFinished });
       return;
@@ -222,7 +249,18 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const result: any = await interviewGraph.invoke({ messages: [new HumanMessage(message)] }, config);
     if (result.isFinished && result.evaluations && result.evaluations.length > 0) {
       
-      const role = await InterviewRole.findOne({ roleName });
+      let role: any = null;
+      let roleNameForDisplay = roleName;
+
+      if (mongoose.isValidObjectId(roleName)) {
+        role = await InterviewDraft.findById(roleName);
+        if (role) roleNameForDisplay = "Tailored Interview";
+      }
+
+      if (!role) {
+        role = await InterviewRole.findOne({ roleName });
+      }
+
       const roleQuestions = role ? role.questions : [];
 
       const evals = result.evaluations.map((e: any) => {
@@ -274,8 +312,8 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
          }
       }
 
-      const ollama = getOllamaService();
-      const summaryRes = await ollama.evaluateFullInterview(roleName, evals.map((e: any) => ({ questionId: e.questionId, questionText: e.questionText, candidateAnswer: e.candidateAnswer, idealAnswer: e.idealAnswer })));
+      const aiService = getGeminiService();
+      const summaryRes = await aiService.evaluateFullInterview(roleName, evals.map((e: any) => ({ questionId: e.questionId, questionText: e.questionText, candidateAnswer: e.candidateAnswer, idealAnswer: e.idealAnswer })));
       
       await Interview.create({ 
         candidateId, 

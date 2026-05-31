@@ -16,13 +16,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { API_PATH } from "../../utils/apiPath";
 import Navbar from "../Graduates/Jobseeker/components/Navbar";
-import {
-  EntryBadge,
-  MidBadge,
-  SeniorBadge,
-  ExpertBadge,
-  getBadgeComponent,
-} from "../../components/Badges/SkillBadges";
+
 
 const AssessmentList = () => {
   const navigate = useNavigate();
@@ -38,10 +32,11 @@ const AssessmentList = () => {
 
   const fetchData = async () => {
     try {
-      const assessRes = await axiosInstance.get("/api/assessments");
+      // Fetch only candidate-specific approved assessments
+      const assessRes = await axiosInstance.get("/api/generation/my-assessments");
       setAssessments(assessRes.data || []);
     } catch (error) {
-      console.error("Error fetching assessments", error);
+      console.error("Error fetching personalized assessments", error);
     }
 
     try {
@@ -59,10 +54,19 @@ const AssessmentList = () => {
     }
 
     try {
-      const rolesRes = await axiosInstance.get(API_PATH.INTERVIEW.GET_ROLES);
-      setRoles(rolesRes.data || []);
+      // Fetch candidate-specific tailored interview drafts
+      const draftsRes = await axiosInstance.get("/api/generation/my-interviews");
+      const draftsAsRoles = (draftsRes.data || []).map(draft => ({
+        _id: draft._id,
+        roleName: draft._id, // Use ID as roleName for backend lookup
+        displayName: "Your Tailored Interview",
+        description: "A custom 20-question interview specifically generated for your skills and experience.",
+        questions: draft.questions,
+        isDraft: true
+      }));
+      setRoles(draftsAsRoles);
     } catch (error) {
-      console.error("Error fetching interview roles", error);
+      console.error("Error fetching personalized interviews", error);
     }
   };
 
@@ -127,7 +131,7 @@ const AssessmentList = () => {
 
               <div className="flex-1">
                 <h4 className="font-bold text-gray-900 mb-1">
-                  {role.roleName}
+                  {role.displayName || role.roleName}
                 </h4>
                 <p className="text-sm text-gray-500 flex items-center gap-1">
                   {role.questions?.length || 0} Questions Available
@@ -149,43 +153,7 @@ const AssessmentList = () => {
 
         <hr className="border-0 h-px bg-gray-200 my-10" />
 
-        {/* Badge Legend */}
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-indigo-100 rounded-2xl p-6 mb-8">
-          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Trophy size={22} className="text-yellow-500" />
-            Skill Badge Levels
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border-2 border-green-200">
-              <EntryBadge size={28} />
-              <div>
-                <div className="font-bold text-sm text-gray-900">Entry</div>
-                <div className="text-xs text-gray-500">Beginner</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border-2 border-blue-200">
-              <MidBadge size={28} />
-              <div>
-                <div className="font-bold text-sm text-gray-900">Mid</div>
-                <div className="text-xs text-gray-500">Intermediate</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border-2 border-purple-200">
-              <SeniorBadge size={28} />
-              <div>
-                <div className="font-bold text-sm text-gray-900">Senior</div>
-                <div className="text-xs text-gray-500">Advanced</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 border-2 border-orange-200">
-              <ExpertBadge size={28} />
-              <div>
-                <div className="font-bold text-sm text-gray-900">Expert</div>
-                <div className="text-xs text-gray-500">Master</div>
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Skill Assessments Section */}
         <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
@@ -196,21 +164,15 @@ const AssessmentList = () => {
           {assessments.length > 0 ? (
             assessments.map((assessment) => {
               const verified = isVerified(assessment.skill);
-              const BadgeComponent = verified
-                ? getBadgeComponent(verified.level)
-                : null;
 
               return (
                 <div
                   key={assessment._id}
                   className="bg-white rounded-xl border border-gray-200 p-6 transition-all duration-300 relative hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
                 >
-                  {verified && BadgeComponent && (
+                  {verified && (
                     <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
-                      <BadgeComponent size={32} />
-                      <span className="text-xs font-bold text-gray-600">
-                        {verified.level}
-                      </span>
+                      <CheckCircle size={28} className="text-green-500" />
                       <button 
                         onClick={() => {
                           const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
@@ -223,15 +185,14 @@ const AssessmentList = () => {
                       </button>
                     </div>
                   )}
-                  <h3 className="font-bold text-lg mb-2 pr-16">
+                  <h3 className="font-bold text-lg mb-2 pr-16 capitalize">
                     {assessment.skill}
                   </h3>
                   <p className="text-gray-500 text-sm mb-2">
-                    {assessment.difficulty} • {assessment.timeLimit || 15} mins
+                    {assessment.timeLimit || 15} mins • {assessment.questions?.length || 0} questions
                   </p>
                   <p className="text-gray-400 text-xs mb-4">
-                    Pass: {assessment.passingScore || 80}% •{" "}
-                    {assessment.questions?.length || 0} questions
+                    Pass: {assessment.passingScore || 80}%
                   </p>
                   <button
                     onClick={() => {
@@ -279,11 +240,11 @@ const AssessmentList = () => {
           onClick={() => setSelectedSubmission(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden animate-fade-in"
+            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50">
-              <h3 className="text-xl font-bold text-gray-900">
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
+              <h3 className="text-xl font-bold text-gray-900 capitalize">
                 {selectedSubmission.assessment?.skill || "Assessment"} Results
               </h3>
               <button
@@ -294,15 +255,17 @@ const AssessmentList = () => {
               </button>
             </div>
             
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                   <p className="text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
                   <p className="text-3xl font-black text-blue-700">{selectedSubmission.score}%</p>
                 </div>
-                <div className="flex-1 bg-green-50 border border-green-100 rounded-xl p-4 text-center">
-                  <p className="text-sm font-bold text-green-600 mb-1 uppercase tracking-wider">Status</p>
-                  <p className="text-xl font-bold text-green-700 capitalize">Verified</p>
+                <div className={`flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                  <p className={`text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
+                  <div className={`flex items-center justify-center gap-2 text-xl font-bold capitalize ${selectedSubmission.passed ? 'text-green-700' : 'text-red-700'}`}>
+                    {selectedSubmission.passed ? <><CheckCircle size={22} /> Passed</> : <><X size={22} /> Failed</>}
+                  </div>
                 </div>
               </div>
 
@@ -329,6 +292,71 @@ const AssessmentList = () => {
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Questions Review Section */}
+              {selectedSubmission.assessment?.questions && selectedSubmission.answers && (
+                <div className="mt-8 space-y-6">
+                  <h4 className="text-lg font-bold text-gray-900 border-b pb-2">Questions Review</h4>
+                  {selectedSubmission.assessment.questions.map((q, index) => {
+                    const userAnswer = selectedSubmission.answers.find(a => a.questionId === q._id);
+                    let isCorrect = false;
+                    if (userAnswer) {
+                      if (q.type === 'identification') {
+                        isCorrect = userAnswer.selectedOption.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
+                      } else {
+                        isCorrect = userAnswer.selectedOption.trim() === q.correctAnswer.trim();
+                      }
+                    }
+
+                    return (
+                      <div key={q._id || index} className="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 mt-1">
+                            {isCorrect ? (
+                              <CheckCircle className="w-6 h-6 text-green-500" />
+                            ) : (
+                              <X className="w-6 h-6 text-red-500" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 mb-2">
+                              {index + 1}. {q.questionText}
+                            </p>
+                            
+                            {q.codeSnippet && (
+                              <div className="bg-slate-900 text-slate-50 p-4 rounded-lg my-3 font-mono text-sm overflow-x-auto whitespace-pre">
+                                {q.codeSnippet}
+                              </div>
+                            )}
+                            
+                            <div className="mb-3 text-sm">
+                              <p className="text-gray-600 mb-1">
+                                Your Answer: <span className={`font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                  {userAnswer?.selectedOption || 'Not answered'}
+                                </span>
+                              </p>
+                              {!isCorrect && (
+                                <p className="text-gray-600">
+                                  Correct Answer: <span className="font-medium text-green-600">
+                                    {q.correctAnswer}
+                                  </span>
+                                </p>
+                              )}
+                            </div>
+
+                            {q.explanation && (
+                              <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 mt-3 text-sm">
+                                <p className="font-semibold text-blue-900 mb-1">Explanation:</p>
+                                <p className="text-blue-800">{q.explanation}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

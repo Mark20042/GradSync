@@ -47,6 +47,7 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
     "I will not switch tabs, windows, or leave the assessment page",
     "I understand that violations may result in automatic submission and review",
     "I agree to complete this assessment honestly and independently",
+    "I understand that the results of this assessment will be viewed by the employer of the applied job of yours",
   ];
 
   return (

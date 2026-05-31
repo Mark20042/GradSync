@@ -3,7 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle, BrainCircuit } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "./components/AdminModal";
 import UserBasicInfo from "./components/UserForm/UserBasicInfo";
@@ -20,6 +20,7 @@ const AdminUsers = () => {
     const [editingUser, setEditingUser] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [viewingUser, setViewingUser] = useState(null);
+    const [showAIReviewModal, setShowAIReviewModal] = useState(false);
     const [showViewModal, setShowViewModal] = useState(false);
     const [savedJobs, setSavedJobs] = useState([]);
     const [showSavedJobsModal, setShowSavedJobsModal] = useState(false);
@@ -426,10 +427,10 @@ const AdminUsers = () => {
                         </div>
                     )
                 }
-            </AdminModal >
+            </AdminModal>
 
             {/* View User Modal */}
-            < AdminModal
+            <AdminModal
                 isOpen={showViewModal}
                 onClose={() => setShowViewModal(false)}
                 title="User Details"

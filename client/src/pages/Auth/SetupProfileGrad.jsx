@@ -43,6 +43,13 @@ const SetupProfileGrad = () => {
     languages: [],
     experienceType: "work", // Default for ExperienceStep tab
     certificationType: "certification", // Default for SkillsStep tab
+    jobPreferences: {
+      desiredJobTitle: "",
+      industry: "",
+      jobType: "",
+      salaryExpectation: "",
+      relocation: false,
+    },
   });
 
   const [validationErrors, setValidationErrors] = useState({});
@@ -176,7 +183,7 @@ const SetupProfileGrad = () => {
         certifications: formData.certifications || [],
         awards: formData.awards || [],
         languages: formData.languages || [],
-        jobPreferences: {},
+        jobPreferences: formData.jobPreferences || {},
         website: formData.website || "",
         bio: formData.bio || "",
         birthdate: formData.birthdate || null,

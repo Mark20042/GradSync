@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GraduationCap, Calendar, Award, MapPin, Globe, Sparkles, FileText } from "lucide-react";
+import { GraduationCap, Calendar, Award, MapPin, Globe, Sparkles, FileText, Linkedin, Github } from "lucide-react";
 import axiosInstance from "../../../../utils/axiosInstance";
 
 import { API_PATH } from "../../../../utils/apiPath";
@@ -236,6 +236,42 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             name="website"
             placeholder="e.g. https://yourwebsite.com"
             value={formData.website || ""}
+            onChange={handleChange}
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* LinkedIn */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          LinkedIn Profile
+        </label>
+        <div className="relative">
+          <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="url"
+            name="linkedin"
+            placeholder="e.g. https://linkedin.com/in/username"
+            value={formData.linkedin || ""}
+            onChange={handleChange}
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* GitHub */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          GitHub Profile
+        </label>
+        <div className="relative">
+          <Github className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="url"
+            name="github"
+            placeholder="e.g. https://github.com/username"
+            value={formData.github || ""}
             onChange={handleChange}
             className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />

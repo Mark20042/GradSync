@@ -1,1126 +1,673 @@
 import React, { useState, useEffect } from "react";
-import {
-  Trash2,
-  Edit,
-  Plus,
-  Save,
-  X,
-  Code,
-  Image as ImageIcon,
-  AlertCircle,
-  Users,
-  Search,
-} from "lucide-react";
-import axiosInstance from "../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import axiosInstance from "../../utils/axiosInstance";
+import { CheckCircle, Eye, AlertCircle, RefreshCw, Plus, Users, Search, Target, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const AdminAssessmentManager = () => {
-  const [assessments, setAssessments] = useState([]);
-  const [selectedAssessment, setSelectedAssessment] = useState(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
-  const [isEditQuestionModalOpen, setIsEditQuestionModalOpen] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isVerifiedUsersModalOpen, setIsVerifiedUsersModalOpen] =
-    useState(false);
-
-  const [verifiedUsers, setVerifiedUsers] = useState([]);
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [userToUnverify, setUserToUnverify] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  const [newAssessment, setNewAssessment] = useState({
-    skill: "",
-    title: "",
-    difficulty: "Entry",
-    timeLimit: 15,
-    passingScore: 80,
-    maxTabSwitches: 3,
-    maxCopyPastes: 3,
-    maxWindowBlurs: 3,
-    maxRightClicks: 3,
-    maxDevTools: 1,
-  });
+  const [assessments, setAssessments] = useState([]);
+  const [loadingAssessments, setLoadingAssessments] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateProgress, setGenerateProgress] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("all");
+  const [viewingAssessment, setViewingAssessment] = useState(null);
+  const pollIntervalRef = React.useRef(null);
 
-  const [newQuestion, setNewQuestion] = useState({
-    type: "multiple-choice",
+  const [isAutoGenerating, setIsAutoGenerating] = useState(false);
+  const autoGenIntervalRef = React.useRef(null);
+
+  const [isAddingQuestion, setIsAddingQuestion] = useState(false);
+  const [addForm, setAddForm] = useState({
     questionText: "",
-    codeSnippet: "",
-    imageUrl: "",
-    options: ["", "", "", ""],
     correctAnswer: "",
+    category: "General",
+    type: "identification",
     explanation: "",
-    category: "Technical",
+    options: "" // comma separated for now
   });
 
   useEffect(() => {
-    fetchAssessments();
+    fetchCandidates();
   }, []);
 
-  const fetchAssessments = async () => {
-    try {
-      const res = await axiosInstance.get("/api/assessments");
-      setAssessments(res.data);
-    } catch (error) {
-      toast.error("Failed to fetch assessments");
-      console.error(error);
-    }
-  };
-
-  const handleCreateAssessment = async () => {
-    if (!newAssessment.skill || !newAssessment.title) {
-      toast.error("Please fill all required fields");
-      return;
-    }
-
+  const fetchCandidates = async () => {
     setLoading(true);
     try {
-      await axiosInstance.post("/api/assessments", newAssessment);
-      toast.success("Assessment created successfully!");
-      setIsCreateModalOpen(false);
-      setNewAssessment({ 
-        skill: "", 
-        title: "", 
-        difficulty: "Entry",
-        timeLimit: 15,
-        passingScore: 80,
-        maxTabSwitches: 3,
-        maxCopyPastes: 3,
-        maxWindowBlurs: 3,
-        maxRightClicks: 3,
-        maxDevTools: 1,
-      });
-      fetchAssessments();
+      const res = await axiosInstance.get("/api/admin/users");
+      // Filter for jobseekers and graduates
+      const filtered = res.data.filter(u => u.role === "jobseeker" || u.role === "graduate");
+      setCandidates(filtered);
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to create assessment",
-      );
+      toast.error("Failed to load candidates");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateAssessment = async () => {
-    setLoading(true);
+  const fetchAssessmentsForCandidate = async (candidateId) => {
+    setLoadingAssessments(true);
     try {
-      await axiosInstance.put(
-        `/api/assessments/${selectedAssessment._id}`,
-        selectedAssessment,
-      );
-      toast.success("Assessment updated successfully!");
-      setIsEditModalOpen(false);
-      fetchAssessments();
+      const res = await axiosInstance.get(`/api/generation/assessments/candidate/${candidateId}`);
+      setAssessments(res.data || []);
     } catch (error) {
-      toast.error("Failed to update assessment");
+      toast.error("Failed to load candidate assessments");
     } finally {
-      setLoading(false);
+      setLoadingAssessments(false);
+    }
+  };
+
+  const handleSelectCandidate = (candidate) => {
+    setSelectedCandidate(candidate);
+    fetchAssessmentsForCandidate(candidate._id);
+  };
+
+  const handleCancelGeneration = () => {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    setGenerating(false);
+    setGenerateProgress("");
+    toast.success("Generation polling stopped.");
+  };
+
+  const handleGenerate = async () => {
+    let rawSkills = [...(selectedCandidate.verifiedSkills || []), ...(selectedCandidate.skills || [])];
+    let allSkills = Array.from(new Set(rawSkills.map(s => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s).filter(s => s && s.trim() !== "")));
+
+    if (allSkills.length === 0) {
+      return toast.error("Candidate has no skills listed.");
+    }
+
+    setGenerating(true);
+    try {
+      if (selectedSkill === "all") {
+        // Use the new batch endpoint — backend processes skills sequentially
+        setGenerateProgress(`Starting generation for all ${allSkills.length} skills...`);
+        await axiosInstance.post("/api/generation/assessments/generate-all", {
+          candidateId: selectedCandidate._id
+        });
+        toast.success(`Generation started for ${allSkills.length} skills! They will process one by one. Click refresh to check progress.`);
+      } else {
+        // Single skill generation
+        setGenerateProgress(`Generating for ${selectedSkill}...`);
+        await axiosInstance.post("/api/generation/assessments/generate", {
+          candidateId: selectedCandidate._id,
+          skill: selectedSkill
+        });
+        toast.success(`Generation started for ${selectedSkill}!`);
+      }
+      fetchAssessmentsForCandidate(selectedCandidate._id);
+
+      // Start auto-polling to track progress
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+
+      pollIntervalRef.current = setInterval(async () => {
+        try {
+          const res = await axiosInstance.get(`/api/generation/assessments/candidate/${selectedCandidate._id}`);
+          setAssessments(res.data || []);
+          const stillGenerating = (res.data || []).some(a => a.status === 'generating');
+          if (!stillGenerating) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+            setGenerating(false);
+            setGenerateProgress("");
+            toast.success("All assessments finished generating!");
+          } else {
+            const done = (res.data || []).filter(a => a.status !== 'generating').length;
+            const total = (res.data || []).length;
+            setGenerateProgress(`Processing... ${done}/${total} skills complete`);
+          }
+        } catch (_) { }
+      }, 10000); // Poll every 10 seconds
+
+    } catch (error) {
+      toast.error("Failed to start assessment generation.");
+      setGenerating(false);
+      setGenerateProgress("");
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isAutoGenerating) {
+      const pollLogic = async () => {
+        try {
+          // Fetch fresh candidates
+          const res = await axiosInstance.get("/api/admin/users");
+          const filtered = res.data.filter(u => u.role === "jobseeker" || u.role === "graduate");
+          setCandidates(filtered);
+
+          // Check if anyone is generating right now
+          const anyGenerating = filtered.some(c => c.isGenerating);
+          if (anyGenerating) {
+            return; // Wait for them to finish
+          }
+
+          // Find first candidate with missing skills
+          const candidateToGen = filtered.find(c => {
+            let rawSkills = [...(c.verifiedSkills || []), ...(c.skills || [])];
+            let uniqueSkills = Array.from(new Set(rawSkills.map(s => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s).filter(s => s && s.trim() !== "")));
+            const generatedSkillsData = c.generatedSkills || [];
+            const missingSkills = uniqueSkills.filter(s => !generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase()));
+            return missingSkills.length > 0;
+          });
+
+          if (candidateToGen) {
+            toast.loading(`Auto-generating for ${candidateToGen.fullName}...`, { id: 'autogen', duration: 3000 });
+            await axiosInstance.post("/api/generation/assessments/generate-missing", {
+              candidateId: candidateToGen._id
+            });
+            // Optimistic update
+            setCandidates(prev => prev.map(c => c._id === candidateToGen._id ? { ...c, isGenerating: true } : c));
+            if (selectedCandidate?._id === candidateToGen._id) {
+              fetchAssessmentsForCandidate(candidateToGen._id);
+            }
+          } else {
+            toast.success("Auto-generation complete for all candidates!", { id: 'autogen' });
+            setIsAutoGenerating(false);
+          }
+        } catch (error) {
+          console.error("Auto-gen error:", error);
+        }
+      };
+
+      // Run immediately on start
+      pollLogic();
+
+      // Then set interval
+      autoGenIntervalRef.current = setInterval(pollLogic, 10000); // Check every 10 seconds
+    } else {
+      if (autoGenIntervalRef.current) clearInterval(autoGenIntervalRef.current);
+    }
+    return () => {
+      if (autoGenIntervalRef.current) clearInterval(autoGenIntervalRef.current);
+    };
+  }, [isAutoGenerating, selectedCandidate]);
+
+  const handleApprove = async (id) => {
+    try {
+      await axiosInstance.patch(`/api/generation/assessments/${id}/approve`);
+      toast.success("Assessment approved and now visible to candidate!");
+      fetchAssessmentsForCandidate(selectedCandidate._id);
+    } catch (error) {
+      toast.error("Approval failed");
     }
   };
 
   const handleDeleteAssessment = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this assessment?"))
-      return;
-
+    if (!window.confirm("Are you sure you want to delete this entire assessment? This cannot be undone.")) return;
     try {
-      await axiosInstance.delete(`/api/assessments/${id}`);
-      toast.success("Assessment deleted");
-      fetchAssessments();
+      await axiosInstance.delete(`/api/generation/assessments/${id}`);
+      toast.success("Assessment deleted successfully!");
+      if (viewingAssessment?._id === id) setViewingAssessment(null);
+      fetchAssessmentsForCandidate(selectedCandidate._id);
     } catch (error) {
       toast.error("Failed to delete assessment");
     }
   };
 
-  const handleViewVerifiedUsers = async (assessment) => {
-    setSelectedAssessment(assessment);
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get(
-        `/api/assessments/${assessment.skill}/users`,
-      );
-      setVerifiedUsers(res.data);
-      setIsVerifiedUsersModalOpen(true);
-    } catch (error) {
-      toast.error("Failed to fetch verified users");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUnverifyUser = async () => {
-    if (!userToUnverify) return;
-
-    try {
-      await axiosInstance.delete(
-        `/api/assessments/${selectedAssessment.skill}/users/${userToUnverify._id}`,
-      );
-      toast.success("User unverified successfully");
-      setUserToUnverify(null);
-      handleViewVerifiedUsers(selectedAssessment);
-    } catch (error) {
-      toast.error("Failed to unverify user");
-    }
-  };
-
-  const handleAddQuestion = async () => {
-    if (!newQuestion.questionText || !newQuestion.correctAnswer) {
-      toast.error("Please fill required question fields");
-      return;
-    }
-
-    const validOptions = newQuestion.type === 'identification' 
-      ? [] 
-      : newQuestion.options.filter((opt) => opt.trim() !== "");
-      
-    if (newQuestion.type !== 'identification' && validOptions.length < 2) {
-      toast.error("Please provide at least 2 options for this question type");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await axiosInstance.post(
-        `/api/assessments/${selectedAssessment._id}/questions`,
-        {
-          ...newQuestion,
-          options: validOptions,
-        },
-      );
-      toast.success("Question added!");
-      setNewQuestion({
-        type: "multiple-choice",
-        questionText: "",
-        codeSnippet: "",
-        imageUrl: "",
-        options: ["", "", "", ""],
-        correctAnswer: "",
-        explanation: "",
-        category: "Technical",
-      });
-      setIsQuestionModalOpen(false);
-      fetchAssessments();
-    } catch (error) {
-      toast.error("Failed to add question");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteQuestion = async (assessmentId, questionId) => {
-    if (!window.confirm("Delete this question?")) return;
-
+    if (!window.confirm("Are you sure you want to delete this question?")) return;
     try {
-      await axiosInstance.delete(
-        `/api/assessments/${assessmentId}/questions/${questionId}`,
-      );
+      await axiosInstance.delete(`/api/generation/assessments/${assessmentId}/questions/${questionId}`);
       toast.success("Question deleted");
-      fetchAssessments();
-    } catch (error) {
+
+      // Update local state for modal
+      if (viewingAssessment && viewingAssessment._id === assessmentId) {
+        setViewingAssessment(prev => ({
+          ...prev,
+          questions: prev.questions.filter(q => q._id !== questionId)
+        }));
+      }
+      fetchAssessmentsForCandidate(selectedCandidate._id);
+    } catch (err) {
       toast.error("Failed to delete question");
     }
   };
 
-  const handleOpenEditQuestion = (assessment, question) => {
-    setSelectedAssessment(assessment);
-    setEditingQuestion({
-      ...question,
-      options:
-        question.options?.length >= 4
-          ? question.options
-          : [
-              ...(question.options || []),
-              ...Array(4 - (question.options?.length || 0)).fill(""),
-            ],
-    });
-    setIsEditQuestionModalOpen(true);
-  };
-
-  const handleUpdateQuestion = async () => {
-    if (!editingQuestion.questionText || !editingQuestion.correctAnswer) {
-      toast.error("Please fill required question fields");
+  const handleAddQuestion = async (assessmentId) => {
+    if (!addForm.questionText || !addForm.correctAnswer) {
+      toast.error("Please fill in both question and correct answer");
       return;
     }
 
-    const validOptions = editingQuestion.type === 'identification' 
-      ? [] 
-      : editingQuestion.options.filter((opt) => opt.trim() !== "");
-      
-    if (editingQuestion.type !== 'identification' && validOptions.length < 2) {
-      toast.error("Please provide at least 2 options for this question type");
-      return;
-    }
-
-    setLoading(true);
     try {
-      await axiosInstance.put(
-        `/api/assessments/${selectedAssessment._id}/questions/${editingQuestion._id}`,
-        {
-          type: editingQuestion.type,
-          questionText: editingQuestion.questionText,
-          codeSnippet: editingQuestion.codeSnippet || "",
-          imageUrl: editingQuestion.imageUrl || "",
-          options: validOptions,
-          correctAnswer: editingQuestion.correctAnswer,
-          explanation: editingQuestion.explanation || "",
-          category: editingQuestion.category || "General",
-        },
-      );
-      toast.success("Question updated successfully!");
-      setIsEditQuestionModalOpen(false);
-      setEditingQuestion(null);
-      fetchAssessments();
+      let payload = { ...addForm };
+      if (addForm.type === 'multiple-choice' && addForm.options) {
+        payload.options = addForm.options.split(',').map(o => o.trim());
+      } else {
+        payload.options = [];
+      }
+
+      const res = await axiosInstance.post(`/api/generation/assessments/${assessmentId}/questions`, payload);
+      toast.success("Question added successfully");
+      setIsAddingQuestion(false);
+      setAddForm({ questionText: "", correctAnswer: "", category: "General", type: "identification", explanation: "", options: "" });
+
+      // Update in-place
+      setViewingAssessment(prev => ({
+        ...prev,
+        questions: [...prev.questions, res.data.question]
+      }));
+      fetchAssessmentsForCandidate(selectedCandidate._id);
     } catch (error) {
-      toast.error("Failed to update question");
-      console.error(error);
-    } finally {
-      setLoading(false);
+      toast.error("Failed to add question");
     }
   };
 
-  const getDifficultyStyles = (diff) => {
-    switch (diff) {
-      case "Entry": return "bg-emerald-100 text-emerald-800";
-      case "Mid": return "bg-blue-100 text-blue-800";
-      case "Senior": return "bg-indigo-100 text-indigo-800";
-      case "Expert": return "bg-amber-100 text-amber-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
+
+
+  const filteredCandidates = candidates.filter(c =>
+    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <DashboardLayout activeMenu="admin-assessments">
-      <div className="min-h-screen bg-gray-100 p-10">
-        <div className="flex justify-between items-end mb-12 bg-white px-8 py-6 rounded-2xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 tracking-tight m-0">
-              Assessment Manager
-            </h1>
-            <p className="text-gray-500 mt-2 text-base">
-              Create, manage, and track skill assessments for your candidates.
-            </p>
-          </div>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 shadow-[0_4px_6px_-1px_rgba(37,99,235,0.3)] disabled:opacity-50"
-          >
-            <Plus size={20} />
-            Create Assessment
-          </button>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Candidate Assessments</h1>
+          <p className="text-gray-500 mt-2">Manage and generate tailored AI assessments per candidate.</p>
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(360px,1fr))] gap-6">
-          {assessments.map((assessment) => (
-            <div key={assessment._id} className="bg-white rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-blue-200 border border-gray-200 overflow-hidden flex flex-col">
-              <div className="p-6 bg-gradient-to-br from-white to-slate-50 border-b border-gray-100">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-gray-800 flex items-center justify-between m-0">
-                    {assessment.title}
-                  </h3>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => {
-                        setSelectedAssessment(assessment);
-                        setIsEditModalOpen(true);
-                      }}
-                      className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
-                      title="Edit Settings"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteAssessment(assessment._id)}
-                      className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
-                      title="Delete Assessment"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex gap-2 mt-2">
-                  <span className="text-[0.7rem] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider bg-gray-100 text-gray-700">
-                    {assessment.skill}
-                  </span>
-                  <span className={`text-[0.7rem] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${getDifficultyStyles(assessment.difficulty)}`}>
-                    {assessment.difficulty}
-                  </span>
-                </div>
-
-                <div className="flex gap-4 mt-4 text-gray-500 text-sm font-medium">
-                  <div className="flex items-center gap-1.5" title="Time Limit">
-                    <span>⏱️</span> {assessment.timeLimit || 15}m
-                  </div>
-                  <div className="flex items-center gap-1.5" title="Passing Score">
-                    <span>🎯</span> {assessment.passingScore || 80}%
-                  </div>
-                  <div className="flex items-center gap-1.5" title="Questions">
-                    <span>📝</span> {assessment.questions?.length || 0}
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 flex-1">
-                <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest">
-                  Questions Preview
-                </h4>
-
-                {!assessment.questions || assessment.questions.length === 0 ? (
-                  <div className="text-center py-6 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
-                    <p className="text-sm">No questions yet</p>
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Candidates List */}
+          <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-200px)]">
+            <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col gap-3">
+              <button
+                onClick={() => setIsAutoGenerating(!isAutoGenerating)}
+                className={`w-full py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${isAutoGenerating
+                    ? "bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 shadow-inner"
+                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                  }`}
+              >
+                {isAutoGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Stop Auto-Generation
+                  </>
                 ) : (
-                  <div className="max-h-60 overflow-y-auto pr-1 flex flex-col gap-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-gray-50">
-                    {assessment.questions.map((q, idx) => (
-                      <div key={q._id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-gray-600 flex items-center justify-between hover:border-slate-300 hover:bg-white transition-all">
-                        <span className="truncate max-w-[200px]">
-                          {idx + 1}. {q.questionText}
-                        </span>
-                        <button
-                          onClick={() => handleOpenEditQuestion(assessment, q)}
-                          className="p-1 text-gray-400 hover:text-blue-600 cursor-pointer"
-                        >
-                          <Edit size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    Auto-Generate Missing
+                  </>
                 )}
-              </div>
+              </button>
 
-              <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
-                <button
-                  onClick={() => {
-                    setSelectedAssessment(assessment);
-                    setIsQuestionModalOpen(true);
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
-                >
-                  <Plus size={16} /> Add Qs
-                </button>
-                <button
-                  onClick={() => handleViewVerifiedUsers(assessment)}
-                  className="flex-1 flex items-center justify-center gap-2 p-2.5 rounded-xl text-sm font-semibold border border-gray-200 bg-white text-gray-700 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
-                >
-                  <Users size={16} /> Takers
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Create Assessment Modal */}
-        {isCreateModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-5" onClick={() => setIsCreateModalOpen(false)}>
-            <div className="bg-white rounded-2xl p-8 max-w-[800px] w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 m-0">Create New Assessment</h2>
-
-              <label className="block font-semibold text-gray-700 mb-2">Skill Name *</label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="e.g., JavaScript, React, Python"
-                value={newAssessment.skill}
-                onChange={(e) => setNewAssessment({ ...newAssessment, skill: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">Assessment Title *</label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="e.g., JavaScript Fundamentals"
-                value={newAssessment.title}
-                onChange={(e) => setNewAssessment({ ...newAssessment, title: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">Difficulty *</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={newAssessment.difficulty}
-                onChange={(e) => setNewAssessment({ ...newAssessment, difficulty: e.target.value })}
-              >
-                <option value="Entry">Entry</option>
-                <option value="Mid">Mid</option>
-                <option value="Senior">Senior</option>
-                <option value="Expert">Expert</option>
-              </select>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-2">Time Limit (minutes)</label>
-                  <input
-                    type="number"
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                    min="1"
-                    max="180"
-                    placeholder="15"
-                    value={newAssessment.timeLimit}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, timeLimit: parseInt(e.target.value) || 15 })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-2">Passing Score (%)</label>
-                  <input
-                    type="number"
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                    min="1"
-                    max="100"
-                    placeholder="80"
-                    value={newAssessment.passingScore}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, passingScore: parseInt(e.target.value) || 80 })}
-                  />
-                </div>
-              </div>
-
-              <h3 className="text-lg font-bold text-gray-800 mt-2 mb-4">Integrity Violations (Auto-reject Thresholds)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Tab Switches</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newAssessment.maxTabSwitches}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, maxTabSwitches: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Copy-Pastes</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newAssessment.maxCopyPastes}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, maxCopyPastes: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Window Blurs</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newAssessment.maxWindowBlurs}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, maxWindowBlurs: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Right Clicks</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newAssessment.maxRightClicks}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, maxRightClicks: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max DevTools Opens</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={newAssessment.maxDevTools}
-                    onChange={(e) => setNewAssessment({ ...newAssessment, maxDevTools: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleCreateAssessment}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Save size={18} />
-                  {loading ? "Creating..." : "Create"}
-                </button>
-                <button
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300"
-                >
-                  <X size={18} />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Edit Assessment Modal */}
-        {isEditModalOpen && selectedAssessment && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-5" onClick={() => setIsEditModalOpen(false)}>
-            <div className="bg-white rounded-2xl p-8 max-w-[800px] w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 m-0">Edit Assessment</h2>
-
-              <label className="block font-semibold text-gray-700 mb-2">Skill Name</label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                value={selectedAssessment.skill}
-                onChange={(e) => setSelectedAssessment({ ...selectedAssessment, skill: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">Assessment Title</label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                value={selectedAssessment.title}
-                onChange={(e) => setSelectedAssessment({ ...selectedAssessment, title: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">Difficulty</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={selectedAssessment.difficulty}
-                onChange={(e) => setSelectedAssessment({ ...selectedAssessment, difficulty: e.target.value })}
-              >
-                <option value="Entry">Entry</option>
-                <option value="Mid">Mid</option>
-                <option value="Senior">Senior</option>
-                <option value="Expert">Expert</option>
-              </select>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-2">Time Limit (minutes)</label>
-                  <input
-                    type="number"
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                    min="1"
-                    max="180"
-                    placeholder="15"
-                    value={selectedAssessment.timeLimit || 15}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, timeLimit: parseInt(e.target.value) || 15 })}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-gray-700 mb-2">Passing Score (%)</label>
-                  <input
-                    type="number"
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                    min="1"
-                    max="100"
-                    placeholder="80"
-                    value={selectedAssessment.passingScore || 80}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, passingScore: parseInt(e.target.value) || 80 })}
-                  />
-                </div>
-              </div>
-
-              <h3 className="text-lg font-bold text-gray-800 mt-2 mb-4">Integrity Violations (Auto-reject Thresholds)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Tab Switches</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={selectedAssessment.maxTabSwitches ?? 3}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxTabSwitches: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Copy-Pastes</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={selectedAssessment.maxCopyPastes ?? 3}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxCopyPastes: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Window Blurs</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={selectedAssessment.maxWindowBlurs ?? 3}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxWindowBlurs: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max Right Clicks</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={selectedAssessment.maxRightClicks ?? 3}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxRightClicks: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Max DevTools Opens</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={selectedAssessment.maxDevTools ?? 1}
-                    onChange={(e) => setSelectedAssessment({ ...selectedAssessment, maxDevTools: parseInt(e.target.value) || 0 })}
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleUpdateAssessment}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Save size={18} />
-                  {loading ? "Updating..." : "Update"}
-                </button>
-                <button
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300"
-                >
-                  <X size={18} />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Add Question Modal */}
-        {isQuestionModalOpen && selectedAssessment && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-5" onClick={() => setIsQuestionModalOpen(false)}>
-            <div className="bg-white rounded-2xl p-8 max-w-[800px] w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 m-0">Add Question</h2>
-              <p className="text-gray-500 mb-8 font-medium">to {selectedAssessment.title}</p>
-
-              <label className="block font-semibold text-gray-700 mb-2">Question Type *</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={newQuestion.type}
-                onChange={(e) => {
-                  const t = e.target.value;
-                  const newOptions = t === 'true-false' 
-                    ? ['True', 'False', '', ''] 
-                    : (newQuestion.type === 'true-false' ? ["", "", "", ""] : newQuestion.options);
-                  setNewQuestion({ 
-                    ...newQuestion, 
-                    type: t,
-                    options: newOptions,
-                    correctAnswer: ""
-                  });
-                }}
-              >
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="true-false">True / False</option>
-                <option value="identification">Identification (Type the answer)</option>
-              </select>
-
-              <label className="block font-semibold text-gray-700 mb-2">Category</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={newQuestion.category || "Technical"}
-                onChange={(e) => setNewQuestion({ ...newQuestion, category: e.target.value })}
-              >
-                <option value="Technical">Technical</option>
-                <option value="Behavioral">Behavioral</option>
-                <option value="Communication">Communication</option>
-                <option value="General">General</option>
-                <option value="Logical">Logical</option>
-              </select>
-
-              <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>
-              <textarea
-                rows={3}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="Enter your question here..."
-                value={newQuestion.questionText}
-                onChange={(e) => setNewQuestion({ ...newQuestion, questionText: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">
-                <Code size={16} className="inline mr-1" />
-                Code Snippet (Optional)
-              </label>
-              <textarea
-                rows={5}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-mono text-sm"
-                placeholder="Paste code here..."
-                value={newQuestion.codeSnippet}
-                onChange={(e) => setNewQuestion({ ...newQuestion, codeSnippet: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">
-                <ImageIcon size={16} className="inline mr-1" />
-                Image URL (Optional)
-              </label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="https://example.com/image.png"
-                value={newQuestion.imageUrl}
-                onChange={(e) => setNewQuestion({ ...newQuestion, imageUrl: e.target.value })}
-              />
-
-              {newQuestion.type !== 'identification' && (
-                <>
-                  <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
-                  <div className="grid gap-2 mb-4">
-                    {newQuestion.options.slice(0, newQuestion.type === 'true-false' ? 2 : 4).map((option, index) => (
-                      <input
-                        key={index}
-                        disabled={newQuestion.type === 'true-false'}
-                        className={`w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${newQuestion.type === 'true-false' ? 'bg-gray-100' : ''}`}
-                        placeholder={`Option ${index + 1}`}
-                        value={option}
-                        onChange={(e) => {
-                          const newOptions = [...newQuestion.options];
-                          newOptions[index] = e.target.value;
-                          setNewQuestion({ ...newQuestion, options: newOptions });
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
-                  <select
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                    value={newQuestion.correctAnswer}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
-                  >
-                    <option value="">Select correct answer</option>
-                    {newQuestion.options.slice(0, newQuestion.type === 'true-false' ? 2 : 4).map((opt, i) => opt && (
-                      <option key={i} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {newQuestion.type === 'identification' && (
-                <>
-                  <label className="block font-semibold text-gray-700 mb-2">Exact Correct Answer *</label>
-                  <input
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-semibold text-green-700 bg-green-50"
-                    placeholder="e.g. React"
-                    value={newQuestion.correctAnswer}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
-                  />
-                </>
-              )}
-
-              <label className="block font-semibold text-gray-700 mb-2">Explanation (Optional)</label>
-              <textarea
-                rows={3}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="Explain why this is the correct answer..."
-                value={newQuestion.explanation}
-                onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleAddQuestion}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Save size={18} />
-                  Save Question
-                </button>
-                <button
-                  onClick={() => setIsQuestionModalOpen(false)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300"
-                >
-                  <X size={18} />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Edit Question Modal */}
-        {isEditQuestionModalOpen && editingQuestion && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-5" onClick={() => setIsEditQuestionModalOpen(false)}>
-            <div className="bg-white rounded-2xl p-8 max-w-[800px] w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 m-0">Edit Question</h2>
-              <p className="text-gray-500 mb-8 font-medium">in {selectedAssessment?.title}</p>
-
-              <label className="block font-semibold text-gray-700 mb-2">Question Type *</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={editingQuestion.type || 'multiple-choice'}
-                onChange={(e) => {
-                  const t = e.target.value;
-                  const newOptions = t === 'true-false' 
-                    ? ['True', 'False', '', ''] 
-                    : (editingQuestion.type === 'true-false' ? ["", "", "", ""] : editingQuestion.options);
-                  setEditingQuestion({ 
-                    ...editingQuestion, 
-                    type: t,
-                    options: newOptions,
-                    correctAnswer: ""
-                  });
-                }}
-              >
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="true-false">True / False</option>
-                <option value="identification">Identification (Type the answer)</option>
-              </select>
-
-              <label className="block font-semibold text-gray-700 mb-2">Category</label>
-              <select
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                value={editingQuestion.category || "Technical"}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, category: e.target.value })}
-              >
-                <option value="Technical">Technical</option>
-                <option value="Behavioral">Behavioral</option>
-                <option value="Communication">Communication</option>
-                <option value="General">General</option>
-                <option value="Logical">Logical</option>
-              </select>
-
-              <label className="block font-semibold text-gray-700 mb-2">Question Text *</label>
-              <textarea
-                rows={3}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="Enter your question here..."
-                value={editingQuestion.questionText}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, questionText: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">
-                <Code size={16} className="inline mr-1" />
-                Code Snippet (Optional)
-              </label>
-              <textarea
-                rows={5}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-mono text-sm"
-                placeholder="Paste code here..."
-                value={editingQuestion.codeSnippet || ""}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, codeSnippet: e.target.value })}
-              />
-
-              <label className="block font-semibold text-gray-700 mb-2">
-                <ImageIcon size={16} className="inline mr-1" />
-                Image URL (Optional)
-              </label>
-              <input
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="https://example.com/image.png"
-                value={editingQuestion.imageUrl || ""}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, imageUrl: e.target.value })}
-              />
-
-              {editingQuestion.type !== 'identification' && (
-                <>
-                  <label className="block font-semibold text-gray-700 mb-2">Answer Options *</label>
-                  <div className="grid gap-2 mb-4">
-                    {editingQuestion.options?.slice(0, editingQuestion.type === 'true-false' ? 2 : 4).map((option, index) => (
-                      <input
-                        key={index}
-                        disabled={editingQuestion.type === 'true-false'}
-                        className={`w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 ${editingQuestion.type === 'true-false' ? 'bg-gray-100' : ''}`}
-                        placeholder={`Option ${index + 1}`}
-                        value={option}
-                        onChange={(e) => {
-                          const newOptions = [...editingQuestion.options];
-                          newOptions[index] = e.target.value;
-                          setEditingQuestion({ ...editingQuestion, options: newOptions });
-                        }}
-                      />
-                    ))}
-                  </div>
-
-                  <label className="block font-semibold text-gray-700 mb-2">Correct Answer *</label>
-                  <select
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 bg-white"
-                    value={editingQuestion.correctAnswer}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
-                  >
-                    <option value="">Select correct answer</option>
-                    {editingQuestion.options?.slice(0, editingQuestion.type === 'true-false' ? 2 : 4).map((opt, i) => opt && (
-                      <option key={i} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {editingQuestion.type === 'identification' && (
-                <>
-                  <label className="block font-semibold text-gray-700 mb-2">Exact Correct Answer *</label>
-                  <input
-                    className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500 font-semibold text-green-700 bg-green-50"
-                    placeholder="e.g. React"
-                    value={editingQuestion.correctAnswer}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
-                  />
-                </>
-              )}
-
-              <label className="block font-semibold text-gray-700 mb-2">Explanation (Optional)</label>
-              <textarea
-                rows={3}
-                className="w-full p-3 border-2 border-gray-200 rounded-lg mb-4 focus:outline-none focus:border-blue-500"
-                placeholder="Explain why this is the correct answer..."
-                value={editingQuestion.explanation || ""}
-                onChange={(e) => setEditingQuestion({ ...editingQuestion, explanation: e.target.value })}
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={handleUpdateQuestion}
-                  disabled={loading}
-                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 disabled:opacity-50"
-                >
-                  <Save size={18} />
-                  Update Question
-                </button>
-                <button
-                  onClick={() => setIsEditQuestionModalOpen(false)}
-                  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300"
-                >
-                  <X size={18} />
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Verified Users Modal */}
-        {isVerifiedUsersModalOpen && selectedAssessment && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] p-5" onClick={() => setIsVerifiedUsersModalOpen(false)}>
-            <div className="bg-white rounded-2xl p-8 max-w-[800px] w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300" onClick={(e) => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 m-0">
-                  Verified Users - {selectedAssessment.title}
-                  <span className="text-base font-normal text-gray-400 ml-3">({verifiedUsers.length})</span>
-                </h2>
-                <button
-                  onClick={() => setIsVerifiedUsersModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="relative mb-6">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Search size={20} />
-                </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                  className="w-full pl-11 pr-3 py-3 border border-gray-200 rounded-xl text-sm transition-all focus:outline-none focus:border-blue-500 bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
-                  placeholder="Search by name or email..."
+                  type="text"
+                  placeholder="Search candidates..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 />
               </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {loading ? (
+                <p className="p-4 text-center text-gray-500">Loading candidates...</p>
+              ) : filteredCandidates.map(c => {
+                let rawSkills = [...(c.verifiedSkills || []), ...(c.skills || [])];
+                let uniqueSkills = Array.from(new Set(rawSkills.map(s => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s).filter(s => s && s.trim() !== "")));
+                const generatedSkillsData = c.generatedSkills || [];
 
-              {verifiedUsers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                  <Users size={48} className="mb-4 opacity-50" />
-                  <p className="text-lg">No certified talent yet.</p>
+                const completedSkillsCount = uniqueSkills.filter(s => generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase() && gs.status !== 'generating')).length;
+                const pendingReviewCount = generatedSkillsData.filter(gs => gs.status === 'pending review').length;
+                const generatingSkills = uniqueSkills.filter(s => generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase() && gs.status === 'generating'));
+                const missingSkills = uniqueSkills.filter(s => !generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase()));
+
+                const hasNewSkill = missingSkills.length > 0;
+
+                let completionPercentage = 0;
+                if (uniqueSkills.length > 0) {
+                  completionPercentage = Math.round((completedSkillsCount / uniqueSkills.length) * 100);
+                } else {
+                  completionPercentage = 100; // no skills = fully covered
+                }
+
+                return (
+                  <button
+                    key={c._id}
+                    onClick={() => handleSelectCandidate(c)}
+                    className={`w-full flex items-center p-3 rounded-xl transition-all ${selectedCandidate?._id === c._id ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50 border border-transparent'}`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold mr-3 shrink-0 relative">
+                      {c.fullName?.charAt(0) || 'U'}
+                      {hasNewSkill && !c.isGenerating && (
+                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full" title="New skill added"></span>
+                      )}
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate flex items-center gap-2">
+                        {c.fullName}
+                        {c.isGenerating && (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                        )}
+                      </p>
+                      <div className="flex justify-between items-center mt-0.5 mb-1">
+                        <p className="text-xs text-gray-500 truncate">{c.email}</p>
+                        <div className="flex items-center gap-1">
+                          {pendingReviewCount > 0 && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/80 px-2 py-0.5 rounded-full shrink-0" title={`${pendingReviewCount} assessments pending review`}>
+                              {pendingReviewCount} Pending
+                            </span>
+                          )}
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-100/50 px-2 py-0.5 rounded-full shrink-0">
+                            {completionPercentage}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                        <div className={`h-1.5 rounded-full ${completionPercentage === 100 ? 'bg-green-500' : completionPercentage > 50 ? 'bg-blue-500' : 'bg-orange-500'}`} style={{ width: `${completionPercentage}%` }}></div>
+                      </div>
+
+                      {generatingSkills.length > 0 && (
+                        <p className="text-[10px] text-blue-600 font-semibold mt-1 animate-pulse truncate" title={`Generating: ${generatingSkills.join(", ")}`}>
+                          <Loader2 className="w-3 h-3 inline mr-1 animate-spin" />
+                          Generating: {generatingSkills.join(", ")}
+                        </p>
+                      )}
+
+                      {hasNewSkill && (
+                        <p className="text-[10px] text-red-500 font-semibold mt-1 animate-pulse truncate" title={`Missing: ${missingSkills.join(", ")}`}>
+                          Missing: {missingSkills.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Assessment Management */}
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-[calc(100vh-200px)]">
+            {!selectedCandidate ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                <Users className="w-16 h-16 mb-4 text-gray-300" />
+                <p className="text-lg">Select a candidate to manage their assessments</p>
+              </div>
+            ) : (
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate.fullName}'s Assessments</h2>
+                    <p className="text-gray-500 mt-1">Review, approve, or generate new assessments.</p>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={() => fetchAssessmentsForCandidate(selectedCandidate._id)}
+                      className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
+                      title="Refresh Assessments"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loadingAssessments ? 'animate-spin' : ''}`} />
+                    </button>
+                    {generating && <span className="text-sm text-blue-600 font-medium">{generateProgress}</span>}
+                    <select
+                      value={selectedSkill}
+                      onChange={(e) => setSelectedSkill(e.target.value)}
+                      className="border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="all">Generate for All Skills</option>
+                      {Array.from(new Set([...(selectedCandidate.verifiedSkills || []), ...(selectedCandidate.skills || [])]
+                        .map(s => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s)
+                        .filter(s => s && s.trim() !== "")))
+                        .map((s, i) => (
+                          <option key={i} value={s}>{s}</option>
+                        ))}
+                    </select>
+                    {generating ? (
+                      <button
+                        onClick={handleCancelGeneration}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" /> Stop Polling
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleGenerate}
+                        disabled={generating}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" />
+                        {selectedSkill === 'all' ? 'Generate All' : 'Generate Selected'}
+                      </button>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <div className="mt-6 flex flex-col gap-2">
-                  {verifiedUsers
-                    .filter((user) =>
-                        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((user, idx) => {
-                      const rank = idx + 1;
-                      return (
-                        <div key={user._id} className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl transition-all hover:border-blue-500 hover:shadow-sm hover:translate-x-1">
-                          <div className="flex items-center flex-1 min-w-0">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-extrabold text-[0.9rem] mr-4 shrink-0 
-                              ${rank === 1 ? 'bg-amber-100 text-amber-900 border-2 border-amber-400' : 
-                                rank === 2 ? 'bg-gray-100 text-gray-800 border-2 border-gray-300' : 
-                                rank === 3 ? 'bg-pink-100 text-pink-900 border-2 border-pink-300' : 'bg-gray-100 text-gray-500'}`}>
-                              #{rank}
-                            </div>
 
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-base shrink-0 mr-4 shadow-sm">
-                              {user.fullName.charAt(0).toUpperCase()}
+                <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                  {loadingAssessments ? (
+                    <p className="text-center text-gray-500 mt-10">Loading assessments...</p>
+                  ) : assessments.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                      <p className="text-gray-500 mb-2">No generated assessments found.</p>
+                      <p className="text-sm text-gray-400">Select a skill above and click generate.</p>
+                    </div>
+                  ) : (
+                    assessments.map(a => (
+                      <div key={a._id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all flex flex-col">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-lg text-gray-900">{a.title}</h3>
+                              <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full font-semibold uppercase">{a.skill}</span>
                             </div>
-
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-gray-900 m-0 text-base truncate" title={user.fullName}>
-                                {user.fullName}
-                              </h4>
-                              <p className="text-gray-500 text-sm mt-0.5 truncate m-0" title={user.email}>
-                                {user.email}
-                              </p>
-                            </div>
+                            <p className="text-sm text-gray-500 mt-1">{a.questions?.length || 0} questions generated</p>
                           </div>
-
-                          <div className="flex items-center gap-6 shrink-0 ml-4">
-                            <div className="text-right">
-                              <p className="text-[0.65rem] text-gray-400 mb-0.5 uppercase font-bold">Score</p>
-                              <span className="text-emerald-500 font-bold text-lg leading-none">
-                                {user.score !== null && user.score !== undefined ? Math.round(user.score) : "N/A"}%
-                              </span>
-                            </div>
-
-                            <div className="text-right min-w-[70px]">
-                              <p className="text-[0.65rem] text-gray-400 mb-0.5 uppercase font-bold">Level</p>
-                              <span className={`font-bold text-sm leading-none ${
-                                user.level === "Expert" ? "text-amber-700" : 
-                                user.level === "Senior" ? "text-violet-700" : 
-                                user.level === "Mid" ? "text-blue-700" : "text-emerald-700"
+                          <div className="flex flex-col items-end gap-2">
+                            <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                a.status === 'generating' ? 'bg-blue-100 text-blue-700 animate-pulse' :
+                                  'bg-orange-100 text-orange-700'
                               }`}>
-                                {user.level}
-                              </span>
-                            </div>
-
-                            <div className="text-right min-w-[80px]">
-                              <p className="text-[0.65rem] text-gray-400 mb-0.5 uppercase font-bold">Date</p>
-                              <span className="text-gray-600 font-semibold text-sm leading-none">
-                                {new Date(user.earnedAt).toLocaleDateString()}
-                              </span>
-                            </div>
-
-                            <button
-                              className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUserToUnverify(user);
-                              }}
-                              title="Unverify User"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                              {a.status}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {/* Unverify User Confirmation Modal */}
-        {userToUnverify && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1100] p-5 animate-in fade-in duration-200" onClick={() => setUserToUnverify(null)}>
-            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertCircle size={32} className="text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Unverify User?</h2>
-              <p className="text-center text-gray-500 mb-8">
-                Are you sure you want to unverify <span className="font-bold text-gray-800">{userToUnverify.fullName}</span>? They will lose their badge for this skill. This action cannot be undone.
-              </p>
-              
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setUserToUnverify(null)}
-                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUnverifyUser}
-                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-[0_4px_12px_-2px_rgba(239,68,68,0.4)] transition-all hover:shadow-[0_6px_16px_-2px_rgba(239,68,68,0.5)]"
-                >
-                  Yes, Unverify
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
+                        {/* Action Buttons & Status */}
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-2 justify-between items-center">
+                          <div className="flex gap-2">
+                            {a.questions && a.questions.length > 0 && (
+                              <button
+                                onClick={() => setViewingAssessment(a)}
+                                className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg font-medium transition-all"
+                              >
+                                View Questions ({a.questions.length})
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteAssessment(a._id)}
+                              className="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-4 py-1.5 rounded-lg font-medium transition-all"
+                            >
+                              Delete
+                            </button>
+                          </div>
+
+                          <div className="flex gap-2 items-center">
+                            {a.status === 'pending review' && (
+                              <button
+                                onClick={() => handleApprove(a._id)}
+                                className="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm"
+                              >
+                                Approve Assessment
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* View Questions Modal */}
+        {viewingAssessment && (
+          <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center p-4 md:p-8" onClick={() => setViewingAssessment(null)}>
+            <div className="bg-white rounded-2xl w-full max-w-4xl max-h-full flex flex-col shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{viewingAssessment.title}</h2>
+                  <p className="text-gray-500 text-sm mt-1">{viewingAssessment.questions.length} questions available</p>
+                </div>
+                <button onClick={() => { setViewingAssessment(null); setIsAddingQuestion(false); }} className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="px-6 py-4 border-b border-gray-100 bg-white">
+                <button
+                  onClick={() => setIsAddingQuestion(!isAddingQuestion)}
+                  className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"
+                >
+                  {isAddingQuestion ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  {isAddingQuestion ? 'Cancel Adding' : 'Add New Question'}
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {isAddingQuestion && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm mb-4">
+                    <h3 className="font-semibold text-blue-900 mb-3">Add New Question</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Question</label>
+                        <textarea
+                          value={addForm.questionText}
+                          onChange={e => setAddForm(prev => ({ ...prev, questionText: e.target.value }))}
+                          className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
+                          rows={2}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Type</label>
+                          <select
+                            value={addForm.type}
+                            onChange={e => setAddForm(prev => ({ ...prev, type: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          >
+                            <option value="multiple-choice">Multiple Choice</option>
+                            <option value="identification">Identification</option>
+                            <option value="true-false">True/False</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Category</label>
+                          <input
+                            type="text"
+                            value={addForm.category}
+                            onChange={e => setAddForm(prev => ({ ...prev, category: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                            placeholder="e.g. General"
+                          />
+                        </div>
+                      </div>
+                      {addForm.type === 'multiple-choice' && (
+                        <div>
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Options (comma separated)</label>
+                          <input
+                            type="text"
+                            value={addForm.options}
+                            onChange={e => setAddForm(prev => ({ ...prev, options: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                            placeholder="Option A, Option B, Option C, Option D"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Correct Answer</label>
+                        <input
+                          type="text"
+                          value={addForm.correctAnswer}
+                          onChange={e => setAddForm(prev => ({ ...prev, correctAnswer: e.target.value }))}
+                          className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Explanation (Optional)</label>
+                        <textarea
+                          value={addForm.explanation}
+                          onChange={e => setAddForm(prev => ({ ...prev, explanation: e.target.value }))}
+                          className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none bg-white"
+                          rows={2}
+                        />
+                      </div>
+                      <div className="pt-2">
+                        <button
+                          onClick={() => handleAddQuestion(viewingAssessment._id)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                        >
+                          Save Question
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {viewingAssessment.questions.map((q, idx) => (
+                  <div key={q._id || idx} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                    <div className="flex justify-between items-start gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{q.category}</span>
+                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full uppercase tracking-wider">{q.type}</span>
+                        </div>
+                        <p className="text-base font-semibold text-gray-900"><span className="text-blue-600 mr-2">Q{idx + 1}.</span>{q.questionText}</p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteQuestion(viewingAssessment._id, q._id)}
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all shrink-0"
+                        title="Delete Question"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+
+                    {q.codeSnippet && (
+                      <div className="mb-4 bg-gray-900 text-gray-100 p-4 rounded-xl text-sm font-mono overflow-x-auto">
+                        <pre><code>{q.codeSnippet}</code></pre>
+                      </div>
+                    )}
+
+                    {q.options && q.options.length > 0 && q.type !== 'identification' && (
+                      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {q.options.map((opt, oIdx) => (
+                          <div key={oIdx} className={`p-3 rounded-lg border ${opt === q.correctAnswer ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} text-sm`}>
+                            {String.fromCharCode(65 + oIdx)}. {opt}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl">
+                      <p className="text-sm"><span className="font-bold text-gray-900 mr-2">Correct Answer:</span> <span className="text-green-700 font-semibold">{q.correctAnswer}</span></p>
+                      {q.explanation && (
+                        <p className="text-sm mt-2 text-gray-600"><span className="font-bold text-gray-900 mr-2">Explanation:</span> {q.explanation}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

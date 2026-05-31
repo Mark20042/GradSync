@@ -1,7 +1,7 @@
-import { ChatOllama } from '@langchain/ollama';
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { PromptTemplate } from '@langchain/core/prompts';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { env } from '@/config/environment.js';
+import { env } from "../../config/environment.js";
 import type {
   UserProfileForAI,
   JobDetailsForAI,
@@ -9,25 +9,65 @@ import type {
   SummaryResult,
   InterviewEvalResult,
   FullInterviewEvalResult,
-} from '@/interfaces/ai.interfaces.js';
+} from '../../interfaces/ai.interfaces.js';
 
-/**
- * Ollama AI Service (Local LLM via LangChain).
- *
- * Provides AI-powered features using a locally-hosted Ollama model.
- * This is the primary AI engine used by the AI controller.
- */
-export class OllamaService {
-  private model: ChatOllama;
+class GeminiService {
+  private static instance: GeminiService;
+  public model: ChatGoogleGenerativeAI;
+  public generationModel: ChatGoogleGenerativeAI;
 
-  constructor() {
-    // Primary model for structured analysis tasks
-    this.model = new ChatOllama({
-      model: env.OLLAMA_MODEL,
+  private constructor() {
+    this.model = new ChatGoogleGenerativeAI({
+      model: "gemini-3.1-flash-lite", // Using Gemini 3.1 Flash Lite
+      maxOutputTokens: 8192,
       temperature: 0.2,
-      baseUrl: env.OLLAMA_BASE_URL,
+      apiKey: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSy_dummy_key_if_missing",
     });
 
+
+    this.generationModel = new ChatGoogleGenerativeAI({
+      model: "gemma-4-26b-a4b-it", // Specifically for Assessment/Interview Generation
+      maxOutputTokens: 8192,
+      temperature: 0.2, // Low temperature for consistent JSON structure
+      apiKey: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "AIzaSy_dummy_key_if_missing",
+    });
+  }
+
+  public static getInstance(): GeminiService {
+    if (!GeminiService.instance) {
+      GeminiService.instance = new GeminiService();
+    }
+    return GeminiService.instance;
+  }
+
+  private extractJSON(content: string): string {
+    // 1. Remove thinking blocks
+    let cleaned = content.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim();
+    
+    // 2. Find markdown JSON blocks
+    const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (match && match[1]) {
+      cleaned = match[1].trim();
+    }
+    
+    // 3. Find the first brace
+    const firstBrace = cleaned.indexOf('{');
+    if (firstBrace === -1) return cleaned;
+    
+    // 4. Find the largest valid JSON object by iterating backwards from the last brace
+    for (let i = cleaned.lastIndexOf('}'); i >= firstBrace; i--) {
+        if (cleaned[i] === '}') {
+            const attempt = cleaned.substring(firstBrace, i + 1);
+            try {
+                JSON.parse(attempt);
+                return attempt; // Successfully parsed!
+            } catch (e) {
+                // Ignore and continue searching backwards
+            }
+        }
+    }
+    
+    return cleaned; // Fallback
   }
 
   // ─── Job Suitability Analysis ──────────────────────────────────────────
@@ -130,7 +170,7 @@ export class OllamaService {
         ),
       });
 
-      console.log('📡 Sending prompt to Local AI (Ollama)...');
+      console.log('📡 Sending prompt to Gemini...');
       const response = await this.model.invoke(input);
 
       const content =
@@ -139,20 +179,15 @@ export class OllamaService {
           : JSON.stringify(response.content);
 
       // Parse JSON from response
-      const firstBrace = content.indexOf('{');
-      const lastBrace = content.lastIndexOf('}');
-
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        const jsonStr = content.substring(firstBrace, lastBrace + 1);
+      const jsonStr = this.extractJSON(content);
+      if (jsonStr) {
         return JSON.parse(jsonStr) as SuitabilityResult;
       } else {
         throw new Error('No JSON object found in response');
       }
     } catch (error) {
       console.error('Error analyzing suitability:', error);
-      throw new Error(
-        'Failed to analyze suitability. Ensure Ollama is running and you have pulled the model.'
-      );
+      throw new Error('Failed to analyze suitability.');
     }
   }
 
@@ -192,7 +227,7 @@ export class OllamaService {
         education: JSON.stringify(userProfile.education ?? []),
       });
 
-      console.log('📡 Sending summary prompt to Local AI (Ollama)...');
+      console.log('📡 Sending summary prompt to Gemini...');
       const response = await this.model.invoke(input);
 
       const content =
@@ -200,7 +235,10 @@ export class OllamaService {
           ? response.content
           : JSON.stringify(response.content);
 
-      return { summary: content.trim() };
+      // Handle "thinking" block output from Gemma/Gemini
+      const cleanedContent = content.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+
+      return { summary: cleanedContent };
     } catch (error) {
       console.error('Error generating summary:', error);
       throw new Error('Failed to generate summary.');
@@ -269,7 +307,7 @@ export class OllamaService {
         candidateAnswer,
       });
 
-      console.log('📡 Sending interview evaluation prompt to Ollama...');
+      console.log('📡 Sending interview evaluation prompt to Gemini...');
       const response = await this.model.invoke(input);
 
       const content =
@@ -278,11 +316,8 @@ export class OllamaService {
           : JSON.stringify(response.content);
 
       // Parse JSON from response
-      const firstBrace = content.indexOf('{');
-      const lastBrace = content.lastIndexOf('}');
-
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        const jsonStr = content.substring(firstBrace, lastBrace + 1);
+      const jsonStr = this.extractJSON(content);
+      if (jsonStr) {
         const result = JSON.parse(jsonStr) as InterviewEvalResult;
 
         // Ensure score is within bounds
@@ -291,13 +326,11 @@ export class OllamaService {
 
         return result;
       } else {
-        throw new Error('No JSON object found in Ollama response');
+        throw new Error('No JSON object found in AI response');
       }
     } catch (error) {
       console.error('Error evaluating interview answer:', error);
-      throw new Error(
-        'Failed to evaluate interview answer. Ensure Ollama is running.'
-      );
+      throw new Error('Failed to evaluate interview answer.');
     }
   }
 
@@ -344,20 +377,18 @@ export class OllamaService {
     `;
 
     try {
-      console.log('📡 Sending bulk interview evaluation to Ollama...');
+      console.log('📡 Sending bulk interview evaluation to Gemini...');
       const response = await this.model.invoke(template);
       const content =
         typeof response.content === 'string'
           ? response.content
           : JSON.stringify(response.content);
-      const firstBrace = content.indexOf('{');
-      const lastBrace = content.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        return JSON.parse(
-          content.substring(firstBrace, lastBrace + 1)
-        ) as FullInterviewEvalResult;
+          
+      const jsonStr = this.extractJSON(content);
+      if (jsonStr) {
+        return JSON.parse(jsonStr) as FullInterviewEvalResult;
       }
-      throw new Error('Invalid JSON from Ollama');
+      throw new Error('Invalid JSON from AI');
     } catch (error) {
       console.error('Bulk evaluation error:', error);
       throw error;
@@ -366,12 +397,4 @@ export class OllamaService {
 
 }
 
-// Singleton instance
-let ollamaServiceInstance: OllamaService | null = null;
-
-export const getOllamaService = (): OllamaService => {
-  if (!ollamaServiceInstance) {
-    ollamaServiceInstance = new OllamaService();
-  }
-  return ollamaServiceInstance;
-};
+export const getGeminiService = () => GeminiService.getInstance();

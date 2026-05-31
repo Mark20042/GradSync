@@ -15,6 +15,7 @@ import Message from "@/models/Message.model.js";
 import JobFAQ from "@/models/JobFAQ.model.js";
 import EmployerSettings from "@/models/EmployerSettings.model.js";
 import Assessment from "@/models/Assessment.model.js";
+import InterviewDraft from "@/models/InterviewDraft.model.js";
 import {
   deleteFromCloudinary,
   getPublicIdFromUrl,
@@ -121,6 +122,31 @@ const updateProfile = async (
     }
 
     await user.save();
+    
+    // Auto-generate assessments for any newly added skills
+    if ((user.role === "graduate" || user.role === "jobseeker") && body.skills !== undefined) {
+      try {
+        const existingAssessments = await Assessment.find({ candidateId: user._id });
+        const generatedSkills = existingAssessments.map((a: any) => a.skill.toLowerCase());
+        
+        const rawSkills = [...(user.verifiedSkills || []), ...(user.skills || [])];
+        const allSkills = Array.from(new Set(
+          rawSkills.map((s: any) => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s)
+            .filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
+        )) as string[];
+
+        const missingSkills = allSkills.filter(s => !generatedSkills.includes(s.toLowerCase()));
+
+        if (missingSkills.length > 0) {
+          import('@/services/generation.service.js').then(({ autoGenerateMissingForUser }) => {
+            autoGenerateMissingForUser(user._id.toString(), missingSkills);
+          }).catch(err => console.error("Failed to load generation service for auto-gen:", err));
+        }
+      } catch (err) {
+        console.error("Error detecting missing skills on profile update:", err);
+      }
+    }
+
     const updatedUser = await User.findById(req.user._id).select("-password");
     res.status(StatusCodes.OK).json(updatedUser);
   } catch (error) {
@@ -166,6 +192,8 @@ const deleteProfile = async (
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
       await Assessment.deleteMany({ user: userId });
+      await Assessment.deleteMany({ candidateId: userId });
+      await InterviewDraft.deleteMany({ candidateId: userId });
     }
     if (user.role === "employer") {
       const jobs = await Job.find({ company: userId }).select("_id");

@@ -41,6 +41,7 @@ import CertificationsSection from "./components/profile/CertificationsSection";
 import AccountSettingsSection from "./components/profile/AccountSettingsSection";
 import SkillsSection from "./components/profile/SkillsSection";
 import InterviewScoresSection from "./components/profile/InterviewScoresSection";
+import JobPreferencesSection from "./components/profile/JobPreferencesSection";
 
 const UserProfile = () => {
   const { user: authUser, updateUser } = useAuth();
@@ -345,6 +346,7 @@ const UserProfile = () => {
     { id: "skills", label: "Skills & Languages", icon: Code },
     { id: "projects", label: "Projects", icon: Layers },
     { id: "certifications", label: "Certifications & Awards", icon: Award },
+    { id: "preferences", label: "Job Preferences", icon: Target },
     { id: "interviews", label: "Interview Scores", icon: Target },
     { id: "settings", label: "Account Settings", icon: Settings, danger: true },
   ];
@@ -573,6 +575,15 @@ const UserProfile = () => {
 
               {activeSection === "certifications" && (
                 <CertificationsSection
+                  user={user}
+                  editing={editing}
+                  editData={editData}
+                  setEditData={setEditData}
+                />
+              )}
+
+              {activeSection === "preferences" && (
+                <JobPreferencesSection
                   user={user}
                   editing={editing}
                   editData={editData}
