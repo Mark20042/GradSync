@@ -89,7 +89,7 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Salary Expectation ($/year)
+            Salary Expectation (₱ per month)
           </label>
           <input
             type="number"
