@@ -16,6 +16,7 @@ import JobFAQ from "@/models/JobFAQ.model.js";
 import EmployerSettings from "@/models/EmployerSettings.model.js";
 import Assessment from "@/models/Assessment.model.js";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
+import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
 import {
   deleteFromCloudinary,
   getPublicIdFromUrl,
@@ -194,6 +195,7 @@ const deleteProfile = async (
       await Assessment.deleteMany({ user: userId });
       await Assessment.deleteMany({ candidateId: userId });
       await InterviewDraft.deleteMany({ candidateId: userId });
+      await AssessmentSubmission.deleteMany({ user: userId });
     }
     if (user.role === "employer") {
       const jobs = await Job.find({ company: userId }).select("_id");

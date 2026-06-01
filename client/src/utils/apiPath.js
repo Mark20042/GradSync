@@ -64,6 +64,7 @@ export const API_PATH = {
     GENERATE_SUMMARY: "/api/ai/summary",
     SCAN_MATCHES: "/api/ai/scan-matches",
     CHECK_CANDIDATE_SUITABILITY: "/api/ai/candidate-suitability",
+    SUBMIT_FEEDBACK: "/api/ai/feedback",
   },
   NOTIFICATIONS: {
     GET_ALL: "/api/notifications",
@@ -95,6 +96,8 @@ export const API_PATH = {
     DELETE_FAQ: (id) => `/api/admin/faqs/${id}`,
     CREATE_EMPLOYER_SETTINGS: "/api/admin/employer-settings",
     UPDATE_EMPLOYER_SETTINGS: (id) => `/api/admin/employer-settings/${id}`,
+    AI_FEEDBACKS: "/api/admin/ai-feedback",
+    DELETE_AI_FEEDBACK: (id) => `/api/admin/ai-feedback/${id}`,
   },
   EMPLOYER: {
     SETTINGS: "/api/employer/settings",

@@ -53,10 +53,13 @@ import AdminAssessmentManager from "./pages/Admin/AdminAssessmentManager";
 import AdminAssessmentReview from "./pages/Admin/AdminAssessmentReview";
 import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
 import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
+import AdminAIFeedbacks from "./pages/Admin/AdminAIFeedbacks";
+import FeatureFeedbackModal from "./components/FeatureFeedbackModal";
 
 const App = () => {
   return (
     <AuthProvider>
+      <FeatureFeedbackModal />
       <Router>
         <Suspense
           fallback={
@@ -138,6 +141,10 @@ const App = () => {
               <Route
                 path="/admin-employer-settings"
                 element={<AdminEmployerSettings />}
+              />
+              <Route
+                path="/admin-ai-feedbacks"
+                element={<AdminAIFeedbacks />}
               />
               <Route
                 path="/admin-assessments"

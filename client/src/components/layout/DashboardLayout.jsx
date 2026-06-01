@@ -225,6 +225,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
                   name: "Employer Settings",
                   icon: Settings,
                 },
+                { id: "admin-ai-feedbacks", name: "Feature Feedbacks", icon: Sparkles },
                 { id: "admin-reports", name: "Reports", icon: FileSpreadsheet },
               ].map((item) => (
                 <NavigationItem

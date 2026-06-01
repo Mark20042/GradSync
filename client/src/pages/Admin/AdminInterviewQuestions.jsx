@@ -33,9 +33,8 @@ const AdminInterviewQuestions = () => {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get("/api/admin/users");
-      const filtered = res.data.filter(u => u.role === "jobseeker" || u.role === "graduate");
-      setCandidates(filtered);
+      const res = await axiosInstance.get("/api/admin/candidates");
+      setCandidates(res.data);
     } catch (error) {
       toast.error("Failed to load candidates");
     } finally {

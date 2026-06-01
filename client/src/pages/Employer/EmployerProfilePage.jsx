@@ -5,13 +5,16 @@ import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import toast from "react-hot-toast";
-import { Building2, Globe, Upload, Save, Trash2 } from "lucide-react";
+import { Building2, Globe, Upload, Save, Trash2, Lock } from "lucide-react";
 import LocationDetectInput from "../../components/Input/LocationDetectInput";
+import { AnimatePresence } from "framer-motion";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 
 const EmployerProfilePage = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
@@ -256,6 +259,21 @@ const EmployerProfilePage = () => {
               </div>
             </form>
 
+            {/* Account Security */}
+            <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Account Security</h3>
+              <p className="text-gray-500 text-sm mb-6">
+                Manage your password and account security settings.
+              </p>
+              <button
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                <Lock className="w-4 h-4" />
+                Change Password
+              </button>
+            </div>
+
             {/* Delete Account */}
             <div className="bg-red-50 p-6 rounded-xl border border-red-100">
               <h3 className="text-lg font-bold text-red-700 mb-2">Account Deletion</h3>
@@ -273,6 +291,16 @@ const EmployerProfilePage = () => {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isPasswordModalOpen && (
+          <ChangePasswordModal 
+            isOpen={isPasswordModalOpen} 
+            onClose={() => setIsPasswordModalOpen(false)} 
+            userEmail={user?.email}
+          />
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };

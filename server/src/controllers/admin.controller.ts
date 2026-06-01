@@ -14,14 +14,16 @@ import Conversation from "@/models/Conversation.model.js";
 import Message from "@/models/Message.model.js";
 import Assessment from "@/models/Assessment.model.js";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
+import FeatureFeedback from "@/models/FeatureFeedback.model.js";
+import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
 import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/services/cloudinary.service.js";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const totalGraduates = await User.countDocuments({ role: "graduate" });
-    const totalEmployers = await User.countDocuments({ role: "employer" });
-    const totalJobSeekers = await User.countDocuments({ role: "jobseeker" });
+    const totalUsers = await User.countDocuments({ isAdmin: { $ne: true } });
+    const totalGraduates = await User.countDocuments({ role: "graduate", isAdmin: { $ne: true } });
+    const totalEmployers = await User.countDocuments({ role: "employer", isAdmin: { $ne: true } });
+    const totalJobSeekers = await User.countDocuments({ role: "jobseeker", isAdmin: { $ne: true } });
     const totalJobs = await Job.countDocuments();
     const activeJobs = await Job.countDocuments({ isClosed: false });
     const totalApplications = await Application.countDocuments();
@@ -30,6 +32,7 @@ export const getAnalytics = async (req: any, res: Response, next: NextFunction) 
     const pendingApplications = await Application.countDocuments({ status: "In Review" });
     const appliedApplications = await Application.countDocuments({ status: "Applied" });
     const recentUsers = await User.aggregate([
+      { $match: { isAdmin: { $ne: true } } },
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       { $project: { fullName: 1, email: 1, role: 1, createdAt: 1 } }
@@ -125,6 +128,7 @@ export const deleteApplication = async (req: any, res: Response, next: NextFunct
 export const getAllUsers = async (_req: any, res: Response, next: NextFunction) => {
   try { 
     const users = await User.aggregate([
+      { $match: { isAdmin: { $ne: true } } },
       { $sort: { createdAt: -1 } },
       {
         $lookup: {
@@ -150,6 +154,41 @@ export const getAllUsers = async (_req: any, res: Response, next: NextFunction) 
         }
       },
       { $project: { password: 0, assessments: 0 } } // Exclude password and heavy assessments array
+    ]);
+    res.json(users);
+  }
+  catch (error) { next(error); }
+};
+
+export const getCandidates = async (_req: any, res: Response, next: NextFunction) => {
+  try { 
+    const users = await User.aggregate([
+      { $match: { isAdmin: { $ne: true }, role: { $in: ["jobseeker", "graduate"] } } },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: "assessments",
+          localField: "_id",
+          foreignField: "candidateId",
+          as: "assessments"
+        }
+      },
+      {
+        $addFields: {
+          assessmentCount: { $size: "$assessments" },
+          generatedSkills: {
+            $map: {
+              input: "$assessments",
+              as: "a",
+              in: { skill: "$$a.skill", status: "$$a.status" }
+            }
+          },
+          isGenerating: {
+            $in: ["generating", "$assessments.status"]
+          }
+        }
+      },
+      { $project: { password: 0, assessments: 0 } }
     ]);
     res.json(users);
   }
@@ -193,6 +232,7 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
       await Assessment.deleteMany({ user: userId });
       await Assessment.deleteMany({ candidateId: userId });
       await InterviewDraft.deleteMany({ candidateId: userId });
+      await AssessmentSubmission.deleteMany({ user: userId });
     }
 
     if (user.role === "employer") {
@@ -537,4 +577,24 @@ export const uploadImage = async (req: any, res: Response, next: NextFunction) =
   } catch (error) { next(error); }
 };
 
+export const getAIFeedbacks = async (_req: any, res: Response, next: NextFunction) => {
+  try {
+    const feedbacks = await FeatureFeedback.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $lookup: { from: "users", localField: "user", foreignField: "_id", as: "u" } },
+      { $unwind: { path: "$u", preserveNullAndEmptyArrays: true } },
+      { $addFields: { user: { _id: "$u._id", fullName: "$u.fullName", email: "$u.email", role: "$u.role" } } },
+      { $project: { u: 0 } }
+    ]);
+    res.json(feedbacks);
+  } catch (error) { next(error); }
+};
 
+export const deleteAIFeedback = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const feedback = await FeatureFeedback.findById(req.params.id);
+    if (!feedback) throw new NotFoundError("Feedback not found");
+    await feedback.deleteOne();
+    res.json({ message: "Feedback removed successfully" });
+  } catch (error) { next(error); }
+};

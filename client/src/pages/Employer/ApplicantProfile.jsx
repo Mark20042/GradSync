@@ -48,6 +48,9 @@ const ApplicantProfile = () => {
           candidateId: applicant.applicant._id
         });
         setAiAnalysis(response.data);
+        window.dispatchEvent(new CustomEvent("openFeedbackModal", {
+          detail: { featureName: "Employer Suitability Analysis" }
+        }));
       } catch (error) {
         console.error("Analysis failed:", error);
         toast.error("Failed to analyze candidate");

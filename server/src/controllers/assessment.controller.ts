@@ -287,10 +287,23 @@ const deleteSubmission = async (
   next: NextFunction,
 ) => {
   try {
-    const submission = await AssessmentSubmission.findByIdAndDelete(
-      req.params.id,
-    );
+    const submission = await AssessmentSubmission.findById(req.params.id).populate("assessment");
     if (!submission) throw new NotFoundError("Submission not found");
+
+    if (submission.passed) {
+      const assessmentDoc = submission.assessment as any;
+      if (assessmentDoc && assessmentDoc.skill) {
+        const user = await User.findById(submission.user);
+        if (user && user.verifiedSkills) {
+          user.verifiedSkills = user.verifiedSkills.filter(
+            (s) => s.skill !== assessmentDoc.skill
+          );
+          await user.save();
+        }
+      }
+    }
+
+    await submission.deleteOne();
     res.status(StatusCodes.OK).json({ message: "Submission deleted" });
   } catch (error) {
     next(error);

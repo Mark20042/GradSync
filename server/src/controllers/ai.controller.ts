@@ -11,6 +11,7 @@ import type {
   CandidateSuitabilityRequestBody,
   UserProfileForAI,
 } from '@/interfaces/ai.interfaces.js';
+import FeatureFeedback from '@/models/FeatureFeedback.model.js';
 
 // Choose AI service dynamically
 const getAIService = () => {
@@ -244,6 +245,60 @@ export const checkCandidateSuitability = async (
   } catch (error) {
     console.error('AI Candidate Check Error:', error);
     res.status(500).json({ message: 'Failed to analyze candidate' });
+  }
+};
+
+// ─── Submit Feature Feedback ──────────────────────────────────────────────
+
+/**
+ * @desc    Submit feedback for system features
+ * @route   POST /api/ai/feedback
+ * @access  Private
+ */
+export const submitFeatureFeedback = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = req.user._id;
+    const { rating, comments, improvements, featureName } = req.body;
+
+    if (!featureName) {
+      res.status(400).json({ message: 'featureName is required' });
+      return;
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    if (user.feedbackProvidedFeatures && user.feedbackProvidedFeatures.includes(featureName)) {
+      res.status(400).json({ message: 'Feedback already provided for this feature' });
+      return;
+    }
+
+    const feedback = new FeatureFeedback({
+      user: userId,
+      rating,
+      comments,
+      improvements,
+      featureName
+    });
+
+    await feedback.save();
+
+    if (!user.feedbackProvidedFeatures) {
+      user.feedbackProvidedFeatures = [];
+    }
+    user.feedbackProvidedFeatures.push(featureName);
+    await user.save();
+
+    res.status(201).json({ message: 'Feedback submitted successfully', feedback });
+  } catch (error) {
+    console.error('Submit Feature Feedback Error:', error);
+    res.status(500).json({ message: 'Failed to submit feedback' });
   }
 };
 

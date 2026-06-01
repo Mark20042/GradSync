@@ -38,10 +38,8 @@ const AdminAssessmentManager = () => {
   const fetchCandidates = async () => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get("/api/admin/users");
-      // Filter for jobseekers and graduates
-      const filtered = res.data.filter(u => u.role === "jobseeker" || u.role === "graduate");
-      setCandidates(filtered);
+      const res = await axiosInstance.get("/api/admin/candidates");
+      setCandidates(res.data);
     } catch (error) {
       toast.error("Failed to load candidates");
     } finally {
@@ -142,12 +140,11 @@ const AdminAssessmentManager = () => {
       const pollLogic = async () => {
         try {
           // Fetch fresh candidates
-          const res = await axiosInstance.get("/api/admin/users");
-          const filtered = res.data.filter(u => u.role === "jobseeker" || u.role === "graduate");
-          setCandidates(filtered);
+          const res = await axiosInstance.get("/api/admin/candidates");
+          setCandidates(res.data);
 
           // Check if anyone is generating right now
-          const anyGenerating = filtered.some(c => c.isGenerating);
+          const anyGenerating = res.data.some(c => c.isGenerating);
           if (anyGenerating) {
             return; // Wait for them to finish
           }

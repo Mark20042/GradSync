@@ -274,6 +274,10 @@ const AssessmentTaking = () => {
       } else {
         toast.error("Assessment completed. Better luck next time!");
       }
+
+      window.dispatchEvent(new CustomEvent("openFeedbackModal", {
+        detail: { featureName: "Assessments" }
+      }));
     } catch (error) {
       console.error("Submission failed", error);
       toast.error("Failed to submit assessment");

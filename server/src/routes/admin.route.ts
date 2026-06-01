@@ -12,6 +12,7 @@ router.use(adminMiddleware as any);
 router.get("/analytics", adminController.getAnalytics);
 router.post("/upload", upload.single("image"), adminController.uploadImage);
 router.get("/users", adminController.getAllUsers);
+router.get("/candidates", adminController.getCandidates);
 router.post("/users", adminController.createUser);
 router.put("/users/:id", adminController.updateUser);
 router.delete("/users/:id", adminController.deleteUser);
@@ -34,5 +35,7 @@ router.delete("/job-faqs/:id", adminController.deleteJobFAQ);
 router.get("/employer-settings", adminController.getAllEmployerSettings);
 router.post("/employer-settings", adminController.createEmployerSettings);
 router.put("/employer-settings/:id", adminController.updateEmployerSettings);
+router.get("/ai-feedback", adminController.getAIFeedbacks);
+router.delete("/ai-feedback/:id", adminController.deleteAIFeedback);
 
 export default router;

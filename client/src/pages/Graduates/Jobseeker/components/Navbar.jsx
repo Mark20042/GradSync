@@ -51,6 +51,9 @@ const Navbar = () => {
     try {
       const response = await axiosInstance.post(API_PATH.AI.SCAN_MATCHES);
       alert(`Scan complete! Found ${response.data.matchesFound} new matches.`);
+      window.dispatchEvent(new CustomEvent("openFeedbackModal", {
+        detail: { featureName: "Job Match Analysis" }
+      }));
     } catch (error) {
       console.error("Error scanning matches:", error);
       alert("Failed to scan for matches.");

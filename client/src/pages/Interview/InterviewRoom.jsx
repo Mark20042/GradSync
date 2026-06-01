@@ -495,6 +495,10 @@ const InterviewRoom = () => {
         toast.success("Interview submitted successfully!");
       }
       
+      window.dispatchEvent(new CustomEvent("openFeedbackModal", {
+        detail: { featureName: "Interviews" }
+      }));
+      
       setIsSubmitted(true);
       setIsEvaluating(false);
 

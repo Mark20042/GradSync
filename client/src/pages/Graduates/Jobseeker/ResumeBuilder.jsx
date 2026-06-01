@@ -81,6 +81,11 @@ const ResumeBuilder = () => {
       setUser((prev) => ({ ...prev, resume: resumeUrl }));
 
       toast.success("ATS-friendly resume saved to your profile successfully!");
+      
+      // Trigger feedback modal for Resume Builder
+      window.dispatchEvent(new CustomEvent("openFeedbackModal", {
+        detail: { featureName: "Resume Builder" }
+      }));
     } catch (error) {
       console.error("Error saving resume:", error);
       toast.error(

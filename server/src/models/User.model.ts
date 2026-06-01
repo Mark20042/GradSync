@@ -204,6 +204,8 @@ const userSchema = new Schema<IUser>(
 
     // AI scan tracking
     lastScanDate: Date,
+    // Feature Feedback tracking
+    feedbackProvidedFeatures: { type: [String], default: [] },
   },
   { timestamps: true },
 );
