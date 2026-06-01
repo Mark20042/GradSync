@@ -8,7 +8,6 @@ import { API_PATH } from "../../../utils/apiPath";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import EmployerSuitabilityModal from "./EmployerSuitabilityModal";
-import EmployerAssessmentInvitationModal from "./EmployerAssessmentInvitationModal";
 import { FileCode } from "lucide-react";
 
 import StatusBadge from "../../../components/StatusBadge";
@@ -25,7 +24,6 @@ const ApplicantProfilePreview = ({
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [showInviteModal, setShowInviteModal] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
@@ -214,12 +212,7 @@ const ApplicantProfilePreview = ({
               jobTitle={selectedApplicant.job.title}
             />
 
-            <EmployerAssessmentInvitationModal
-              isOpen={showInviteModal}
-              onClose={() => setShowInviteModal(false)}
-              candidate={selectedApplicant.applicant}
-              job={selectedApplicant.job}
-            />
+
 
             {/* Action Buttons Row */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t border-gray-100 mt-4">
@@ -235,13 +228,7 @@ const ApplicantProfilePreview = ({
                 View Full Profile
               </button>
 
-              <button
-                className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-700 font-semibold rounded-xl hover:bg-indigo-50 transition-all shadow-sm active:scale-[0.98] focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
-                onClick={() => setShowInviteModal(true)}
-              >
-                <FileCode className="w-5 h-5" />
-                Invite to Assessment
-              </button>
+
 
               <button
                 className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-blue-50 text-blue-700 font-semibold rounded-xl hover:bg-blue-100 transition-all shadow-sm active:scale-[0.98] focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"

@@ -23,7 +23,6 @@ import messageRoutes from "@/routes/message.route.js";
 import employerRoutes from "@/routes/employer.route.js";
 import aiRoutes from "@/routes/ai.route.js";
 import adminRoutes from "@/routes/admin.route.js";
-import employerAssessmentRoutes from "@/routes/employerAssessment.route.js";
 import generationRoutes from "@/routes/generation.route.js";
 
 // middlewares import
@@ -118,7 +117,6 @@ apiRouter.use("/messages", messageRoutes);
 apiRouter.use("/employer", employerRoutes);
 apiRouter.use("/ai", aiRoutes);
 apiRouter.use("/admin", adminRoutes);
-apiRouter.use("/employer-assessments", employerAssessmentRoutes);
 apiRouter.use("/generation", generationRoutes);
 
 // mount api routes

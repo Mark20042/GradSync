@@ -9,6 +9,7 @@ import {
   getInterviewResultEmailTemplate,
   getAssessmentApprovalEmailTemplate,
   getAssessmentRejectionEmailTemplate,
+  getForgotPasswordEmailTemplate,
 } from "@/templates/email/index.js";
 import { generateAssessmentCertificatePdf } from "@/utils/assessment-certificate.js";
 
@@ -282,56 +283,6 @@ export const sendInterviewResultEmail = async (
   }
 };
 
-export const sendEmployerAssessmentResultEmail = async (
-  userEmail: string,
-  userName: string,
-  assessmentTitle: string,
-  score: number,
-): Promise<boolean> => {
-  try {
-    const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/my-assessments`;
-
-    if (shouldUseMailtrap()) {
-      const client = getMailtrapClient();
-      const fromEmail = parseEmailFrom();
-      await client.send({
-        from: fromEmail,
-        to: [{ email: userEmail }],
-        subject: "Employer Assessment Results - GradSync",
-        html: getAssessmentApprovalEmailTemplate(
-          userName,
-          assessmentTitle,
-          score,
-          resultUrl,
-        ),
-        category: "Assessment Review",
-      });
-      console.log(`✅ Employer assessment result email sent to ${userEmail}`);
-      return true;
-    }
-
-    if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) return false;
-    const mailOptions = {
-      from: env.EMAIL_FROM || `"GradSync" <${env.EMAIL_USER}>`,
-      to: userEmail,
-      subject: "Employer Assessment Results - GradSync",
-      html: getAssessmentApprovalEmailTemplate(
-        userName,
-        assessmentTitle,
-        score,
-        resultUrl,
-      ),
-    };
-    const trans = getTransporter();
-    await trans.sendMail(mailOptions);
-    console.log(`✅ Employer assessment result email sent to ${userEmail}`);
-    return true;
-  } catch (error: any) {
-    console.error("❌ Error sending employer assessment result email:", error.message);
-    return false;
-  }
-};
-
 export const sendAssessmentApprovalEmail = async (
   userEmail: string,
   userName: string,
@@ -455,6 +406,42 @@ export const sendAssessmentRejectionEmail = async (
       "❌ Error sending assessment rejection email:",
       error.message,
     );
+    return false;
+  }
+};
+
+export const sendForgotPasswordEmail = async (
+  userEmail: string,
+  otp: string,
+): Promise<boolean> => {
+  try {
+    if (shouldUseMailtrap()) {
+      const client = getMailtrapClient();
+      const fromEmail = parseEmailFrom();
+      await client.send({
+        from: fromEmail,
+        to: [{ email: userEmail }],
+        subject: "GradSync - Password Reset Request",
+        html: getForgotPasswordEmailTemplate(otp),
+        category: "Password Reset",
+      });
+      console.log(`✅ Forgot password email sent to ${userEmail}`);
+      return true;
+    }
+
+    if (!env.EMAIL_USER || !env.EMAIL_PASSWORD) return false;
+    const mailOptions = {
+      from: env.EMAIL_FROM || `"GradSync" <${env.EMAIL_USER}>`,
+      to: userEmail,
+      subject: "GradSync - Password Reset Request",
+      html: getForgotPasswordEmailTemplate(otp),
+    };
+    const trans = getTransporter();
+    await trans.sendMail(mailOptions);
+    console.log(`✅ Forgot password email sent to ${userEmail}`);
+    return true;
+  } catch (error: any) {
+    console.error("❌ Error sending forgot password email:", error.message);
     return false;
   }
 };

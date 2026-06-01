@@ -125,11 +125,7 @@ export const EMPLOYER_MENU = [
     name: "Auto-Pilot",
     icon: Zap,
   },
-  {
-    id: "employer-assessments",
-    name: "Assessments",
-    icon: ClipboardList,
-  },
+
   {
     id: "company-profile",
     name: "Company Profile",

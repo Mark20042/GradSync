@@ -18,7 +18,9 @@ import { verifyDocument } from "@/utils/ocr.service.js";
 import {
   sendVerificationSuccessEmail,
   sendVerificationFailedEmail,
+  sendForgotPasswordEmail,
 } from "@/utils/email.service.js";
+import Otp from "@/models/Otp.model.js";
 import { autoGenerateForUser } from "@/services/generation.service.js";
 import fs from "fs";
 import path from "path";
@@ -463,6 +465,114 @@ const uploadResume = async (
   }
 };
 
+const checkEmailExists = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    if (!email) throw new BadRequestError("Email is required");
+    
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new NotFoundError("We can't find your account.");
+    }
+
+    res.status(StatusCodes.OK).json({ 
+      message: "User found", 
+      email: user.email,
+      fullName: user.fullName,
+      avatar: user.avatar || null
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) throw new NotFoundError("We can't find your account.");
+
+    // Generate a 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Delete any existing OTP for this email
+    await Otp.deleteMany({ email: email.toLowerCase() });
+
+    // Save the new OTP
+    await Otp.create({
+      email: email.toLowerCase(),
+      otp: otpCode,
+    });
+
+    // Send the email
+    await sendForgotPasswordEmail(user.email, otpCode);
+
+    res.status(StatusCodes.OK).json({ message: "OTP sent to your email" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const otpRecord = await Otp.findOne({ email: email.toLowerCase() });
+    if (!otpRecord) {
+      throw new BadRequestError("OTP expired or not found. Please request a new one.");
+    }
+
+    // Strictly enforce 5-minute (300000ms) limit, since MongoDB TTL is not instantaneous
+    const now = new Date();
+    const diffInMs = now.getTime() - new Date(otpRecord.createdAt).getTime();
+    if (diffInMs > 5 * 60 * 1000) {
+      await Otp.deleteOne({ _id: otpRecord._id });
+      throw new BadRequestError("OTP expired. Please request a new one.");
+    }
+
+    if (otpRecord.otp !== otp) {
+      throw new BadRequestError("Invalid OTP");
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    user.password = newPassword; // Replace with hashed password if encryption is added
+    await user.save();
+
+    // Automatically delete OTP record upon successful reset
+    await Otp.deleteOne({ _id: otpRecord._id });
+
+    res.status(StatusCodes.OK).json({ message: "Password has been successfully reset" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    
+    // We expect req.user to be set via authenticationMiddleware
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) throw new NotFoundError("User not found");
+
+    if (user.password !== oldPassword) {
+      throw new BadRequestError("Incorrect old password");
+    }
+
+    user.password = newPassword; // Replace with hash logic if added
+    await user.save();
+
+    res.status(StatusCodes.OK).json({ message: "Password updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   register,
   login,
@@ -471,4 +581,8 @@ export {
   setupProfileGrad,
   uploadImage,
   uploadResume,
+  forgotPassword,
+  resetPassword,
+  checkEmailExists,
+  changePassword,
 };

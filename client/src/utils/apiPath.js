@@ -12,6 +12,10 @@ export const API_PATH = {
     DELETE_RESUME: "/api/users/resume", //Delete resume
     UPLOAD_IMAGE: "/api/auth/upload-image", //Upload profile image
     UPLOAD_RESUME: "/api/auth/upload-resume", //Upload resume
+    CHECK_EMAIL: "/api/auth/check-email", //Check if email exists
+    FORGOT_PASSWORD: "/api/auth/forgot-password", //Request OTP for forgot password
+    RESET_PASSWORD: "/api/auth/reset-password", //Reset password using OTP
+    CHANGE_PASSWORD: "/api/auth/change-password", //Change password while logged in
   },
 
   USERS: {

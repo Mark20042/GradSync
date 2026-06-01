@@ -5,3 +5,4 @@ export { getRejectionEmailTemplate } from "./rejection.template.js";
 export { getInterviewResultEmailTemplate } from "./interview-result.template.js";
 export { getAssessmentApprovalEmailTemplate } from "./assessment-approval.template.js";
 export { getAssessmentRejectionEmailTemplate } from "./assessment-rejection.template.js";
+export { getForgotPasswordEmailTemplate } from "./forgot-password.template.js";
