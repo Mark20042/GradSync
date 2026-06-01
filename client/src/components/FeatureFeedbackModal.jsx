@@ -4,6 +4,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { API_PATH } from "../utils/apiPath";
 import { toast } from "react-hot-toast";
 import { X, Star } from "lucide-react";
+import { motion } from "framer-motion";
 
 const FeatureFeedbackModal = () => {
   const { user, updateUser } = useAuth();
@@ -85,29 +86,41 @@ const FeatureFeedbackModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-fade-in-up max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-gray-800">
-              How was your experience?
-            </h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/50 backdrop-blur-md p-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] overflow-y-auto border border-gray-100"
+      >
+        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 border-b border-gray-100">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">
+                How was your experience?
+              </h2>
+              <p className="text-gray-600 mt-2 text-sm leading-relaxed">
+                You recently used <span className="font-semibold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-md">{featureName}</span> for the first time! We'd love to hear your thoughts.
+              </p>
+            </div>
             <button
               onClick={handleSkip}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-700 bg-white hover:bg-gray-100 p-2 rounded-full transition-all shadow-sm"
+              aria-label="Close"
             >
-              <X size={24} />
+              <X size={20} className="stroke-[2.5]" />
             </button>
           </div>
-          
-          <p className="text-gray-600 mb-6 text-sm">
-            You recently used <span className="font-semibold text-indigo-600">{featureName}</span> for the first time! We'd love to hear your thoughts to help us improve.
-          </p>
-
+        </div>
+        
+        <div className="p-6">
           <form onSubmit={handleSubmit}>
-            <div className="flex justify-center space-x-2 mb-6">
+            <div className="flex justify-center space-x-3 mb-8">
               {[1, 2, 3, 4, 5].map((star) => (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
                   key={star}
                   type="button"
                   onMouseEnter={() => setHoverRating(star)}
@@ -116,55 +129,66 @@ const FeatureFeedbackModal = () => {
                   className="focus:outline-none"
                 >
                   <Star
-                    size={40}
-                    className={`transition-colors ${
+                    size={44}
+                    className={`transition-all duration-200 ${
                       star <= (hoverRating || rating)
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
+                        ? "text-amber-400 fill-amber-400 drop-shadow-sm"
+                        : "text-gray-200"
                     }`}
                   />
-                </button>
+                </motion.button>
               ))}
             </div>
 
-            <div className="mb-4">
-              <label htmlFor="comments" className="block text-sm font-medium text-gray-700 mb-2">
-                What did you like? (Optional)
-              </label>
-              <textarea
-                id="comments"
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all"
-                placeholder="Tell us what you liked..."
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-              ></textarea>
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="comments" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  What did you like? <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
+                <textarea
+                  id="comments"
+                  rows="2"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none transition-all text-sm"
+                  placeholder="Tell us what worked well for you..."
+                  value={comments}
+                  onChange={(e) => setComments(e.target.value)}
+                ></textarea>
+              </div>
+
+              <div>
+                <label htmlFor="improvements" className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  Suggest improvements <span className="text-gray-400 font-normal">(Optional)</span>
+                </label>
+                <textarea
+                  id="improvements"
+                  rows="2"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white resize-none transition-all text-sm"
+                  placeholder="What could be better?"
+                  value={improvements}
+                  onChange={(e) => setImprovements(e.target.value)}
+                ></textarea>
+              </div>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="improvements" className="block text-sm font-medium text-gray-700 mb-2">
-                Suggest improvements (Optional)
-              </label>
-              <textarea
-                id="improvements"
-                rows="2"
-                className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-all"
-                placeholder="What could be better?"
-                value={improvements}
-                onChange={(e) => setImprovements(e.target.value)}
-              ></textarea>
+            <div className="mt-8">
+              <button
+                type="submit"
+                disabled={isSubmitting || rating === 0}
+                className="w-full py-3.5 px-4 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Submitting...</span>
+                  </>
+                ) : (
+                  <span>Submit Feedback</span>
+                )}
+              </button>
             </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting || rating === 0}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? "Submitting..." : "Submit Feedback"}
-            </button>
           </form>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
