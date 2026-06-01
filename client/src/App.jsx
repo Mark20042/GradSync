@@ -53,7 +53,7 @@ import AdminAssessmentManager from "./pages/Admin/AdminAssessmentManager";
 import AdminAssessmentReview from "./pages/Admin/AdminAssessmentReview";
 import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
 import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
-import AdminAIFeedbacks from "./pages/Admin/AdminAIFeedbacks";
+import AdminFeatureFeedbacks from "./pages/Admin/AdminFeatureFeedbacks";
 import FeatureFeedbackModal from "./components/FeatureFeedbackModal";
 
 const App = () => {
@@ -144,7 +144,7 @@ const App = () => {
               />
               <Route
                 path="/admin-ai-feedbacks"
-                element={<AdminAIFeedbacks />}
+                element={<AdminFeatureFeedbacks />}
               />
               <Route
                 path="/admin-assessments"

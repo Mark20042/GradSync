@@ -322,7 +322,7 @@ const setupProfileGrad = async (
       middleName,
       lastName,
     } = req.body;
-    
+
     // Construct fullName if any name part is provided
     let updateFields: any = {
       degree,
@@ -355,11 +355,11 @@ const setupProfileGrad = async (
       if (firstName !== undefined) updateFields.firstName = firstName;
       if (middleName !== undefined) updateFields.middleName = middleName;
       if (lastName !== undefined) updateFields.lastName = lastName;
-      
+
       const currentFirstName = firstName !== undefined ? firstName : req.user.firstName;
       const currentMiddleName = middleName !== undefined ? middleName : req.user.middleName;
       const currentLastName = lastName !== undefined ? lastName : req.user.lastName;
-      
+
       updateFields.fullName = [currentFirstName, currentMiddleName, currentLastName].filter(Boolean).join(" ");
     }
 
@@ -469,14 +469,14 @@ const checkEmailExists = async (req: Request, res: Response, next: NextFunction)
   try {
     const { email } = req.body;
     if (!email) throw new BadRequestError("Email is required");
-    
+
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       throw new NotFoundError("We can't find your account.");
     }
 
-    res.status(StatusCodes.OK).json({ 
-      message: "User found", 
+    res.status(StatusCodes.OK).json({
+      message: "User found",
       email: user.email,
       fullName: user.fullName,
       avatar: user.avatar || null
@@ -554,7 +554,7 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
 const changePassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    
+
     // We expect req.user to be set via authenticationMiddleware
     const userId = req.user._id;
     const user = await User.findById(userId);

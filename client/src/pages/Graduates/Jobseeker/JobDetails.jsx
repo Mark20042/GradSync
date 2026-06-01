@@ -38,7 +38,21 @@ const JobDetails = () => {
   const [showSuitabilityModal, setShowSuitabilityModal] = useState(false);
   const [suitabilityResult, setSuitabilityResult] = useState(null);
   const [suitabilityLoading, setSuitabilityLoading] = useState(false);
+  const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!showSuitabilityModal && suitabilityResult && !hasPromptedFeedback) {
+      setHasPromptedFeedback(true);
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("openFeedbackModal", {
+            detail: { featureName: "AI Match Analysis" },
+          })
+        );
+      }, 500);
+    }
+  }, [showSuitabilityModal, suitabilityResult, hasPromptedFeedback]);
 
   const checkSuitability = async () => {
     setSuitabilityLoading(true);
