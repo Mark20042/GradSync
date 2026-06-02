@@ -253,6 +253,8 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
     await Message.deleteMany({ conversationId: { $in: conversationIds } });
     await Conversation.deleteMany({ _id: { $in: conversationIds } });
 
+    await FeatureFeedback.deleteMany({ user: userId });
+
     await user.deleteOne();
     res.json({ message: "User and all associated data removed" });
   } catch (error) { next(error); }

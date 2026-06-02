@@ -1,6 +1,6 @@
 import { Download, X, User, Sparkles, BrainCircuit } from "lucide-react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getInitials } from "../../../utils/helper";
 import moment from "moment";
 import axiosInstance from "../../../utils/axiosInstance";
@@ -27,8 +27,21 @@ const ApplicantProfilePreview = ({
   const [showRejectionModal, setShowRejectionModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
+  const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
 
   const navigate = useNavigate();
+  useEffect(() => {
+    if (!showAiModal && aiAnalysis && !hasPromptedFeedback) {
+      setHasPromptedFeedback(true);
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("openFeedbackModal", {
+            detail: { featureName: "Employer Suitability Analysis" },
+          })
+        );
+      }, 500);
+    }
+  }, [showAiModal, aiAnalysis, hasPromptedFeedback]);
 
   const handleOpenAiAnalysis = async () => {
     setShowAiModal(true);
@@ -41,9 +54,6 @@ const ApplicantProfilePreview = ({
           candidateId: selectedApplicant.applicant._id
         });
         setAiAnalysis(response.data);
-        window.dispatchEvent(new CustomEvent("openFeedbackModal", {
-          detail: { featureName: "Employer Suitability Analysis" }
-        }));
       } catch (error) {
         console.error("Analysis failed:", error);
         toast.error("Failed to analyze candidate");

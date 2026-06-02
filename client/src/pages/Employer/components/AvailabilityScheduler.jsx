@@ -10,9 +10,6 @@ const AvailabilityScheduler = () => {
     const [autoReplyMessage, setAutoReplyMessage] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const [jobs, setJobs] = useState([]);
-    const [selectedJobId, setSelectedJobId] = useState("");
-    const [jobAutoReplyMessage, setJobAutoReplyMessage] = useState("");
 
     // Use a fixed reference week for consistency (e.g., first week of 2024 which starts on a Monday)
     // Jan 1, 2024 was a Monday.
@@ -20,51 +17,8 @@ const AvailabilityScheduler = () => {
 
     useEffect(() => {
         fetchSettings();
-        fetchJobs();
     }, []);
 
-    const fetchJobs = async () => {
-        try {
-            const res = await axiosInstance.get(API_PATH.JOBS.GET_JOBS_EMPLOYER);
-            setJobs(res.data);
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-        }
-    };
-
-    const handleJobSelect = (jobId) => {
-        setSelectedJobId(jobId);
-        if (jobId) {
-            const job = jobs.find(j => j._id === jobId);
-            setJobAutoReplyMessage(job?.autoReplyMessage || "");
-        }
-    };
-
-    const handleSaveJobReply = async () => {
-        if (!selectedJobId) return;
-        try {
-            // We need an endpoint to update just the job's autoReplyMessage. 
-            // Re-using UPDATE_JOB might require sending all fields if the backend isn't partial-update friendly.
-            // Assuming standard PUT/PATCH behavior or we fetch-modify-save.
-            // Let's assume we can send partial update or we have the full job object.
-
-            const job = jobs.find(j => j._id === selectedJobId);
-            if (!job) return;
-
-            const payload = { ...job, autoReplyMessage: jobAutoReplyMessage };
-            // Remove populated fields if any to avoid errors (like company object vs ID)
-            if (payload.company && typeof payload.company === 'object') payload.company = payload.company._id;
-
-            await axiosInstance.put(API_PATH.JOBS.UPDATE_JOB(selectedJobId), payload);
-
-            // Update local state
-            setJobs(jobs.map(j => j._id === selectedJobId ? { ...j, autoReplyMessage: jobAutoReplyMessage } : j));
-            toast.success("Job auto-reply saved");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to save job reply");
-        }
-    };
 
     const fetchSettings = async () => {
         try {
@@ -180,49 +134,13 @@ const AvailabilityScheduler = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <h3 className="text-lg font-semibold mb-4">Auto-Reply Message</h3>
 
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Context</label>
-                    <select
-                        className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={selectedJobId}
-                        onChange={(e) => handleJobSelect(e.target.value)}
-                    >
-                        <option value="">Default (Global)</option>
-                        {jobs.map(job => (
-                            <option key={job._id} value={job._id}>{job.title}</option>
-                        ))}
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                        {selectedJobId
-                            ? "Set a specific auto-reply for this job. If empty, the default message will be used."
-                            : "This message will be sent if no specific job message is set."}
-                    </p>
-                </div>
-
                 <textarea
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                     rows="4"
-                    value={selectedJobId ? jobAutoReplyMessage : autoReplyMessage}
-                    onChange={(e) => {
-                        if (selectedJobId) {
-                            setJobAutoReplyMessage(e.target.value);
-                        } else {
-                            setAutoReplyMessage(e.target.value);
-                        }
-                    }}
-                    placeholder={selectedJobId ? "Enter specific auto-reply for this job..." : "Enter the message to send when you are offline..."}
+                    value={autoReplyMessage}
+                    onChange={(e) => setAutoReplyMessage(e.target.value)}
+                    placeholder="Enter the message to send when you are offline..."
                 />
-
-                {selectedJobId && (
-                    <div className="mt-2 flex justify-end">
-                        <button
-                            onClick={handleSaveJobReply}
-                            className="text-sm bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                            Save Job Reply
-                        </button>
-                    </div>
-                )}
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">

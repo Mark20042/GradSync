@@ -18,24 +18,13 @@ const JobFAQManager = () => {
     });
 
     const [loading, setLoading] = useState(true);
-    const [jobs, setJobs] = useState([]);
-
     useEffect(() => {
         const loadData = async () => {
-            await Promise.all([fetchFAQs(), fetchJobs()]);
+            await fetchFAQs();
             setLoading(false);
         };
         loadData();
     }, []);
-
-    const fetchJobs = async () => {
-        try {
-            const res = await axiosInstance.get(API_PATH.JOBS.GET_JOBS_EMPLOYER);
-            setJobs(res.data);
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-        }
-    };
 
     const fetchFAQs = async () => {
         try {
@@ -59,7 +48,7 @@ const JobFAQManager = () => {
                 const payload = {
                     question: faq.question,
                     answer: faq.answer,
-                    job: faq.job || null
+                    job: null
                 };
 
                 if (faq.id) {
@@ -157,16 +146,10 @@ const JobFAQManager = () => {
                             <input type="hidden" {...register(`faqs.${index}.id`)} />
 
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Specific Job (Optional)</label>
-                                <select
-                                    {...register(`faqs.${index}.job`)}
-                                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                                >
-                                    <option value="">All Jobs / General</option>
-                                    {jobs.map(job => (
-                                        <option key={job._id} value={job._id}>{job.title}</option>
-                                    ))}
-                                </select>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Context</label>
+                                <div className="w-full p-2 border border-gray-200 rounded-md text-sm bg-gray-50 text-gray-500">
+                                    General
+                                </div>
                             </div>
 
                             <div>

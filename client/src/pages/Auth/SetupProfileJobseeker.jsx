@@ -16,7 +16,20 @@ const stepsConfig = [
   { id: 2, title: "Professional Links", desc: "Showcase your online presence." },
   { id: 3, title: "Work Experience", desc: "Share your professional history." },
   { id: 4, title: "Skills & Bio", desc: "What makes you stand out?" },
+  { id: 5, title: "Job Preferences", desc: "What kind of job are you looking for?" },
 ];
+
+// --- Input helper ---
+const InputField = ({ icon: Icon, label, required, error, children, className = "" }) => (
+  <div className={className}>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">{label}{required && " *"}</label>
+    {children}
+    {error && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{error}</p>}
+  </div>
+);
+
+const inputCls = (err) =>
+  `w-full pl-11 pr-4 py-3.5 rounded-xl border ${err ? "border-red-500 bg-red-50" : "border-gray-200 bg-white"} focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all text-gray-700`;
 
 const SetupProfileJobseeker = () => {
   const navigate = useNavigate();
@@ -30,6 +43,9 @@ const SetupProfileJobseeker = () => {
     website: "", github: "", linkedin: "", portfolio: "",
     skills: "", experiences: [], internships: [],
     experienceType: "work",
+    jobPreferences: {
+      desiredJobTitle: "", industry: "", preferredLocation: "", jobType: "Full-time", salaryExpectation: "", relocation: false
+    }
   });
 
   const [newExp, setNewExp] = useState({
@@ -44,6 +60,15 @@ const SetupProfileJobseeker = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) setValidationErrors((p) => ({ ...p, [name]: "" }));
+  };
+
+  const handlePreferenceChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      jobPreferences: { ...prev.jobPreferences, [name]: type === 'checkbox' ? checked : value }
+    }));
     if (validationErrors[name]) setValidationErrors((p) => ({ ...p, [name]: "" }));
   };
 
@@ -80,6 +105,8 @@ const SetupProfileJobseeker = () => {
     } else if (step === 4) {
       if (!formData.skills?.trim()) errors.skills = "At least one skill is required";
       if (!formData.bio?.trim()) errors.bio = "A short professional bio is required";
+    } else if (step === 5) {
+      if (!formData.jobPreferences?.desiredJobTitle?.trim()) errors.desiredJobTitle = "Desired Job Title is required";
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -93,7 +120,7 @@ const SetupProfileJobseeker = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep(4)) { toast.error("Please fill in all required fields."); return; }
+    if (!validateStep(5)) { toast.error("Please fill in all required fields."); return; }
     setLoading(true);
     try {
       const payload = {
@@ -110,18 +137,6 @@ const SetupProfileJobseeker = () => {
       setLoading(false);
     }
   };
-
-  // --- Input helper ---
-  const InputField = ({ icon: Icon, label, required, error, children, className = "" }) => (
-    <div className={className}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2">{label}{required && " *"}</label>
-      {children}
-      {error && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{error}</p>}
-    </div>
-  );
-
-  const inputCls = (err) =>
-    `w-full pl-11 pr-4 py-3.5 rounded-xl border ${err ? "border-red-500 bg-red-50" : "border-gray-200 bg-white"} focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all text-gray-700`;
 
   // --- Success screen ---
   if (success) {
@@ -159,7 +174,7 @@ const SetupProfileJobseeker = () => {
         <div className="bg-white border-b border-gray-100 px-6 py-6 sm:px-10 sm:py-8">
           <div className="flex items-center justify-between relative z-10">
             {stepsConfig.map((step) => (
-              <div key={step.id} className="flex flex-col items-center relative w-1/4">
+              <div key={step.id} className="flex flex-col items-center relative w-1/5">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all duration-500 ${
                   currentStep >= step.id ? "bg-blue-600 text-white shadow-lg shadow-blue-200 ring-4 ring-blue-50" : "bg-gray-100 text-gray-400"
                 }`}>
@@ -351,6 +366,56 @@ const SetupProfileJobseeker = () => {
                         <span key={idx} className="px-4 py-1.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-full border border-blue-100 shadow-sm">{skill}</span>
                       ))}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 5: Job Preferences */}
+              {currentStep === 5 && (
+                <div className="space-y-6">
+                  <div className="mb-6"><h3 className="text-2xl font-bold text-gray-900">Job Preferences</h3><p className="text-gray-500 text-sm mt-1">What kind of job are you looking for?</p></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField icon={Briefcase} label="Desired Job Title" required error={validationErrors.desiredJobTitle}>
+                      <div className="relative group">
+                        <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                        <input type="text" name="desiredJobTitle" value={formData.jobPreferences.desiredJobTitle} onChange={handlePreferenceChange} placeholder="e.g. Frontend Developer" className={inputCls(validationErrors.desiredJobTitle)} />
+                      </div>
+                    </InputField>
+
+                    <InputField icon={Globe} label="Industry">
+                      <div className="relative group">
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                        <input type="text" name="industry" value={formData.jobPreferences.industry} onChange={handlePreferenceChange} placeholder="e.g. Information Technology" className={inputCls(false)} />
+                      </div>
+                    </InputField>
+
+                    <InputField label="Preferred Location">
+                      <LocationDetectInput name="preferredLocation" placeholder="e.g. Remote, Manila" value={formData.jobPreferences.preferredLocation} onChange={handlePreferenceChange} />
+                    </InputField>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Job Type</label>
+                      <select name="jobType" value={formData.jobPreferences.jobType} onChange={handlePreferenceChange} className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all text-gray-700 bg-white">
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Remote">Remote</option>
+                      </select>
+                    </div>
+
+                    <InputField label="Salary Expectation (Monthly)">
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">₱</span>
+                        <input type="number" name="salaryExpectation" value={formData.jobPreferences.salaryExpectation} onChange={handlePreferenceChange} placeholder="e.g. 30000" className="w-full pl-9 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all text-gray-700 bg-white" />
+                      </div>
+                    </InputField>
+
+                    <div className="flex items-center mt-8">
+                      <input type="checkbox" id="relocation" name="relocation" checked={formData.jobPreferences.relocation} onChange={handlePreferenceChange} className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" />
+                      <label htmlFor="relocation" className="ml-3 text-sm font-medium text-gray-700">Open to relocation</label>
+                    </div>
+
                   </div>
                 </div>
               )}

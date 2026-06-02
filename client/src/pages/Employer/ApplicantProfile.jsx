@@ -28,6 +28,7 @@ const ApplicantProfile = () => {
   const applicantId = location.state?.applicantId || null;
 
   const [applicant, setApplicant] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [interviewScores, setInterviewScores] = useState([]);
   const [selectedInterview, setSelectedInterview] = useState(null);
@@ -37,6 +38,20 @@ const ApplicantProfile = () => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [showAiModal, setShowAiModal] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
+
+  useEffect(() => {
+    if (!showAiModal && aiAnalysis && !hasPromptedFeedback) {
+      setHasPromptedFeedback(true);
+      setTimeout(() => {
+        window.dispatchEvent(
+          new CustomEvent("openFeedbackModal", {
+            detail: { featureName: "Employer Suitability Analysis" },
+          })
+        );
+      }, 500);
+    }
+  }, [showAiModal, aiAnalysis, hasPromptedFeedback]);
 
   const handleOpenAiAnalysis = async () => {
     setShowAiModal(true);
@@ -48,9 +63,6 @@ const ApplicantProfile = () => {
           candidateId: applicant.applicant._id
         });
         setAiAnalysis(response.data);
-        window.dispatchEvent(new CustomEvent("openFeedbackModal", {
-          detail: { featureName: "Employer Suitability Analysis" }
-        }));
       } catch (error) {
         console.error("Analysis failed:", error);
         toast.error("Failed to analyze candidate");
@@ -60,6 +72,7 @@ const ApplicantProfile = () => {
       }
     }
   };
+
   const [assessmentSubmissions, setAssessmentSubmissions] = useState([]);
 
   const fetchApplicant = async () => {

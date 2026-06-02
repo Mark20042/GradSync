@@ -17,6 +17,7 @@ import EmployerSettings from "@/models/EmployerSettings.model.js";
 import Assessment from "@/models/Assessment.model.js";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
 import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
+import FeatureFeedback from "@/models/FeatureFeedback.model.js";
 import {
   deleteFromCloudinary,
   getPublicIdFromUrl,
@@ -213,6 +214,7 @@ const deleteProfile = async (
     const conversationIds = conversations.map((c) => c._id);
     await Message.deleteMany({ conversationId: { $in: conversationIds } });
     await Conversation.deleteMany({ _id: { $in: conversationIds } });
+    await FeatureFeedback.deleteMany({ user: userId });
     await User.findByIdAndDelete(userId);
     res
       .status(StatusCodes.OK)
