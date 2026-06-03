@@ -107,12 +107,7 @@ const AssessmentList = () => {
           AI Practice Interviewer
         </h2>
 
-        <div className="flex items-center gap-2 mb-5 text-sm text-gray-500">
-          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">
-            Select Role
-          </span>
-          Choose a practice interview job role to begin practicing.
-        </div>
+
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
           {roles.map((role) => (
@@ -173,7 +168,7 @@ const AssessmentList = () => {
                   {verified && (
                     <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
                       <CheckCircle size={28} className="text-green-500" />
-                      <button 
+                      <button
                         onClick={() => {
                           const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
                           if (submission) setSelectedSubmission(submission);
@@ -254,7 +249,7 @@ const AssessmentList = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1">
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
@@ -324,13 +319,13 @@ const AssessmentList = () => {
                             <p className="font-semibold text-gray-900 mb-2">
                               {index + 1}. {q.questionText}
                             </p>
-                            
+
                             {q.codeSnippet && (
                               <div className="bg-slate-900 text-slate-50 p-4 rounded-lg my-3 font-mono text-sm overflow-x-auto whitespace-pre">
                                 {q.codeSnippet}
                               </div>
                             )}
-                            
+
                             <div className="mb-3 text-sm">
                               <p className="text-gray-600 mb-1">
                                 Your Answer: <span className={`font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>

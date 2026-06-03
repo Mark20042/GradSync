@@ -363,6 +363,7 @@ class GeminiService {
     RULES:
     - Return ONLY valid JSON.
     - Be extremely concise to save time.
+    - STRICT SCORING: If the candidate answer is just a short phrase, vague, or does not clearly answer the question, give a score of 0. Do not give partial credit for incomplete or unclear answers.
 
     RESPONSE FORMAT:
     {{
