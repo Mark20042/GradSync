@@ -119,27 +119,6 @@ const ResumePDFx = ({ user }) => {
                         {user.email && <PDFText style={contactItemStyle}>{user.email}</PDFText>}
                         {user.phone && <PDFText style={contactItemStyle}>• {user.phone}</PDFText>}
                         {user.address && <PDFText style={contactItemStyle}>• {user.address}</PDFText>}
-                        {user.website && (
-                            <PDFText style={contactItemStyle}>
-                                • <Link src={user.website} style={{ color: theme.colors.foreground, textDecoration: 'none' }}>
-                                    {user.website.replace(/^https?:\/\//, '')}
-                                </Link>
-                            </PDFText>
-                        )}
-                        {user.linkedin && (
-                            <PDFText style={contactItemStyle}>
-                                • <Link src={user.linkedin} style={{ color: theme.colors.foreground, textDecoration: 'none' }}>
-                                    LinkedIn
-                                </Link>
-                            </PDFText>
-                        )}
-                        {user.github && (
-                            <PDFText style={contactItemStyle}>
-                                • <Link src={user.github} style={{ color: theme.colors.foreground, textDecoration: 'none' }}>
-                                    GitHub
-                                </Link>
-                            </PDFText>
-                        )}
                     </View>
                 </View>
 
@@ -277,11 +256,6 @@ const ResumePDFx = ({ user }) => {
                                 </View>
                                 {project.description && (
                                     <PDFText style={descriptionStyle}>{project.description}</PDFText>
-                                )}
-                                {project.url && (
-                                    <Link src={project.url} style={{ fontSize: 9, color: theme.colors.mutedForeground }}>
-                                        {project.url}
-                                    </Link>
                                 )}
                             </View>
                         ))}

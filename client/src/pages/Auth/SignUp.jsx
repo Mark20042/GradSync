@@ -738,6 +738,9 @@ const SignUp = () => {
                         <span className="text-xs text-gray-500 mt-1">
                           PDF or Image (Max 10MB)
                         </span>
+                        <span className="text-xs text-blue-500 mt-1 text-center font-medium px-2">
+                          Note: We will automatically delete this document from our database once verified.
+                        </span>
                         <input
                           type="file"
                           name="tor"
@@ -823,6 +826,9 @@ const SignUp = () => {
                         </span>
                         <span className="text-xs text-gray-500 mt-1">
                           PDF or Image (Max 10MB)
+                        </span>
+                        <span className="text-xs text-blue-500 mt-1 text-center font-medium px-2">
+                          Note: We will automatically delete this document from our database once verified.
                         </span>
                         <input
                           type="file"

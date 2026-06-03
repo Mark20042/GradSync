@@ -177,9 +177,6 @@ const ResumeBuilder = () => {
               {user.email && <span>{user.email}</span>}
               {user.phone && <span>{user.phone}</span>}
               {user.address && <span>{user.address}</span>}
-              {user.website && <span>{user.website.replace(/^https?:\/\//, '')}</span>}
-              {user.linkedin && <span>LinkedIn: {user.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}</span>}
-              {user.github && <span>GitHub: {user.github.replace(/^https?:\/\/(www\.)?github\.com\//, '')}</span>}
             </div>
           </div>
 
@@ -345,11 +342,6 @@ const ResumeBuilder = () => {
                     {project.description && (
                       <p className="text-xs text-gray-700 whitespace-pre-line leading-relaxed mb-1" style={{ fontFamily: 'Times New Roman, serif' }}>
                         {project.description}
-                      </p>
-                    )}
-                    {project.url && (
-                      <p className="text-xs text-gray-600" style={{ fontFamily: 'Times New Roman, serif' }}>
-                        {project.url}
                       </p>
                     )}
                   </div>

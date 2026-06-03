@@ -141,6 +141,23 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
           user.verified = true;
           user.verificationStatus = "verified";
           user.verificationMessage = ocrResult.message;
+
+          // Automatically delete documents from Cloudinary after verification
+          const cleanups: Promise<void>[] = [];
+          if (torUrl) {
+            const pid = getPublicIdFromUrl(torUrl);
+            if (pid) cleanups.push(deleteFromCloudinary(pid, "image"));
+          }
+          if (businessPermitUrl) {
+            const pid = getPublicIdFromUrl(businessPermitUrl);
+            if (pid) cleanups.push(deleteFromCloudinary(pid, "image"));
+          }
+          await Promise.allSettled(cleanups);
+
+          // Remove the references from the database
+          user.tor = "";
+          user.businessPermit = "";
+
           await (user as any).save();
           sendVerificationSuccessEmail(
             user.email,
