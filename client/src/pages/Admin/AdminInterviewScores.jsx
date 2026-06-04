@@ -71,19 +71,23 @@ const AdminInterviewScores = () => {
     return "bg-red-100 text-red-800";
   };
 
+  // Backend patchCategories already assigns correct categories
+  // Valid categories: General, Communication, Technical, Behavioral
+  const getDisplayCategory = (answer) => answer.category || "General";
+
   const getDisplayCategoryScores = (interview) => {
     if (!interview) return null;
     if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
       return interview.aiFeedback.categoryScores;
     }
     
-    // Fallback calculation for old interviews
+    // Fallback calculation from answer categories (already correct from backend)
     if (!interview.answers || interview.answers.length === 0) return null;
     
     const categoryTotals = {};
     const categoryCounts = {};
     interview.answers.forEach(ans => {
-      const c = ans.category || 'General';
+      const c = ans.category || "General";
       if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
       categoryTotals[c] += ans.score || 0;
       categoryCounts[c] += 1;
@@ -308,13 +312,15 @@ const AdminInterviewScores = () => {
                 Per-Question Breakdown ({selectedInterviewForDetails.answers?.length || 0} questions)
               </h4>
               <div className="flex flex-col gap-4">
-                {selectedInterviewForDetails.answers?.map((answer, idx) => (
+                {selectedInterviewForDetails.answers?.map((answer, idx) => {
+                  const displayCat = getDisplayCategory(answer);
+                  return (
                   <div key={idx} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
                     <div className="flex justify-between items-start mb-3 gap-4">
                       <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
-                        {answer.category && (
+                        {displayCat && (
                           <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
-                            {answer.category}
+                            {displayCat}
                           </span>
                         )}
                         Q{idx + 1}: {answer.questionText}
@@ -333,7 +339,7 @@ const AdminInterviewScores = () => {
                       <strong className="text-gray-900 mr-2">Feedback:</strong> {answer.feedback}
                     </p>
                   </div>
-                ))}
+                )})}
               </div>
             </div>
             

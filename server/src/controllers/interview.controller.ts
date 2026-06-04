@@ -12,6 +12,8 @@ import { interviewGraph } from "@/services/ai/workflows/interview-agent.workflow
 import { HumanMessage } from "@langchain/core/messages";
 import mongoose from "mongoose";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
+import fs from "fs";
+import path from "path";
 
 const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -23,16 +25,16 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
 
     let role: any = null;
     let roleNameForDisplay = roleName || "General";
-    
+
     if (mongoose.isValidObjectId(roleName)) {
       role = await InterviewDraft.findById(roleName);
       if (role) roleNameForDisplay = "Tailored Interview";
     }
-    
+
     if (!role) {
       role = await InterviewRole.findOne({ roleName });
     }
-    
+
     const roleQuestions = role ? role.questions : [];
     const idealMap: Record<string, string> = {};
     roleQuestions.forEach((q: any) => { idealMap[String(q._id)] = q.idealAnswer || ""; });
@@ -70,14 +72,16 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
 
     const interview = await Interview.findOneAndUpdate(
       { candidateId, roleName: roleName || "General" },
-      { $set: { 
-          status: initialStatus, 
+      {
+        $set: {
+          status: initialStatus,
           violations: violations || [],
           violationCount: Array.isArray(violations) ? violations.length : 0,
           rejectionReason,
           answers: answers.map((a: any) => ({
             questionId: a.questionId || null, questionText: a.questionText,
-            candidateAnswer: a.candidateAnswer, idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || ""
+            candidateAnswer: a.candidateAnswer, idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || "",
+            category: a.category || "General"
           }))
         }
       },
@@ -105,19 +109,26 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
         console.log(`🧠 Background evaluation started for user: ${userName} (${roleName})`);
         const bulkResult = await aiService.evaluateFullInterview(
           roleName || "General",
-          answers.map((a: any) => ({ questionId: String(a.questionId), questionText: a.questionText,
-            idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || "", candidateAnswer: a.candidateAnswer }))
+          answers.map((a: any) => ({
+            questionId: String(a.questionId), questionText: a.questionText,
+            idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || "", candidateAnswer: a.candidateAnswer
+          }))
         );
         const evaluated = bulkResult.evaluations.map((ev, idx) => {
           const orig = answers[idx];
-          return { questionId: orig.questionId || null, questionText: orig.questionText,
+          return {
+            questionId: orig.questionId || null, questionText: orig.questionText,
             idealAnswer: idealMap[String(orig.questionId)] || orig.idealAnswer || "",
             candidateAnswer: orig.candidateAnswer,
+            category: orig.category || "General",
             score: typeof ev.score === "number" ? ev.score : 0,
-            feedback: ev.feedback || "No feedback provided." };
+            feedback: ev.feedback || "No feedback provided."
+          };
         });
-        const aiFeedback = { overallScore: bulkResult.overallScore, totalQuestions: answers.length,
-          strengths: bulkResult.strengths, areasForImprovement: bulkResult.areasForImprovement, summary: bulkResult.summary };
+        const aiFeedback = {
+          overallScore: bulkResult.overallScore, totalQuestions: answers.length,
+          strengths: bulkResult.strengths, areasForImprovement: bulkResult.areasForImprovement, summary: bulkResult.summary
+        };
         await Interview.findByIdAndUpdate(interview._id, { $set: { answers: evaluated, aiScore: bulkResult.overallScore, aiFeedback, status: "evaluated" } });
         console.log(`✅ Background evaluation complete for ${userName}`);
         await sendInterviewResultEmail(userEmail, userName, roleName || "General", bulkResult.overallScore, bulkResult.summary);
@@ -135,9 +146,20 @@ const save = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const patchCategories = async (interviews: any[]) => {
+  // Load standard InterviewRole questions
   const roles = await InterviewRole.find({}).lean();
   const roleMap: Record<string, any[]> = {};
   roles.forEach(r => { roleMap[r.roleName] = r.questions; });
+
+  // Also load InterviewDraft questions (for tailored interviews where roleName is an ObjectId)
+  const draftIds = interviews
+    .filter(i => mongoose.isValidObjectId(i.roleName))
+    .map(i => i.roleName);
+
+  if (draftIds.length > 0) {
+    const drafts = await InterviewDraft.find({ _id: { $in: draftIds } }).lean();
+    drafts.forEach((d: any) => { roleMap[String(d._id)] = d.questions; });
+  }
 
   interviews.forEach(interview => {
     const roleQuestions = roleMap[interview.roleName] || [];
@@ -151,9 +173,9 @@ const patchCategories = async (interviews: any[]) => {
           const matchedQ = roleQuestions.find((rq: any) => String(rq._id) === String(ans.questionId));
           if (matchedQ && matchedQ.category) cat = matchedQ.category;
           else if (!ans.questionId) {
-              if (ans.questionText.includes("plan to handle the responsibilities")) cat = "Communication";
-              else if (ans.questionText.includes("specific skills or software")) cat = "General";
-              else if (ans.questionText.includes("stay organized and continuously improve")) cat = "Behavioral";
+            if (ans.questionText.includes("plan to handle the responsibilities")) cat = "Communication";
+            else if (ans.questionText.includes("specific skills or software")) cat = "General";
+            else if (ans.questionText.includes("stay organized and continuously improve")) cat = "Behavioral";
           }
         }
         ans.category = cat;
@@ -164,33 +186,33 @@ const patchCategories = async (interviews: any[]) => {
 };
 
 const getUserInterviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try { 
+  try {
     const interviews = await Interview.find({ candidateId: req.user.id }).sort({ createdAt: -1 }).lean();
-    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+    res.status(StatusCodes.OK).json(await patchCategories(interviews));
   }
   catch (error) { next(error); }
 };
 
 const getAllScores = async (_req: Request, res: Response, next: NextFunction) => {
-  try { 
+  try {
     const interviews = await Interview.find({ status: "evaluated" }).populate("candidateId", "fullName email avatar degree").sort({ createdAt: -1 }).lean();
-    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+    res.status(StatusCodes.OK).json(await patchCategories(interviews));
   }
   catch (error) { next(error); }
 };
 
 const getGraduateInterviews = async (req: Request, res: Response, next: NextFunction) => {
-  try { 
+  try {
     const interviews = await Interview.find({ candidateId: req.params.userId, status: "evaluated" }).sort({ createdAt: -1 }).lean();
-    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+    res.status(StatusCodes.OK).json(await patchCategories(interviews));
   }
   catch (error) { next(error); }
 };
 
 const getInterviewAll = async (_req: Request, res: Response, next: NextFunction) => {
-  try { 
+  try {
     const interviews = await Interview.find().populate("candidateId", "fullName email avatar").sort({ createdAt: -1 }).lean();
-    res.status(StatusCodes.OK).json(await patchCategories(interviews)); 
+    res.status(StatusCodes.OK).json(await patchCategories(interviews));
   }
   catch (error) { next(error); }
 };
@@ -221,12 +243,12 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!message) {
       let role: any = null;
       let roleNameForDisplay = roleName;
-      
+
       if (mongoose.isValidObjectId(roleName)) {
         role = await InterviewDraft.findById(roleName);
         if (role) roleNameForDisplay = "Tailored Interview";
       }
-      
+
       if (!role) {
         role = await InterviewRole.findOne({ roleName });
       }
@@ -248,7 +270,7 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
     const result: any = await interviewGraph.invoke({ messages: [new HumanMessage(message)] }, config);
     if (result.isFinished && result.evaluations && result.evaluations.length > 0) {
-      
+
       let role: any = null;
       let roleNameForDisplay = roleName;
 
@@ -265,7 +287,7 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
       const evals = result.evaluations.map((e: any) => {
         const evalCopy = { ...e };
-        
+
         let cat = "General";
         if (evalCopy.questionId) {
           if (String(evalCopy.questionId).startsWith("intro_1")) cat = "Communication";
@@ -284,52 +306,52 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
 
       const totalScore = evals.reduce((sum: number, ev: any) => sum + ev.score, 0);
       const avgScore = evals.length > 0 ? Math.round(totalScore / evals.length) : 0;
-      
+
       const categoryTotals: Record<string, number> = {};
       const categoryCounts: Record<string, number> = {};
       evals.forEach((ev: any) => {
-         const c = ev.category || "General";
-         if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
-         categoryTotals[c] += ev.score;
-         categoryCounts[c] += 1;
+        const c = ev.category || "General";
+        if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+        categoryTotals[c] += ev.score;
+        categoryCounts[c] += 1;
       });
       const categoryScores: Record<string, number> = {};
       let highestCategory = { name: "", score: -1 };
       let lowestCategory = { name: "", score: 101 };
       Object.keys(categoryTotals).forEach(c => {
-         const avg = Math.round(categoryTotals[c] / categoryCounts[c]);
-         categoryScores[c] = avg;
-         if (avg > highestCategory.score) highestCategory = { name: c, score: avg };
-         if (avg < lowestCategory.score) lowestCategory = { name: c, score: avg };
+        const avg = Math.round(categoryTotals[c] / categoryCounts[c]);
+        categoryScores[c] = avg;
+        if (avg > highestCategory.score) highestCategory = { name: c, score: avg };
+        if (avg < lowestCategory.score) lowestCategory = { name: c, score: avg };
       });
-      
+
       let categoryInterpretation = `The candidate showed a balanced performance across all evaluated areas.`;
       if (highestCategory.name && lowestCategory.name && highestCategory.name !== lowestCategory.name) {
-         if (highestCategory.score >= 80 && lowestCategory.score < 60) {
-            categoryInterpretation = `The candidate excelled remarkably in ${highestCategory.name} but exhibited significant gaps in ${lowestCategory.name}.`;
-         } else if (highestCategory.score - lowestCategory.score >= 15) {
-            categoryInterpretation = `The candidate is strongest in ${highestCategory.name} but lacks slightly in ${lowestCategory.name}.`;
-         }
+        if (highestCategory.score >= 80 && lowestCategory.score < 60) {
+          categoryInterpretation = `The candidate excelled remarkably in ${highestCategory.name} but exhibited significant gaps in ${lowestCategory.name}.`;
+        } else if (highestCategory.score - lowestCategory.score >= 15) {
+          categoryInterpretation = `The candidate is strongest in ${highestCategory.name} but lacks slightly in ${lowestCategory.name}.`;
+        }
       }
 
       const aiService = getGeminiService();
       const summaryRes = await aiService.evaluateFullInterview(roleName, evals.map((e: any) => ({ questionId: e.questionId, questionText: e.questionText, candidateAnswer: e.candidateAnswer, idealAnswer: e.idealAnswer })));
-      
-      await Interview.create({ 
-        candidateId, 
-        roleName, 
-        status: "evaluated", 
-        answers: evals, 
+
+      await Interview.create({
+        candidateId,
+        roleName,
+        status: "evaluated",
+        answers: evals,
         aiScore: avgScore,
-        aiFeedback: { 
-          overallScore: avgScore, 
-          totalQuestions: evals.length, 
-          summary: summaryRes.summary, 
-          strengths: summaryRes.strengths, 
+        aiFeedback: {
+          overallScore: avgScore,
+          totalQuestions: evals.length,
+          summary: summaryRes.summary,
+          strengths: summaryRes.strengths,
           areasForImprovement: summaryRes.areasForImprovement,
           categoryScores,
           categoryInterpretation
-        } 
+        }
       });
       await sendInterviewResultEmail(req.user.email, req.user.fullName, roleName, avgScore, summaryRes.summary);
     }
@@ -338,4 +360,26 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
   } catch (error) { next(error); }
 };
 
-export { evaluate, save, getUserInterviews, getAllScores, getGraduateInterviews, getInterviewAll, getById, remove, chat };
+const getDeepgramToken = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    let deepgramKey = process.env.DEEPGRAM_API_KEY;
+
+    // Fallback: Read directly from .env since the server hasn't been restarted
+    if (!deepgramKey) {
+      try {
+        const envFile = fs.readFileSync(path.resolve(process.cwd(), '.env'), 'utf-8');
+        const match = envFile.match(/DEEPGRAM_API_KEY\s*=\s*(.*)/);
+        if (match && match[1]) deepgramKey = match[1].trim();
+      } catch (e) { /* ignore */ }
+    }
+
+    if (!deepgramKey) throw new Error("DEEPGRAM_API_KEY is not configured on the server.");
+
+    res.status(StatusCodes.OK).json({ token: deepgramKey });
+  } catch (error: any) {
+    console.error("Deepgram Token Error:", error);
+    next(new BadRequestError("Failed to fetch Deepgram token: " + error.message));
+  }
+};
+
+export { evaluate, save, getUserInterviews, getAllScores, getGraduateInterviews, getInterviewAll, getById, remove, chat, getDeepgramToken };

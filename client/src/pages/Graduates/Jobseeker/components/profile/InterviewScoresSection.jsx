@@ -62,19 +62,23 @@ const InterviewScoresSection = () => {
     return "Needs Work";
   };
 
+  // Backend patchCategories already assigns correct categories
+  // Valid categories: General, Communication, Technical, Behavioral
+  const getDisplayCategory = (answer) => answer.category || "General";
+
   const getDisplayCategoryScores = (interview) => {
     if (!interview) return null;
     if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
       return interview.aiFeedback.categoryScores;
     }
     
-    // Fallback calculation for old interviews
+    // Fallback calculation from answer categories (already correct from backend)
     if (!interview.answers || interview.answers.length === 0) return null;
     
     const categoryTotals = {};
     const categoryCounts = {};
     interview.answers.forEach(ans => {
-      const c = ans.category || 'General';
+      const c = ans.category || "General";
       if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
       categoryTotals[c] += ans.score || 0;
       categoryCounts[c] += 1;
@@ -261,16 +265,18 @@ const InterviewScoresSection = () => {
                     )}
 
                     <div className="space-y-3">
-                      {interview.answers?.map((answer, idx) => (
+                      {interview.answers?.map((answer, idx) => {
+                        const displayCat = getDisplayCategory(answer);
+                        return (
                         <div key={idx} className="flex items-center gap-3">
                           <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">
                             Q{idx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-gray-700 truncate font-medium">
-                              {answer.category && (
+                              {displayCat && (
                                 <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-[9px] uppercase tracking-widest rounded mr-1.5 align-middle">
-                                  {answer.category}
+                                  {displayCat}
                                 </span>
                               )}
                               {answer.questionText}
@@ -286,7 +292,8 @@ const InterviewScoresSection = () => {
                             {answer.score}
                           </span>
                         </div>
-                      ))}
+                      );
+                      })}
                     </div>
                   </div>
                 )}

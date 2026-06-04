@@ -23,8 +23,10 @@ const AssessmentList = () => {
   const [assessments, setAssessments] = useState([]);
   const [userSkills, setUserSkills] = useState([]);
   const [mySubmissions, setMySubmissions] = useState([]);
+  const [myInterviews, setMyInterviews] = useState([]);
   const [roles, setRoles] = useState([]);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [selectedInterviewResult, setSelectedInterviewResult] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -68,10 +70,70 @@ const AssessmentList = () => {
     } catch (error) {
       console.error("Error fetching personalized interviews", error);
     }
+
+    try {
+      const intRes = await axiosInstance.get(API_PATH.INTERVIEW.GET_USER_INTERVIEWS);
+      setMyInterviews(intRes.data || []);
+    } catch (error) {
+      console.error("Error fetching user interviews", error);
+    }
   };
 
   const isVerified = (skill) => {
     return userSkills.find((s) => s.skill === skill);
+  };
+
+  // Backend patchCategories already assigns correct categories
+  // Valid categories: General, Communication, Technical, Behavioral
+  const getDisplayCategory = (answer) => answer.category || "General";
+
+  const getScoreColor = (score) => {
+    if (score >= 80) return "bg-green-100 text-green-800";
+    if (score >= 60) return "bg-blue-100 text-blue-800";
+    if (score >= 40) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
+  };
+
+  const getDisplayCategoryScores = (interview) => {
+    if (!interview) return null;
+    // Use backend-provided categoryScores if available
+    if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
+      return interview.aiFeedback.categoryScores;
+    }
+    // Fallback: calculate from answer categories (already correct from backend)
+    if (!interview.answers || interview.answers.length === 0) return null;
+    const categoryTotals = {};
+    const categoryCounts = {};
+    interview.answers.forEach(ans => {
+      const c = ans.category || "General";
+      if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+      categoryTotals[c] += ans.score || 0;
+      categoryCounts[c] += 1;
+    });
+    const calculated = {};
+    Object.keys(categoryTotals).forEach(c => {
+      calculated[c] = Math.round(categoryTotals[c] / categoryCounts[c]);
+    });
+    return Object.keys(calculated).length > 0 ? calculated : null;
+  };
+
+  const getDisplayCategoryInterpretation = (interview, scores) => {
+    if (!interview || !scores) return null;
+    if (interview.aiFeedback?.categoryInterpretation) return interview.aiFeedback.categoryInterpretation;
+    let highest = { name: "", score: -1 };
+    let lowest = { name: "", score: 101 };
+    Object.entries(scores).forEach(([name, score]) => {
+      if (score > highest.score) highest = { name, score };
+      if (score < lowest.score) lowest = { name, score };
+    });
+    if (highest.name && lowest.name && highest.name !== lowest.name) {
+      if (highest.score >= 80 && lowest.score < 60) {
+        return `The candidate excelled remarkably in ${highest.name} but exhibited significant gaps in ${lowest.name}.`;
+      } else if (highest.score - lowest.score >= 15) {
+        return `The candidate is strongest in ${highest.name} but lacks slightly in ${lowest.name}.`;
+      }
+    }
+    return `The candidate showed a balanced performance across all evaluated areas.`;
   };
 
   return (
@@ -110,35 +172,60 @@ const AssessmentList = () => {
 
 
         <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
-          {roles.map((role) => (
-            <div
-              key={role._id}
-              onClick={() =>
-                navigate("/interview-room", {
-                  state: { jobRole: role.roleName },
-                })
-              }
-              className="bg-white rounded-xl border-2 border-gray-200 p-5 transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-500 flex items-start gap-4"
-            >
-              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
-                <Briefcase size={24} className="text-purple-500" />
-              </div>
+          {roles.map((role) => {
+            // Check if the user has already completed this interview
+            const completedInterview = myInterviews.find(i => i.roleName === role.roleName || i.roleName === role.displayName);
 
-              <div className="flex-1">
-                <h4 className="font-bold text-gray-900 mb-1">
-                  {role.displayName || role.roleName}
-                </h4>
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  {role.questions?.length || 0} Questions Available
-                </p>
-                {role.description && (
-                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-                    {role.description}
-                  </p>
+            return (
+              <div
+                key={role._id}
+                onClick={() => {
+                  if (completedInterview) {
+                    toast.error("You have already completed this interview.");
+                    return;
+                  }
+                  navigate("/interview-room", { state: { jobRole: role.roleName } });
+                }}
+                className={`bg-white rounded-xl border-2 border-gray-200 p-5 transition-all duration-300 relative flex items-start gap-4 ${
+                  completedInterview ? "opacity-90 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
+                }`}
+              >
+                {completedInterview && (
+                  <div className="absolute top-4 right-4 flex flex-col items-center gap-1 z-10">
+                    <CheckCircle size={28} className="text-green-500" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedInterviewResult(completedInterview);
+                      }}
+                      className="flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-full mt-0.5 transition-colors font-medium border border-blue-100"
+                      title="View Results"
+                    >
+                      <Eye size={12} /> Results
+                    </button>
+                  </div>
                 )}
+
+                <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                  <Briefcase size={24} className="text-purple-500" />
+                </div>
+
+                <div className="flex-1 pr-12">
+                  <h4 className="font-bold text-gray-900 mb-1">
+                    {role.displayName || role.roleName}
+                  </h4>
+                  <p className="text-sm text-gray-500 flex items-center gap-1">
+                    {role.questions?.length || 0} Questions Available
+                  </p>
+                  {role.description && (
+                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+                      {role.description}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {roles.length === 0 && (
             <p className="text-gray-500 py-4 col-span-full">
               No interview roles available yet. Please check back later.
@@ -354,6 +441,104 @@ const AssessmentList = () => {
                   })}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Interview Result Modal */}
+      {selectedInterviewResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelectedInterviewResult(null)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 m-0">Interview Results</h3>
+                <p className="text-sm text-gray-500 m-0 mt-1">
+                  Role: <span className="font-semibold text-gray-700">{selectedInterviewResult.roleName || "General"}</span> • Score: <span className={`font-bold ${getScoreColor(selectedInterviewResult.aiScore)} px-2 py-0.5 rounded-full`}>{selectedInterviewResult.aiScore}/100</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedInterviewResult(null)}
+                className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto bg-slate-50 flex-1">
+              <div className="mb-6 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h4 className="text-sm font-bold text-gray-900 mb-2">
+                  AI Feedback Summary
+                </h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {selectedInterviewResult.aiFeedback?.summary || "No summary available."}
+                </p>
+
+                {getDisplayCategoryScores(selectedInterviewResult) && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Category Performance</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                      {Object.entries(getDisplayCategoryScores(selectedInterviewResult)).map(([cat, score]) => (
+                        <div key={cat} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 truncate">{cat}</p>
+                          <p className={`text-lg font-extrabold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {score}<span className="text-xs text-gray-400 font-medium">/100</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {getDisplayCategoryInterpretation(selectedInterviewResult, getDisplayCategoryScores(selectedInterviewResult)) && (
+                      <p className="text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg font-medium border border-indigo-100 leading-relaxed">
+                        💡 {getDisplayCategoryInterpretation(selectedInterviewResult, getDisplayCategoryScores(selectedInterviewResult))}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest px-1">
+                Per-Question Breakdown ({selectedInterviewResult.answers?.length || 0} questions)
+              </h4>
+              <div className="flex flex-col gap-4">
+                {selectedInterviewResult.answers?.map((answer, idx) => {
+                  const displayCat = getDisplayCategory(answer);
+                  return (
+                    <div key={idx} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
+                      <div className="flex justify-between items-start mb-3 gap-4">
+                        <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
+                          {displayCat && (
+                            <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
+                              {displayCat}
+                            </span>
+                          )}
+                          Q{idx + 1}: {answer.questionText}
+                        </p>
+                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 ${getScoreColor(answer.score)}`}>
+                        {answer.score}/100
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-3">
+                      <p className="text-[0.8rem] text-gray-600 leading-relaxed italic m-0">
+                        <strong className="text-gray-500 not-italic mr-2">Your Answer:</strong> 
+                        {answer.candidateAnswer || <em className="text-gray-300">No answer</em>}
+                      </p>
+                    </div>
+                    <p className="text-[0.8rem] text-gray-700 leading-relaxed m-0">
+                      <strong className="text-gray-900 mr-2">Feedback:</strong> {answer.feedback}
+                    </p>
+                  </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 flex justify-end shrink-0">
+              <button
+                onClick={() => setSelectedInterviewResult(null)}
+                className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                Close Results
+              </button>
             </div>
           </div>
         </div>

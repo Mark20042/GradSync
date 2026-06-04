@@ -53,6 +53,10 @@ const InterviewResults = () => {
 
   const { aiScore, aiFeedback, answers, roleName } = interview;
 
+  // Backend patchCategories already assigns correct categories
+  // Valid categories: General, Communication, Technical, Behavioral
+  const getDisplayCategory = (answer) => answer.category || "General";
+
   const getScoreColor = (score) => {
     if (score >= 80) return "#16a34a";
     if (score >= 60) return "#2563eb";
@@ -228,16 +232,25 @@ const InterviewResults = () => {
           </div>
 
           <div className="space-y-5">
-            {answers?.map((answer, idx) => (
+            {answers?.map((answer, idx) => {
+              const displayCat = getDisplayCategory(answer);
+              return (
               <div
                 key={idx}
                 className="border border-slate-100 rounded-xl p-5 hover:border-slate-200 transition-colors"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 mr-4">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      Question {idx + 1}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Question {idx + 1}
+                      </span>
+                      {displayCat && (
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] uppercase tracking-widest rounded-md font-bold">
+                          {displayCat}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm font-semibold text-slate-900 mt-1">
                       {answer.questionText}
                     </p>
@@ -280,7 +293,8 @@ const InterviewResults = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
 

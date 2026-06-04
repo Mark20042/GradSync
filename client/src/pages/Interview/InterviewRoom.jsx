@@ -60,78 +60,22 @@ const InterviewRoom = () => {
   const [setupStep, setSetupStep] = useState(1); // 1=Rules, 2=Agreement, 3=Camera Setup
   const [hasAgreed, setHasAgreed] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   // Integrity tracking
   const [violations, setViolations] = useState([]);
 
   const videoRef = useRef(null);
   const previewRef = useRef(null);
   const lottieRef = useRef(null);
-  const recognitionRef = useRef(null);
+  const deepgramSocketRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
   const isListeningRef = useRef(false);
   const transcriptAccumulatorRef = useRef(""); // Accumulates transcript across recognition restarts
-
-  // Initialize Speech Recognition
-  const initSpeechRecognition = useCallback(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      console.warn("Speech Recognition API not supported in this browser.");
-      return null;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "en-PH";
-    recognition.maxAlternatives = 1;
-
-    recognition.onresult = (event) => {
-      let finalTranscript = transcriptAccumulatorRef.current;
-      let interimTranscript = "";
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + " ";
-          transcriptAccumulatorRef.current = finalTranscript;
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      setCurrentTranscript(finalTranscript + interimTranscript);
-    };
-
-    recognition.onerror = (event) => {
-      if (event.error !== "no-speech" && event.error !== "aborted") {
-        console.error("Speech recognition error:", event.error);
-      }
-    };
-
-    recognition.onend = () => {
-      // Auto-restart if we're still in "listening" mode via Ref check
-      if (isListeningRef.current) {
-        setTimeout(() => {
-          try {
-            if (isListeningRef.current) {
-              recognition.start();
-            }
-          } catch (e) {
-            // Safe to ignore
-          }
-        }, 300);
-      }
-    };
-
-    return recognition;
-  }, []); // Dependencies empty because we use Refs for changing values
 
   // Integrity listeners
   const recordViolation = useCallback((type) => {
     if (isSubmitted) return;
-    
+
     setViolations((prev) => {
       const newViolation = {
         type,
@@ -201,43 +145,97 @@ const InterviewRoom = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [hasStarted, isSubmitted, recordViolation]);
+  // Start listening with Deepgram
+  const startListening = useCallback(async () => {
+    try {
+      if (deepgramSocketRef.current) {
+        deepgramSocketRef.current.close();
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.stop();
+      }
 
-  // Start listening
-  const startListening = useCallback(() => {
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) { /* ignore */ }
-    }
+      transcriptAccumulatorRef.current = "";
+      setCurrentTranscript("");
 
-    transcriptAccumulatorRef.current = "";
-    setCurrentTranscript("");
+      //  Fetch short-lived token from our backend
+      const res = await axiosInstance.get("/api/interviews/deepgram-token");
+      const token = res.data.token;
 
-    const recognition = initSpeechRecognition();
-    if (recognition) {
-      recognitionRef.current = recognition;
-      try {
+      //  Open WebSocket (language=en uses the global english model which perfectly handles all accents)
+      const socket = new WebSocket('wss://api.deepgram.com/v1/listen?smart_format=true&interim_results=true&model=nova-2&language=en', [
+        'token',
+        token
+      ]);
+      deepgramSocketRef.current = socket;
+
+      socket.onopen = () => {
         isListeningRef.current = true;
         setIsListening(true);
-        recognition.start();
-      } catch (e) {
-        console.error("Failed to start speech recognition:", e);
-        isListeningRef.current = false;
-        setIsListening(false);
-      }
+
+        // Start recording audio and sending chunks
+        if (stream) {
+          // Extract only the audio track from the webcam stream for Deepgram
+          const audioStream = new MediaStream(stream.getAudioTracks());
+          const mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+          mediaRecorderRef.current = mediaRecorder;
+
+          mediaRecorder.addEventListener('dataavailable', (event) => {
+            if (event.data.size > 0 && socket.readyState === 1) {
+              socket.send(event.data);
+            }
+          });
+
+          mediaRecorder.start(250); // Send chunks every 250ms
+        }
+      };
+
+      socket.onmessage = (message) => {
+        const received = JSON.parse(message.data);
+        const transcript = received.channel?.alternatives[0]?.transcript;
+
+        if (transcript) {
+          if (received.is_final) {
+            transcriptAccumulatorRef.current += transcript + " ";
+            setCurrentTranscript(transcriptAccumulatorRef.current);
+          } else {
+            setCurrentTranscript(transcriptAccumulatorRef.current + transcript);
+          }
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("Deepgram WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        // Handle reconnects if needed, or cleanup
+        if (isListeningRef.current) {
+          console.warn("Deepgram socket closed unexpectedly");
+        }
+      };
+
+    } catch (e) {
+      console.error("Deepgram initialization failed:", e);
+      toast.error("Speech recognition failed to start.");
+      isListeningRef.current = false;
+      setIsListening(false);
     }
-  }, [initSpeechRecognition]);
+  }, [stream]);
 
   // Stop listening
   const stopListening = useCallback(() => {
     isListeningRef.current = false;
     setIsListening(false);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (e) { /* ignore */ }
-      recognitionRef.current = null;
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
     }
+    if (deepgramSocketRef.current) {
+      deepgramSocketRef.current.close();
+    }
+    mediaRecorderRef.current = null;
+    deepgramSocketRef.current = null;
   }, []);
 
   // Initialize camera for setup preview
@@ -327,27 +325,37 @@ const InterviewRoom = () => {
         return toast.error("No questions found for this role.");
       }
 
-      const shuffled = fetchedQuestions.sort(() => 0.5 - Math.random());
-      setQuestions(shuffled);
+      // Use the category already assigned by the backend (from InterviewRole/InterviewDraft)
+      // Valid categories: General, Communication, Technical, Behavioral
+      let finalQuestions = fetchedQuestions.map(q => ({
+        ...q,
+        category: q.category || "General"
+      }));
+
+      // Sort alphabetically by category so they are grouped (no shuffling)
+      finalQuestions.sort((a, b) => a.category.localeCompare(b.category));
+
+      setQuestions(finalQuestions);
       // Initialize answers array
-      setAnswers(shuffled.map((q) => ({
+      setAnswers(finalQuestions.map((q) => ({
         questionId: q._id,
-        questionText: q.question,
+        questionText: q.question || q.questionText,
         idealAnswer: q.idealAnswer || "",
+        category: q.category,
         candidateAnswer: "",
       })));
       setHasStarted(true);
 
       setTimeout(() => {
-        const firstCategory = shuffled[0].category && shuffled[0].category !== 'General' 
-          ? ` Let's begin with a ${shuffled[0].category} question.` 
+        const firstCategory = finalQuestions[0].category && finalQuestions[0].category !== 'General'
+          ? ` Let's begin with a ${finalQuestions[0].category} question.`
           : " Let's begin with the first question.";
-        const displayRole = shuffled[0]?.jobRole || jobRole || "General";
+        const displayRole = finalQuestions[0]?.jobRole || jobRole || "General";
         const finalSpokenRole = /^[0-9a-fA-F]{24}$/.test(displayRole) ? "personalized" : displayRole;
         const greeting = `Good day! I am your interviewer for today. We will be conducting a mock interview for the ${finalSpokenRole} position.${firstCategory}`;
         askQuestion(greeting, () => {
           setTimeout(() => {
-            askQuestion(shuffled[0].question);
+            askQuestion(finalQuestions[0].question || finalQuestions[0].questionText);
           }, 1000);
         });
       }, 1500);
@@ -359,7 +367,7 @@ const InterviewRoom = () => {
 
   const askQuestion = (text, onComplete) => {
     window.speechSynthesis.cancel();
-    stopListening(); // Stop STT while AI is asking
+    stopListening();
 
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
@@ -404,7 +412,7 @@ const InterviewRoom = () => {
       if (onComplete) {
         onComplete();
       } else {
-        // Start STT after AI finishes speaking
+        // Start STT after speaking
         startListening();
       }
     };
@@ -496,11 +504,11 @@ const InterviewRoom = () => {
       } else {
         toast.success("Interview submitted successfully!");
       }
-      
+
       window.dispatchEvent(new CustomEvent("openFeedbackModal", {
         detail: { featureName: "Interviews" }
       }));
-      
+
       setIsSubmitted(true);
       setIsEvaluating(false);
 
@@ -669,22 +677,20 @@ const InterviewRoom = () => {
       <div className="h-[100px] bg-white flex items-center justify-center gap-4 px-8 border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
         <button
           onClick={toggleMic}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
-            micActive
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${micActive
               ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
               : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
-          }`}
+            }`}
         >
           {micActive ? <Mic /> : <MicOff />}
         </button>
 
         <button
           onClick={toggleCam}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${
-            camActive
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${camActive
               ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
               : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
-          }`}
+            }`}
         >
           {camActive ? <VideoIcon /> : <VideoOff />}
         </button>

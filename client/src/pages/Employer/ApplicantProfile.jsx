@@ -40,6 +40,31 @@ const ApplicantProfile = () => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
 
+  // Backend patchCategories already assigns correct categories
+  // Valid categories: General, Communication, Technical, Behavioral
+  const getDisplayCategory = (answer) => answer.category || "General";
+
+  const getDisplayCategoryScores = (interview) => {
+    if (!interview) return null;
+    if (interview.aiFeedback?.categoryScores && Object.keys(interview.aiFeedback.categoryScores).length > 0) {
+      return interview.aiFeedback.categoryScores;
+    }
+    if (!interview.answers || interview.answers.length === 0) return null;
+    const categoryTotals = {};
+    const categoryCounts = {};
+    interview.answers.forEach(ans => {
+      const c = ans.category || "General";
+      if (!categoryTotals[c]) { categoryTotals[c] = 0; categoryCounts[c] = 0; }
+      categoryTotals[c] += ans.score || 0;
+      categoryCounts[c] += 1;
+    });
+    const calculated = {};
+    Object.keys(categoryTotals).forEach(c => {
+      calculated[c] = Math.round(categoryTotals[c] / categoryCounts[c]);
+    });
+    return Object.keys(calculated).length > 0 ? calculated : null;
+  };
+
   useEffect(() => {
     if (!showAiModal && aiAnalysis && !hasPromptedFeedback) {
       setHasPromptedFeedback(true);
@@ -823,14 +848,14 @@ const ApplicantProfile = () => {
                     </div>
 
                     {/* Category Performance */}
-                    {selectedInterview.aiFeedback?.categoryScores && Object.keys(selectedInterview.aiFeedback.categoryScores).length > 0 && (
+                    {getDisplayCategoryScores(selectedInterview) && (
                       <div className="mb-6 bg-gradient-to-br from-indigo-50 to-blue-50 p-5 rounded-xl border border-indigo-100 shadow-sm">
                         <h4 className="text-sm font-bold text-indigo-900 mb-3 uppercase tracking-wider flex items-center gap-2">
                           <Award className="w-4 h-4" />
                           Category Performance
                         </h4>
                         <div className="flex flex-wrap gap-3 mb-4">
-                          {Object.entries(selectedInterview.aiFeedback.categoryScores).map(([cat, score]) => (
+                          {Object.entries(getDisplayCategoryScores(selectedInterview)).map(([cat, score]) => (
                             <div key={cat} className="bg-white px-3 py-1.5 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-2 text-sm">
                               <span className="font-semibold text-indigo-900">{cat}</span>
                               <div className="w-px h-3 bg-indigo-100"></div>
@@ -855,6 +880,7 @@ const ApplicantProfile = () => {
                       </h4>
                       <div className="space-y-4">
                         {selectedInterview.answers?.map((answer, idx) => {
+                          const displayCat = getDisplayCategory(answer);
                           const ansColor =
                             answer.score >= 80
                               ? "text-emerald-700 bg-emerald-50 border-emerald-100"
@@ -874,9 +900,9 @@ const ApplicantProfile = () => {
                                   <p className="text-sm font-semibold text-gray-800 leading-snug">
                                     Q{idx + 1}: {answer.questionText}
                                   </p>
-                                  {answer.category && (
+                                  {displayCat && (
                                     <span className="inline-block px-2 py-0.5 mt-1 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wide">
-                                      {answer.category}
+                                      {displayCat}
                                     </span>
                                   )}
                                 </div>
