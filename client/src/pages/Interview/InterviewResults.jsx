@@ -149,7 +149,7 @@ const InterviewResults = () => {
                       {getScoreLabel(aiScore)}
                     </span>
                     <span className="text-slate-400 text-sm">
-                      {roleName || "General"} Interview
+                      {/^[0-9a-fA-F]{24}$/.test(roleName) ? "Tailored" : (roleName || "General")} Interview
                     </span>
                   </div>
                   <h1 className="text-3xl font-extrabold text-slate-900 mb-3">

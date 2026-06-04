@@ -214,7 +214,7 @@ const InterviewScoresSection = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">
-                        {interview.roleName || "General"} Interview
+                        {/^[0-9a-fA-F]{24}$/.test(interview.roleName) ? "Tailored" : (interview.roleName || "General")} Interview
                       </p>
                       <div className="flex items-center gap-3 mt-1">
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getScoreBg(interview.aiScore)} ${getScoreColor(interview.aiScore)}`}>

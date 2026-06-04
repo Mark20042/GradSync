@@ -84,7 +84,7 @@ const InterviewRoom = () => {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = "en-US";
+    recognition.lang = "en-PH";
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
@@ -342,7 +342,9 @@ const InterviewRoom = () => {
         const firstCategory = shuffled[0].category && shuffled[0].category !== 'General' 
           ? ` Let's begin with a ${shuffled[0].category} question.` 
           : " Let's begin with the first question.";
-        const greeting = `Good day! I am your interviewer for today. We will be conducting a mock interview for the ${jobRole || "General"} position.${firstCategory}`;
+        const displayRole = shuffled[0]?.jobRole || jobRole || "General";
+        const finalSpokenRole = /^[0-9a-fA-F]{24}$/.test(displayRole) ? "personalized" : displayRole;
+        const greeting = `Good day! I am your interviewer for today. We will be conducting a mock interview for the ${finalSpokenRole} position.${firstCategory}`;
         askQuestion(greeting, () => {
           setTimeout(() => {
             askQuestion(shuffled[0].question);

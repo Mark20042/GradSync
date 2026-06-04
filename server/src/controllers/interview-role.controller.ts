@@ -1,13 +1,36 @@
 import type { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { NotFoundError, BadRequestError } from "@/errors/index.js";
+import mongoose from "mongoose";
 import InterviewRole from "@/models/InterviewRole.model.js";
+import InterviewDraft from "@/models/InterviewDraft.model.js";
 
 const getAllQuestions = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category, jobRole } = req.query as any;
-    const roles = await InterviewRole.find();
     const allQuestions: any[] = [];
+    
+    // Check if it's an InterviewDraft (Tailored Interview)
+    if (jobRole && mongoose.isValidObjectId(jobRole)) {
+      const draft = await InterviewDraft.findById(jobRole);
+      if (draft) {
+        draft.questions.forEach((q: any) => {
+          if (category && category !== "All" && q.category !== category) return;
+          allQuestions.push({ 
+            _id: q._id, 
+            roleId: draft._id, 
+            jobRole: "Tailored Interview", 
+            question: q.questionText || q.question, // handle schema variations
+            category: q.category, 
+            idealAnswer: q.idealAnswer || "" 
+          });
+        });
+        return res.status(StatusCodes.OK).json(allQuestions);
+      }
+    }
+
+    // Otherwise treat as a standard InterviewRole
+    const roles = await InterviewRole.find();
     roles.forEach(role => {
       if (jobRole && !role.roleName.toLowerCase().includes(jobRole.toLowerCase())) return;
       role.questions.forEach(q => {
