@@ -67,7 +67,7 @@ export const createNotification = async (
     const user = await User.findById(recipientId).select('pushSubscription');
     if (user?.pushSubscription && env.VAPID_PUBLIC_KEY) {
       const payload = JSON.stringify({
-        title,
+        title: `GradSync - ${title}`,
         message,
         type,
         referenceId,

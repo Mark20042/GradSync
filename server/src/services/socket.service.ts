@@ -44,7 +44,7 @@ export const initializeSocket = (server: HTTPServer): void => {
 
         // Update the conversation's 'lastMessage' for UI previews
         const updatedConversation = await Conversation.findByIdAndUpdate(
-          conversationId, 
+          conversationId,
           { lastMessage: { text: content, sender: senderId, sentAt: new Date() } },
           { new: true }
         ).populate('job', 'title');
@@ -65,7 +65,7 @@ export const initializeSocket = (server: HTTPServer): void => {
             const recipient = await User.findById(recipientId).select('pushSubscription');
             if (recipient?.pushSubscription && env.VAPID_PUBLIC_KEY) {
               const payload = JSON.stringify({
-                title: 'New Message',
+                title: 'GradSync - New Message',
                 message: notificationMessage,
                 type: 'MESSAGE',
                 referenceId: conversationId,
