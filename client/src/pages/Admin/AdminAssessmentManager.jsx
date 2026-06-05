@@ -190,16 +190,6 @@ const AdminAssessmentManager = () => {
     };
   }, [isAutoGenerating, selectedCandidate]);
 
-  const handleApprove = async (id) => {
-    try {
-      await axiosInstance.patch(`/api/generation/assessments/${id}/approve`);
-      toast.success("Assessment approved and now visible to candidate!");
-      fetchAssessmentsForCandidate(selectedCandidate._id);
-    } catch (error) {
-      toast.error("Approval failed");
-    }
-  };
-
   const handleDeleteAssessment = async (id) => {
     if (!window.confirm("Are you sure you want to delete this entire assessment? This cannot be undone.")) return;
     try {
@@ -283,8 +273,8 @@ const AdminAssessmentManager = () => {
               <button
                 onClick={() => setIsAutoGenerating(!isAutoGenerating)}
                 className={`w-full py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${isAutoGenerating
-                    ? "bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 shadow-inner"
-                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                  ? "bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 shadow-inner"
+                  : "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
                   }`}
               >
                 {isAutoGenerating ? (
@@ -320,7 +310,6 @@ const AdminAssessmentManager = () => {
                 const generatedSkillsData = c.generatedSkills || [];
 
                 const completedSkillsCount = uniqueSkills.filter(s => generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase() && gs.status !== 'generating')).length;
-                const pendingReviewCount = generatedSkillsData.filter(gs => gs.status === 'pending review').length;
                 const generatingSkills = uniqueSkills.filter(s => generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase() && gs.status === 'generating'));
                 const missingSkills = uniqueSkills.filter(s => !generatedSkillsData.some(gs => gs.skill.toLowerCase() === s.toLowerCase()));
 
@@ -355,11 +344,6 @@ const AdminAssessmentManager = () => {
                       <div className="flex justify-between items-center mt-0.5 mb-1">
                         <p className="text-xs text-gray-500 truncate">{c.email}</p>
                         <div className="flex items-center gap-1">
-                          {pendingReviewCount > 0 && (
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-100/80 px-2 py-0.5 rounded-full shrink-0" title={`${pendingReviewCount} assessments pending review`}>
-                              {pendingReviewCount} Pending
-                            </span>
-                          )}
                           <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-100/50 px-2 py-0.5 rounded-full shrink-0">
                             {completionPercentage}%
                           </span>
@@ -402,7 +386,7 @@ const AdminAssessmentManager = () => {
                 <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-100">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate.fullName}'s Assessments</h2>
-                    <p className="text-gray-500 mt-1">Review, approve, or generate new assessments.</p>
+                    <p className="text-gray-500 mt-1">Review, manage, or generate new assessments.</p>
                   </div>
                   <div className="flex gap-2 items-center">
                     <button
@@ -466,12 +450,19 @@ const AdminAssessmentManager = () => {
                             <p className="text-sm text-gray-500 mt-1">{a.questions?.length || 0} questions generated</p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' :
+                            <div className="flex gap-2">
+                              {a.isTaken && (
+                                <span className="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider bg-purple-100 text-purple-700 flex items-center gap-1" title="Candidate has submitted this assessment">
+                                  <CheckCircle className="w-3.5 h-3.5" /> Taken
+                                </span>
+                              )}
+                              <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' :
                                 a.status === 'generating' ? 'bg-blue-100 text-blue-700 animate-pulse' :
                                   'bg-orange-100 text-orange-700'
-                              }`}>
-                              {a.status}
-                            </span>
+                                }`}>
+                                {a.status}
+                              </span>
+                            </div>
                           </div>
                         </div>
 
@@ -495,14 +486,7 @@ const AdminAssessmentManager = () => {
                           </div>
 
                           <div className="flex gap-2 items-center">
-                            {a.status === 'pending review' && (
-                              <button
-                                onClick={() => handleApprove(a._id)}
-                                className="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm"
-                              >
-                                Approve Assessment
-                              </button>
-                            )}
+
                           </div>
                         </div>
                       </div>

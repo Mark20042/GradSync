@@ -9,7 +9,7 @@ const AdminInterviewQuestions = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-  
+
   const [interviews, setInterviews] = useState([]);
   const [loadingInterviews, setLoadingInterviews] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -17,7 +17,7 @@ const AdminInterviewQuestions = () => {
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInterview, setModalInterview] = useState(null);
-  
+
   // Edit state
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editForm, setEditForm] = useState({ questionText: "", idealAnswer: "", category: "" });
@@ -71,16 +71,6 @@ const AdminInterviewQuestions = () => {
       toast.error("Failed to generate interview");
     } finally {
       setGenerating(false);
-    }
-  };
-
-  const handleApprove = async (id) => {
-    try {
-      await axiosInstance.patch(`/api/generation/interviews/${id}/approve`);
-      toast.success("Interview approved and now visible to candidate!");
-      fetchInterviewsForCandidate(selectedCandidate._id);
-    } catch (error) {
-      toast.error("Approval failed");
     }
   };
 
@@ -138,13 +128,13 @@ const AdminInterviewQuestions = () => {
       toast.error("Please fill in both question and answer");
       return;
     }
-    
+
     try {
       const res = await axiosInstance.post(`/api/generation/interviews/${interviewId}/questions`, addForm);
       toast.success("Question added successfully");
       setIsAddingQuestion(false);
       setAddForm({ questionText: "", idealAnswer: "", category: "Technical" });
-      
+
       // Update in-place
       setModalInterview(prev => ({
         ...prev,
@@ -163,8 +153,8 @@ const AdminInterviewQuestions = () => {
     setIsAddingQuestion(false);
   };
 
-  const filteredCandidates = candidates.filter(c => 
-    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredCandidates = candidates.filter(c =>
+    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -231,23 +221,23 @@ const AdminInterviewQuestions = () => {
                 <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-100">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate.fullName}'s Interviews</h2>
-                    <p className="text-gray-500 mt-1">Review, edit, approve, or generate new interview drafts.</p>
+                    <p className="text-gray-500 mt-1">Review, edit, or generate new interview drafts.</p>
                   </div>
                   <div className="flex gap-2 items-center">
                     <button
-                        onClick={() => fetchInterviewsForCandidate(selectedCandidate._id)}
-                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
-                        title="Refresh Interviews"
+                      onClick={() => fetchInterviewsForCandidate(selectedCandidate._id)}
+                      className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
+                      title="Refresh Interviews"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loadingInterviews ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`w-4 h-4 ${loadingInterviews ? 'animate-spin' : ''}`} />
                     </button>
                     <button
-                        onClick={handleGenerate}
-                        disabled={generating}
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
+                      onClick={handleGenerate}
+                      disabled={generating}
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
                     >
-                        {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                        Generate Tailored Interview
+                      {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                      Generate Tailored Interview
                     </button>
                   </div>
                 </div>
@@ -266,42 +256,42 @@ const AdminInterviewQuestions = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-lg text-gray-900">Tailored AI Interview</h3>
+                              <h3 className="font-bold text-lg text-gray-900">Tailored AI Interview</h3>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">{a.questions?.length || 0} questions generated • Tailored to profile</p>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            {a.status === 'generating' ? (
-                                <span className="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider bg-blue-100 text-blue-700 flex items-center gap-2">
-                                    <RefreshCw className="w-3 h-3 animate-spin" /> GENERATING
-                                </span>
-                            ) : (
-                                <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                    {a.status}
-                                </span>
-                            )}
                             <div className="flex gap-2">
-                              {a.status === 'pending review' && (
-                                  <button 
-                                      onClick={() => handleApprove(a._id)}
-                                      className="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm"
-                                  >
-                                      Approve
-                                  </button>
+                              {a.isTaken && (
+                                <span className="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider bg-purple-100 text-purple-700 flex items-center gap-1" title="Candidate has completed this interview">
+                                  <CheckCircle className="w-3.5 h-3.5" /> Taken
+                                </span>
                               )}
+                              {a.status === 'generating' ? (
+                                <span className="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider bg-blue-100 text-blue-700 flex items-center gap-2">
+                                  <RefreshCw className="w-3 h-3 animate-spin" /> GENERATING
+                                </span>
+                              ) : (
+                                <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider ${a.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                  {a.status}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+
                               {a.status !== 'generating' && (
-                                <button 
-                                    onClick={() => openModal(a)}
-                                    className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center gap-1"
+                                <button
+                                  onClick={() => openModal(a)}
+                                  className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center gap-1"
                                 >
-                                    <Eye className="w-3.5 h-3.5" /> View / Edit
+                                  <Eye className="w-3.5 h-3.5" /> View / Edit
                                 </button>
                               )}
-                              <button 
-                                  onClick={() => handleDeleteInterview(a._id)}
-                                  className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm"
+                              <button
+                                onClick={() => handleDeleteInterview(a._id)}
+                                className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm"
                               >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
@@ -380,8 +370,8 @@ const AdminInterviewQuestions = () => {
                       </select>
                     </div>
                     <div className="pt-2">
-                      <button 
-                        onClick={() => handleAddQuestion(modalInterview._id)} 
+                      <button
+                        onClick={() => handleAddQuestion(modalInterview._id)}
                         className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all"
                       >
                         Save Question
@@ -452,14 +442,14 @@ const AdminInterviewQuestions = () => {
                         </div>
                       </div>
                       <div className="flex gap-1 shrink-0">
-                        <button 
+                        <button
                           onClick={() => startEditing(q)}
                           className="text-blue-400 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-lg transition-all"
                           title="Edit Question"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteQuestion(modalInterview._id, q._id)}
                           className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-all"
                           title="Delete Question"

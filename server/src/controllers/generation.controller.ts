@@ -4,6 +4,8 @@ import { generateAssessment, generateAllAssessments, generateInterviewDraft } fr
 import Assessment from "../models/Assessment.model.js";
 import InterviewDraft from "../models/InterviewDraft.model.js";
 import User from "../models/User.model.js";
+import AssessmentSubmission from "../models/AssessmentSubmission.model.js";
+import Interview from "../models/Interview.model.js";
 import { NotFoundError } from "../errors/index.js";
 
 export const generateAssessmentController = async (req: Request, res: Response, next: NextFunction) => {
@@ -172,8 +174,14 @@ export const getMyApprovedInterviewDrafts = async (req: any, res: Response, next
 export const getAssessmentsByCandidate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { candidateId } = req.params;
-    const assessments = await Assessment.find({ candidateId });
-    res.status(StatusCodes.OK).json(assessments);
+    const assessments = await Assessment.find({ candidateId }).lean();
+    
+    const assessmentsWithStatus = await Promise.all(assessments.map(async (a) => {
+      const isTaken = await AssessmentSubmission.exists({ assessment: a._id, user: candidateId });
+      return { ...a, isTaken: !!isTaken };
+    }));
+
+    res.status(StatusCodes.OK).json(assessmentsWithStatus);
   } catch (error) {
     next(error);
   }
@@ -183,8 +191,14 @@ export const getAssessmentsByCandidate = async (req: Request, res: Response, nex
 export const getInterviewDraftsByCandidate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { candidateId } = req.params;
-    const interviewDrafts = await InterviewDraft.find({ candidateId });
-    res.status(StatusCodes.OK).json(interviewDrafts);
+    const interviewDrafts = await InterviewDraft.find({ candidateId }).lean();
+
+    const draftsWithStatus = await Promise.all(interviewDrafts.map(async (d) => {
+      const isTaken = await Interview.exists({ candidateId, roleName: String(d._id) });
+      return { ...d, isTaken: !!isTaken };
+    }));
+
+    res.status(StatusCodes.OK).json(draftsWithStatus);
   } catch (error) {
     next(error);
   }

@@ -58,7 +58,7 @@ const assessmentSchema = new Schema<IAssessment>(
     maxRightClicks: { type: Number, default: 3 },
     maxDevTools: { type: Number, default: 1 },
     questions: [questionSchema],
-    status: { type: String, enum: ['pending review', 'approved', 'generating'], default: 'pending review' },
+    status: { type: String, enum: ['pending review', 'approved', 'generating'], default: 'approved' },
   },
   { timestamps: true }
 );

@@ -79,14 +79,14 @@ const repairJson = (raw: string): string => {
 const safeParse = (content: string): any => {
   // Strip markdown code blocks if present (```json ... ``` or ``` ... ```)
   let cleaned = content.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
-  
+
   // Log first 500 chars for debugging
   console.log(`[safeParse] Raw response preview (${cleaned.length} chars): ${cleaned.substring(0, 500)}...`);
 
   // Try to find JSON object
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
-  
+
   // Also check for bare arrays
   const firstBracket = cleaned.indexOf('[');
   const lastBracket = cleaned.lastIndexOf(']');
@@ -94,7 +94,7 @@ const safeParse = (content: string): any => {
   // Attempt 1: Parse as JSON object { "questions": [...] }
   if (firstBrace !== -1 && lastBrace !== -1) {
     let jsonStr = cleaned.substring(firstBrace, lastBrace + 1);
-    
+
     try { return JSON.parse(jsonStr); } catch (_) { /* fall through */ }
     try { return JSON.parse(repairJson(jsonStr)); } catch (_) { /* fall through */ }
   }
@@ -102,12 +102,12 @@ const safeParse = (content: string): any => {
   // Attempt 2: Parse as bare JSON array [ { ... }, { ... } ]
   if (firstBracket !== -1 && lastBracket !== -1) {
     let arrStr = cleaned.substring(firstBracket, lastBracket + 1);
-    
+
     try {
       const arr = JSON.parse(arrStr);
       if (Array.isArray(arr) && arr.length > 0) return { questions: arr };
     } catch (_) { /* fall through */ }
-    
+
     try {
       const arr = JSON.parse(repairJson(arrStr));
       if (Array.isArray(arr) && arr.length > 0) return { questions: arr };
@@ -154,7 +154,7 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
     try {
       const response = await model.invoke(prompt);
       let content = response.content;
-      
+
       // Handle Gemma "thinking" model response format:
       // content = [{"type":"thinking","thinking":"..."}, {"type":"text","text":"...actual JSON..."}]
       if (Array.isArray(content)) {
@@ -167,7 +167,7 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
         // If no text block found, try to stringify the whole thing
         return JSON.stringify(content);
       }
-      
+
       return typeof content === 'string' ? content : JSON.stringify(content);
     } catch (error: any) {
       const errorMsg = error?.message || '';
@@ -218,7 +218,7 @@ export const generateAssessment = async (skill: string, candidateId: string, awa
       // Detect if skill is programming/IT related for code snippet inclusion
       const techKeywords = ['javascript', 'typescript', 'python', 'java', 'c#', 'c++', 'php', 'ruby', 'go', 'rust', 'swift', 'kotlin', 'react', 'angular', 'vue', 'node', 'express', 'django', 'flask', 'spring', 'sql', 'mysql', 'postgresql', 'mongodb', 'redis', 'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'html', 'css', 'sass', 'tailwind', 'git', 'linux', 'bash', 'powershell', 'api', 'rest', 'graphql', 'webpack', 'vite', 'next', 'nuxt', 'laravel', 'rails', '.net', 'flutter', 'dart', 'r programming', 'matlab', 'scala', 'perl', 'assembly', 'objective-c', 'programming', 'coding', 'software', 'web development', 'mobile development', 'frontend', 'backend', 'fullstack', 'devops', 'data structure', 'algorithm', 'machine learning', 'ai', 'deep learning', 'cybersecurity', 'networking'];
       const isProgramming = techKeywords.some(kw => skill.toLowerCase().includes(kw));
-      
+
       const codeSnippetInstruction = isProgramming
         ? 'For technical questions, include short code snippets where relevant. Use the "codeSnippet" field for this.'
         : 'Do NOT include code snippets. Leave the "codeSnippet" field as an empty string for all questions. This skill is not programming-related.';
@@ -281,7 +281,7 @@ Do NOT use comments inside the JSON. Escape special characters in strings.
       }
     }
 
-    assessment.status = 'pending review';
+    assessment.status = 'approved';
     await assessment.save();
     console.log(`[${skill}] ═══ Assessment complete. Total questions: ${assessment.questions.length} ═══`);
   };
@@ -300,9 +300,9 @@ Do NOT use comments inside the JSON. Escape special characters in strings.
 // Processes all skills one at a time: skill 1 finishes completely, then skill 2, etc.
 export const generateAllAssessments = async (skills: string[], candidateId: string) => {
   const results: any[] = [];
-  
+
   console.log(`[Batch] Starting sequential generation for ${skills.length} skills: ${skills.join(', ')}`);
-  
+
   for (let i = 0; i < skills.length; i++) {
     const skill = skills[i];
     console.log(`[Batch] ──── Processing skill ${i + 1}/${skills.length}: ${skill} ────`);
@@ -314,7 +314,7 @@ export const generateAllAssessments = async (skills: string[], candidateId: stri
       console.error(`[Batch] Failed to generate for ${skill}:`, err);
     }
   }
-  
+
   console.log(`[Batch] ═══ All done. Generated ${results.length}/${skills.length} assessments ═══`);
   return results;
 };
@@ -370,7 +370,7 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
     attempts++;
     try {
       console.log(`[Interview] Generating draft for candidate ${candidateId} (Attempt ${attempts}/${maxRetries})...`);
-      
+
       let content: string;
       if (useQueue) {
         content = await aiQueue.enqueue(() => rateLimitedInvoke(model, prompt));
@@ -379,11 +379,11 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
       }
 
       parsed = safeParse(content);
-      
+
       if (!parsed || !parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
         throw new Error("Failed to parse valid JSON from AI response.");
       }
-      
+
       // Success
       break;
     } catch (error) {
@@ -397,11 +397,11 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
     }
   }
 
-  // 2. Update draft with generated questions and status "pending review"
+  // 2. Update draft with generated questions and status "approved"
   interviewDraft.questions = parsed.questions;
-  interviewDraft.status = 'pending review';
+  interviewDraft.status = 'approved';
   await interviewDraft.save();
-  
+
   console.log(`[Interview] ✓ Generated ${parsed.questions.length} interview questions for candidate ${candidateId}`);
   return interviewDraft;
 };
@@ -469,11 +469,11 @@ export const autoGenerateForUser = (candidateId: string, skills: string[]) => {
 // Enqueues ONLY the missing skills for a user, usually triggered on profile edit
 export const autoGenerateMissingForUser = (candidateId: string, missingSkills: string[]) => {
   if (missingSkills.length === 0) return;
-  
+
   userQueue.enqueue(async () => {
     console.log(`\n[AutoGen] ╔═══ Starting missing assessment generation for user ${candidateId} ═══╗`);
     console.log(`[AutoGen] Generating for missing skills: ${missingSkills.join(', ')}`);
-    
+
     try {
       await generateAllAssessments(missingSkills, candidateId);
       console.log(`[AutoGen] ✓ Missing assessments generated successfully`);

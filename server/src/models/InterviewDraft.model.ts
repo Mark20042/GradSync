@@ -29,7 +29,7 @@ const interviewDraftQuestionSchema = new Schema({
 const interviewDraftSchema = new Schema<IInterviewDraft>(
   {
     candidateId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    status: { type: String, enum: ['draft', 'pending review', 'generating', 'approved'], default: 'draft' },
+    status: { type: String, enum: ['draft', 'pending review', 'generating', 'approved'], default: 'approved' },
     questions: [interviewDraftQuestionSchema],
   },
   { timestamps: true }
