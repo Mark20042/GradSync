@@ -19,10 +19,12 @@ import { API_PATH } from "../../../utils/apiPath";
 import Navbar from "./components/Navbar";
 import JobCard from "../../../components/Cards/JobCard";
 import toast from "react-hot-toast";
+import { useAuth } from "../../../context/AuthContext";
 
 const CompanyProfileView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [company, setCompany] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -37,9 +39,12 @@ const CompanyProfileView = () => {
                 setCompany(companyRes.data);
 
                 // Fetch company's open jobs
-                const jobsRes = await axiosInstance.get(API_PATH.JOBS.GET_ALL_JOBS, {
-                    params: { company: id },
-                });
+                const params = { company: id };
+                if (user) {
+                    params.userId = user._id;
+                }
+
+                const jobsRes = await axiosInstance.get(API_PATH.JOBS.GET_ALL_JOBS, { params });
                 setJobs(jobsRes.data);
             } catch (err) {
                 console.error("Error fetching data:", err);
@@ -50,11 +55,37 @@ const CompanyProfileView = () => {
         };
 
         fetchData();
-    }, [id]);
+    }, [id, user]);
 
+    const toggleSaveJob = async (jobId, isSaved) => {
+        try {
+            if (isSaved) {
+                await axiosInstance.delete(API_PATH.JOBS.UNSAVE_JOB(jobId));
+                toast.success("Job removed from saved");
+            } else {
+                await axiosInstance.post(API_PATH.JOBS.SAVE_JOB(jobId));
+                toast.success("Job saved successfully");
+            }
+            // Update local state instead of refetching everything
+            setJobs((prevJobs) => prevJobs.map((j) => (j._id === jobId ? { ...j, isSaved: !isSaved } : j)));
+        } catch (err) {
+            console.error("Error:", err);
+            toast.error("Something went wrong! Try again later");
+        }
+    };
 
-
-    if (loading) {
+    const applyToJob = async (jobId) => {
+        try {
+            await axiosInstance.post(API_PATH.APPLICATIONS.APPLY_TO_JOB(jobId));
+            toast.success("Applied to job successfully");
+            // Update local state to reflect applied status
+            setJobs((prevJobs) => prevJobs.map((j) => (j._id === jobId ? { ...j, applicationStatus: "In Review" } : j)));
+        } catch (err) {
+            console.error("Error:", err);
+            const errorMsg = err?.response?.data?.message;
+            toast.error(errorMsg || "Something went wrong! Try again later");
+        }
+    };    if (loading) {
         return <CompanyProfileSkeleton />;
     }
 
@@ -201,9 +232,9 @@ const CompanyProfileView = () => {
                                                     key={job._id}
                                                     job={job}
                                                     onClick={() => navigate(`/job/${job._id}`)}
-                                                    onToggleSave={() => { }} // Implement save logic if needed, or pass dummy
+                                                    onToggleSave={() => toggleSaveJob(job._id, job.isSaved)}
                                                     saved={job.isSaved}
-                                                    onApply={() => navigate(`/job/${job._id}`)}
+                                                    onApply={() => applyToJob(job._id)}
                                                 />
                                             ))}
                                         </div>

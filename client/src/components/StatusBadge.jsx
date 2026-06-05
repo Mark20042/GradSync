@@ -1,4 +1,4 @@
-import { CheckCircle, XCircle, Clock, Send, AlertCircle } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Send, AlertCircle, UserX } from "lucide-react";
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
@@ -17,6 +17,10 @@ const StatusBadge = ({ status }) => {
     Rejected: {
       color: "bg-red-50 text-red-700 border-red-200",
       icon: XCircle,
+    },
+    Terminated: {
+      color: "bg-slate-100 text-slate-700 border-slate-300",
+      icon: UserX,
     },
     default: {
       color: "bg-gray-50 text-gray-700 border-gray-200",
