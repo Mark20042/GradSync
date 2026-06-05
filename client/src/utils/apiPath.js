@@ -49,6 +49,7 @@ export const API_PATH = {
     GET_APPLICATION_BY_ID: (id) => `/api/applications/${id}`,
     GET_MY_APPLICATIONS: "/api/applications/my",
     UPDATE_STATUS: (id) => `/api/applications/${id}/status`,
+    TERMINATE: (id) => `/api/applications/${id}/terminate`,
   },
   IMAGE: {
     ULOAD_IMAGE: "/api/auth/upload-image",
@@ -69,6 +70,8 @@ export const API_PATH = {
   NOTIFICATIONS: {
     GET_ALL: "/api/notifications",
     MARK_READ: (id) => `/api/notifications/${id}/read`,
+    MARK_ALL_READ: "/api/notifications/read-all",
+    PUSH_SUBSCRIBE: "/api/notifications/push-subscribe",
   },
   ADMIN: {
     UPLOAD: "/api/admin/upload",

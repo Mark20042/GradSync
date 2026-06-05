@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATH } from "../utils/apiPath";
+import { subscribeToPushNotifications } from "../utils/pushNotifications";
 
 const AuthContext = createContext();
 
@@ -44,6 +45,9 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(serverUser));
       setUser(serverUser);
       setAuthenticated(true);
+      
+      // Initialize Push Notifications
+      subscribeToPushNotifications();
     } catch (error) {
       // Cookie is invalid/expired — clear everything
       console.error("Auth check failed:", error?.response?.status || error.message);
@@ -61,6 +65,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     setAuthenticated(true);
+    
+    // Initialize Push Notifications
+    subscribeToPushNotifications();
   };
 
   // Call the server to clear the cookie, then clean up local state

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { CustomAPIError } from "@/errors/index.js";
-import { logger } from "@/utils/logger.js";
+
 
 export const errorHandler = (
   err: Error,
@@ -9,9 +9,8 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ): void => {
-  logger.error(`${req.method} ${req.originalUrl} - ${err.message}`, {
-    stack: err.stack,
-  });
+  console.error(`${req.method} ${req.originalUrl} - ${err.message}`);
+  console.error(err.stack);
 
   if (err instanceof CustomAPIError) {
     res.status(err.statusCode).json({

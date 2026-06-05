@@ -63,4 +63,8 @@ export const env = {
     "CORS_ORIGINS",
     "http://localhost:3000,http://localhost:5173,http://localhost:5174",
   ).split(","),
+
+  // Web Push (optional by default so it doesn't break CI if not set)
+  VAPID_PUBLIC_KEY: optionalEnv("VAPID_PUBLIC_KEY", ""),
+  VAPID_PRIVATE_KEY: optionalEnv("VAPID_PRIVATE_KEY", ""),
 } as const;

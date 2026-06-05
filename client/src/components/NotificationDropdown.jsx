@@ -12,51 +12,31 @@ const NotificationDropdown = ({ onClose }) => {
     const { user } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState("ALL"); // ALL, MESSAGE, MATCH, APPLICATION
 
     useEffect(() => {
-        fetchNotifications();
+        const fetchAndMarkRead = async () => {
+            try {
+                // Fetch notifications
+                const response = await axiosInstance.get(API_PATH.NOTIFICATIONS.GET_ALL);
+                setNotifications(response.data);
+                
+                // If there are unread notifications, mark them all as read in the backend silently
+                const hasUnread = response.data.some(n => !n.isRead);
+                if (hasUnread) {
+                    await axiosInstance.put(API_PATH.NOTIFICATIONS.MARK_ALL_READ);
+                    window.dispatchEvent(new CustomEvent('notificationReadAll'));
+                }
+            } catch (error) {
+                console.error("Error with notifications:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAndMarkRead();
     }, []);
 
-    const fetchNotifications = async () => {
-        try {
-            const response = await axiosInstance.get(API_PATH.NOTIFICATIONS.GET_ALL);
-            setNotifications(response.data);
-        } catch (error) {
-            console.error("Error fetching notifications:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleMarkAsRead = async (id, e) => {
-        e.stopPropagation();
-        try {
-            await axiosInstance.put(API_PATH.NOTIFICATIONS.MARK_READ(id));
-            setNotifications((prev) =>
-                prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-            );
-            // Dispatch a global event so the red dot updates instantly in Navbar/DashboardLayout
-            window.dispatchEvent(new CustomEvent('notificationRead'));
-        } catch (error) {
-            console.error("Error marking as read:", error);
-        }
-    };
-
     const handleNotificationClick = async (notification) => {
-        // Group logic: Mark ALL notifications relating to this specific resource as read together
-        // Example: If an employer receives 3 messages from same applicant, clear all 3.
-        const relatedUnread = notifications.filter(
-            n => n.relatedId === notification.relatedId && !n.isRead && n.type === notification.type
-        );
-
-        if (relatedUnread.length > 0) {
-            for (const n of relatedUnread) {
-                await handleMarkAsRead(n._id, { stopPropagation: () => { } });
-            }
-        } else if (!notification.isRead) {
-            await handleMarkAsRead(notification._id, { stopPropagation: () => { } });
-        }
 
         if (notification.type === "MESSAGE") {
             if (user?.role === "employer") {
@@ -68,19 +48,19 @@ const NotificationDropdown = ({ onClose }) => {
             // Navigate to job details (for job seekers)
             navigate(`job/${notification.relatedId}`);
         } else if (notification.type === "APPLICATION") {
-            // Navigate to applicants page (for employers)
-            navigate("/applicants", { state: { applicationId: notification.relatedId } });
+            if (user?.role === "employer") {
+                navigate("/applicants", { state: { applicationId: notification.relatedId } });
+            } else {
+                navigate("/my-applications");
+            }
         }
 
         onClose();
     };
 
-    const filteredNotifications = notifications.filter((n) => {
-        if (filter === "ALL") return true;
-        return n.type === filter;
-    });
+    const filteredNotifications = notifications.filter((n) => n.type !== "MESSAGE");
 
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
+    const unreadCount = notifications.filter((n) => !n.isRead && n.type !== "MESSAGE").length;
 
     return (
         <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[100]">
@@ -94,38 +74,7 @@ const NotificationDropdown = ({ onClose }) => {
                 )}
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex p-2 gap-2 border-b border-gray-100">
-                {user?.role === "employer" ? (
-                    // Employer sees: All, Messages, Applicants
-                    ["ALL", "MESSAGE", "APPLICATION"].map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => setFilter(type)}
-                            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${filter === type
-                                ? "bg-blue-50 text-blue-600"
-                                : "text-gray-500 hover:bg-gray-50"
-                                }`}
-                        >
-                            {type === "ALL" ? "All" : type === "MESSAGE" ? "Messages" : "Applicants"}
-                        </button>
-                    ))
-                ) : (
-                    // Job Seekers see: All, Messages, Jobs
-                    ["ALL", "MESSAGE", "MATCH"].map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => setFilter(type)}
-                            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors ${filter === type
-                                ? "bg-blue-50 text-blue-600"
-                                : "text-gray-500 hover:bg-gray-50"
-                                }`}
-                        >
-                            {type === "ALL" ? "All" : type === "MESSAGE" ? "Messages" : "Jobs"}
-                        </button>
-                    ))
-                )}
-            </div>
+
 
             {/* List */}
             <div className="max-h-[400px] overflow-y-auto">
@@ -183,15 +132,7 @@ const NotificationDropdown = ({ onClose }) => {
                                 </div>
                             </div>
 
-                            {!notification.isRead && (
-                                <button
-                                    onClick={(e) => handleMarkAsRead(notification._id, e)}
-                                    className="absolute right-2 bottom-2 p-1.5 text-blue-600 opacity-0 group-hover:opacity-100 hover:bg-blue-100 rounded-full transition-all"
-                                    title="Mark as read"
-                                >
-                                    <Check className="w-4 h-4" />
-                                </button>
-                            )}
+                            {/* Removed individual mark as read button */}
                         </div>
                     ))
                 )}

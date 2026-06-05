@@ -3,7 +3,7 @@ import app from "@/app.js";
 import { connectDB } from "@/config/db.js";
 import { env } from "@/config/environment.js";
 import { initializeSocket } from "@/services/socket.service.js";
-import { logger } from "@/utils/logger.js";
+
 
 /**
  * Server Entry Point
@@ -28,17 +28,17 @@ const startServer = async () => {
     const PORT = env.PORT;
 
     server.listen(PORT, () => {
-      logger.info("");
-      logger.info("═══════════════════════════════════════════");
-      logger.info("  🚀 GradSync Backend (Sirbir Structure)");
-      logger.info(`  📡 Server running on port ${PORT}`);
-      logger.info(`  🌍 Environment: ${env.NODE_ENV}`);
-      logger.info(`  🏥 Health check: http://localhost:${PORT}/health`);
-      logger.info("═══════════════════════════════════════════");
-      logger.info("");
+      console.log("");
+      console.log("═══════════════════════════════════════════");
+      console.log("  🚀 GradSync Backend (Sirbir Structure)");
+      console.log(`  📡 Server running on port ${PORT}`);
+      console.log(`  🌍 Environment: ${env.NODE_ENV}`);
+      console.log(`  🏥 Health check: http://localhost:${PORT}/health`);
+      console.log("═══════════════════════════════════════════");
+      console.log("");
     });
   } catch (error) {
-    logger.error("❌ Failed to start server:", error);
+    console.error("❌ Failed to start server:", error);
     process.exit(1);
   }
 };

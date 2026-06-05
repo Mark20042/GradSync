@@ -24,11 +24,12 @@ import employerRoutes from "@/routes/employer.route.js";
 import aiRoutes from "@/routes/ai.route.js";
 import adminRoutes from "@/routes/admin.route.js";
 import generationRoutes from "@/routes/generation.route.js";
+import { initCronJobs } from "@/jobs/cron.js";
 
 // middlewares import
 import { errorHandler } from "@/middlewares/errorHandler.js";
 import { notFoundMiddleware } from "@/middlewares/notFound.js";
-import { logger } from "@/utils/logger.js";
+
 
 dotenv.config();
 
@@ -37,7 +38,7 @@ const app = express();
 // ─── Log Config ──────────────────────────────────────────────────────────
 const stream = {
   write: (message: string) => {
-    logger.info(message.trim());
+    console.log(message.trim());
   },
 };
 
@@ -125,5 +126,8 @@ app.use("/api", apiRouter);
 // ─── Error Middleware ────────────────────────────────────────────────────
 app.use(notFoundMiddleware);
 app.use(errorHandler);
+
+// ─── Initialize Background Jobs ──────────────────────────────────────────
+initCronJobs();
 
 export default app;

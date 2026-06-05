@@ -7,6 +7,11 @@ import {
   Download,
   Calendar,
   Eye,
+  Send,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  UserX,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
@@ -151,6 +156,27 @@ const ApplicationViewer = () => {
                             {applications.length !== 1 ? "s" : ""}
                           </span>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Status Counters */}
+                    <div className="px-6 py-3 bg-gray-50/80 border-b border-gray-100">
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { label: "Applied", color: "bg-blue-100 text-blue-700", icon: Send },
+                          { label: "In Review", color: "bg-amber-100 text-amber-700", icon: Clock },
+                          { label: "Accepted", color: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
+                          { label: "Rejected", color: "bg-red-100 text-red-700", icon: XCircle },
+                          { label: "Terminated", color: "bg-slate-200 text-slate-700", icon: UserX },
+                        ].map(({ label, color, icon: Icon }) => {
+                          const count = applications.filter(a => a.status === label).length;
+                          return (
+                            <span key={label} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${color}`}>
+                              <Icon className="w-3.5 h-3.5" />
+                              {count} {label}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
 

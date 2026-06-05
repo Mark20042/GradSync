@@ -206,6 +206,9 @@ const userSchema = new Schema<IUser>(
     lastScanDate: Date,
     // Feature Feedback tracking
     feedbackProvidedFeatures: { type: [String], default: [] },
+
+    // Web Push Subscription
+    pushSubscription: { type: Schema.Types.Mixed, default: null },
   },
   { timestamps: true },
 );

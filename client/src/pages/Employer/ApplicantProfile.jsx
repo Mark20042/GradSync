@@ -343,24 +343,19 @@ const ApplicantProfile = () => {
                     </h2>
                     <div className="space-y-4">
                       {applicant.applicant.experiences.map((exp, index) => (
-                        <div key={index} className="flex gap-4">
-                          <div className="flex-1">
-                            <h3 className="font-medium text-gray-900">
-                              {exp.jobTitle}
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                              {exp.company}
-                            </p>
-                            <p className="text-gray-400 text-xs">
-                              {moment(exp.startDate).format("MMM YYYY")} -{" "}
-                              {exp.endDate
-                                ? moment(exp.endDate).format("MMM YYYY")
-                                : "Present"}
-                            </p>
-                            <p className="text-gray-600 text-sm mt-2">
-                              {exp.description}
+                        <div key={index}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium text-gray-900">{exp.title}</h3>
+                              <p className="text-gray-600 text-sm">{exp.company}</p>
+                            </div>
+                            <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                              {moment(exp.startDate).format("MMM YYYY")} – {exp.endDate ? moment(exp.endDate).format("MMM YYYY") : "Present"}
                             </p>
                           </div>
+                          {exp.description && (
+                            <p className="text-gray-600 text-sm mt-2">{exp.description}</p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -376,29 +371,19 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.internships.map(
                         (internship, index) => (
-                          <div key={index} className="flex gap-4">
-                            <div className="flex-1">
-                              <h3 className="font-medium text-gray-900">
-                                {internship.jobTitle}
-                              </h3>
-                              <p className="text-gray-600 text-sm">
-                                {internship.company}
-                              </p>
-                              <p className="text-gray-400 text-xs">
-                                {moment(internship.startDate).format(
-                                  "MMM YYYY",
-                                )}{" "}
-                                -{" "}
-                                {internship.endDate
-                                  ? moment(internship.endDate).format(
-                                      "MMM YYYY",
-                                    )
-                                  : "Present"}
-                              </p>
-                              <p className="text-gray-600 text-sm mt-2">
-                                {internship.description}
+                          <div key={index}>
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-medium text-gray-900">{internship.title}</h3>
+                                <p className="text-gray-600 text-sm">{internship.company}</p>
+                              </div>
+                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                                {moment(internship.startDate).format("MMM YYYY")} – {internship.endDate ? moment(internship.endDate).format("MMM YYYY") : "Present"}
                               </p>
                             </div>
+                            {internship.description && (
+                              <p className="text-gray-600 text-sm mt-2">{internship.description}</p>
+                            )}
                           </div>
                         ),
                       )}
@@ -415,13 +400,19 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.education.map((edu, index) => (
                         <div key={index}>
-                          <h3 className="font-medium text-gray-900">
-                            {edu.degree}
-                          </h3>
-                          <p className="text-gray-600 text-sm">{edu.school}</p>
-                          <p className="text-gray-400 text-xs">
-                            {edu.graduationYear}
-                          </p>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium text-gray-900">{edu.degree}</h3>
+                              <p className="text-gray-600 text-sm">{edu.school}</p>
+                            </div>
+                            {(edu.startDate || edu.endDate) && (
+                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                                {edu.startDate ? moment(edu.startDate).format("MMM YYYY") : ""}
+                                {edu.startDate && edu.endDate ? " – " : ""}
+                                {edu.endDate ? moment(edu.endDate).format("MMM YYYY") : ""}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -442,24 +433,24 @@ const ApplicantProfile = () => {
                               <h3 className="font-medium text-gray-900 text-base">
                                 {proj.name}
                               </h3>
-                              {proj.startDate && (
-                                <p className="text-gray-400 text-xs mt-0.5">
-                                  {moment(proj.startDate).format("MMM YYYY")} -{" "}
-                                  {proj.endDate
-                                    ? moment(proj.endDate).format("MMM YYYY")
-                                    : "Present"}
-                                </p>
+                              {proj.url && (
+                                <a
+                                  href={proj.url.startsWith('http') ? proj.url : `https://${proj.url}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline inline-flex items-center mt-1"
+                                >
+                                  View Project
+                                </a>
                               )}
                             </div>
-                            {proj.url && (
-                              <a
-                                href={proj.url.startsWith('http') ? proj.url : `https://${proj.url}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 text-sm font-medium hover:underline flex items-center gap-1"
-                              >
-                                View Project
-                              </a>
+                            {proj.startDate && (
+                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                                {moment(proj.startDate).format("MMM YYYY")} -{" "}
+                                {proj.endDate
+                                  ? moment(proj.endDate).format("MMM YYYY")
+                                  : "Present"}
+                              </p>
                             )}
                           </div>
 
@@ -496,39 +487,51 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.awards?.map((award, index) => (
                         <div key={`award-${index}`}>
-                          <h3 className="font-medium text-gray-900">
-                            {award.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm">
-                            {award.issuer}
-                          </p>
-                          <p className="text-gray-400 text-xs">
-                            {moment(award.date).format("MMM YYYY")}
-                          </p>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium text-gray-900">
+                                {award.title}
+                              </h3>
+                              <p className="text-gray-600 text-sm">
+                                {award.issuer}
+                              </p>
+                            </div>
+                            {true && (
+                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                                {moment(award.date || undefined).format("MMM YYYY")}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       ))}
                       {applicant.applicant.certifications?.map(
                         (cert, index) => (
                           <div key={`cert-${index}`}>
-                            <h3 className="font-medium text-gray-900">
-                              {cert.name}
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                              {cert.issuer}
-                            </p>
-                            <p className="text-gray-400 text-xs">
-                              {moment(cert.date).format("MMM YYYY")}
-                            </p>
-                            {cert.credentialURL && (
-                              <a
-                                href={cert.credentialURL.startsWith('http') ? cert.credentialURL : `https://${cert.credentialURL}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline inline-flex items-center mt-1"
-                              >
-                                View Credential
-                              </a>
-                            )}
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-medium text-gray-900">
+                                  {cert.name}
+                                </h3>
+                                <p className="text-gray-600 text-sm">
+                                  {cert.issuer}
+                                </p>
+                                {cert.credentialURL && (
+                                  <a
+                                    href={cert.credentialURL.startsWith('http') ? cert.credentialURL : `https://${cert.credentialURL}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-700 text-xs font-medium hover:underline inline-flex items-center mt-1"
+                                  >
+                                    View Credential
+                                  </a>
+                                )}
+                              </div>
+                              {true && (
+                                <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                                  {moment(cert.issueDate || cert.date || undefined).format("MMM YYYY")}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         ),
                       )}

@@ -139,6 +139,9 @@ export interface IUser extends Document {
   lastScanDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+
+  // Web Push Subscription
+  pushSubscription?: any;
 }
 
 // ─── Job Interface ──────────────────────────────────────────────────────

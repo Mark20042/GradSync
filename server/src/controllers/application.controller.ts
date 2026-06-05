@@ -4,7 +4,9 @@ import { BadRequestError, NotFoundError, UnauthorizedError } from "@/errors/inde
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import Application from "@/models/Application.model.js";
 import Job from "@/models/Job.model.js";
+import User from "@/models/User.model.js";
 import { createNotification } from "@/utils/notification.helper.js";
+import { getIo } from "@/services/socket.service.js";
 
 const applyToJob = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -219,12 +221,99 @@ const getApplicationById = async (req: AuthRequest, res: Response, next: NextFun
 const updateApplicationStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { status } = req.body;
-    const app = await Application.findById(req.params.id).populate("job");
-    if (!app) throw new NotFoundError("Not authorized");
+    const app = await Application.findById(req.params.id);
+    if (!app) throw new NotFoundError("Application not found");
+
+    // Auto-add experience when status changes to Accepted
+    if (status === "Accepted" && app.status !== "Accepted") {
+      const job = await Job.findById(app.job).populate("company", "companyName");
+      if (job) {
+        const user = await User.findById(app.applicant);
+        if (user) {
+          const companyData = job.company as any;
+          const newExperience = {
+            title: job.title,
+            company: companyData?.companyName || "Unknown Company",
+            location: job.location || "",
+            startDate: new Date(),
+            current: true,
+            description: `${job.type || "Full-time"} position`,
+          };
+          user.experiences.push(newExperience as any);
+          await user.save();
+
+          // Store reference to the newly added experience sub-document
+          const addedExp = user.experiences[user.experiences.length - 1];
+          app.experienceRef = addedExp._id;
+        }
+      }
+    }
+
     app.status = status;
     await app.save();
+
+    // Notify the applicant
+    try {
+      const job = await Job.findById(app.job).populate("company", "companyName");
+      const companyName = job ? (job.company as any)?.companyName : "An employer";
+      const notification = await createNotification(
+        app.applicant,
+        "APPLICATION",
+        `Application ${status}`,
+        `Your application for ${job?.title || "a job"} has been marked as ${status} by ${companyName}.`,
+        app._id
+      );
+      getIo().to(app.applicant.toString()).emit("receiveNotification", notification);
+    } catch (e) {
+      console.error("Failed to send notification for status update", e);
+    }
+
     res.json({ message: "Application status updated", status });
   } catch (error) { next(error); }
 };
 
-export { applyToJob, getMyApplications, getApplicationsByJob, getApplicationById, updateApplicationStatus };
+const terminateApplication = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const app = await Application.findById(req.params.id);
+    if (!app) throw new NotFoundError("Application not found");
+    if (app.status !== "Accepted") {
+      throw new BadRequestError("Can only terminate accepted/hired applicants");
+    }
+
+    // Update the experience endDate and set current to false
+    if (app.experienceRef) {
+      await User.updateOne(
+        { _id: app.applicant, "experiences._id": app.experienceRef },
+        {
+          $set: {
+            "experiences.$.endDate": new Date(),
+            "experiences.$.current": false,
+          },
+        }
+      );
+    }
+
+    app.status = "Terminated";
+    await app.save();
+
+    // Notify the applicant
+    try {
+      const job = await Job.findById(app.job).populate("company", "companyName");
+      const companyName = job ? (job.company as any)?.companyName : "An employer";
+      const notification = await createNotification(
+        app.applicant,
+        "APPLICATION",
+        "Employment Terminated",
+        `Your employment for ${job?.title || "a job"} at ${companyName} has ended.`,
+        app._id
+      );
+      getIo().to(app.applicant.toString()).emit("receiveNotification", notification);
+    } catch (e) {
+      console.error("Failed to send notification for termination", e);
+    }
+
+    res.json({ message: "Employment terminated successfully" });
+  } catch (error) { next(error); }
+};
+
+export { applyToJob, getMyApplications, getApplicationsByJob, getApplicationById, updateApplicationStatus, terminateApplication };

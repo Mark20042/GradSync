@@ -1,4 +1,4 @@
-import { Download, X, User, Sparkles, BrainCircuit } from "lucide-react";
+import { Download, X, User, Sparkles, BrainCircuit, UserX } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { getInitials } from "../../../utils/helper";
@@ -28,6 +28,8 @@ const ApplicantProfilePreview = ({
   const [rejectionReason, setRejectionReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
+  const [showTerminateModal, setShowTerminateModal] = useState(false);
+  const [terminating, setTerminating] = useState(false);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -109,6 +111,26 @@ const ApplicantProfilePreview = ({
     setShowRejectionModal(false);
     setRejectionReason("");
     setCustomReason("");
+  };
+
+  const handleTerminate = async () => {
+    setTerminating(true);
+    try {
+      const response = await axiosInstance.put(
+        API_PATH.APPLICATIONS.TERMINATE(selectedApplicant._id)
+      );
+      if (response.status === 200) {
+        setCurrentStatus("Terminated");
+        setSelectedApplicant({ ...selectedApplicant, status: "Terminated" });
+        toast.success("Employment terminated. Experience end date updated.");
+      }
+    } catch (err) {
+      console.error("Error terminating:", err);
+      toast.error("Failed to terminate employment");
+    } finally {
+      setTerminating(false);
+      setShowTerminateModal(false);
+    }
   };
 
   return (
@@ -253,6 +275,19 @@ const ApplicantProfilePreview = ({
                 Download Resume
               </button>
             </div>
+
+            {/* End Employment Button (only for Accepted) */}
+            {currentStatus === "Accepted" && (
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowTerminateModal(true)}
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-red-50 text-red-700 font-semibold rounded-xl hover:bg-red-100 transition-all shadow-sm active:scale-[0.98] border border-red-200"
+                >
+                  <UserX className="w-5 h-5" />
+                  End Employment
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -315,6 +350,41 @@ const ApplicantProfilePreview = ({
                 className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Terminate Confirmation Modal */}
+      {showTerminateModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">End Employment</h3>
+              <button onClick={() => setShowTerminateModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex items-center gap-3 bg-red-50 border border-red-100 p-4 rounded-xl mb-6">
+              <UserX className="w-8 h-8 text-red-500 shrink-0" />
+              <div>
+                <p className="text-sm text-red-800 font-medium">Are you sure you want to end employment for <strong>{selectedApplicant.applicant.fullName}</strong>?</p>
+                <p className="text-xs text-red-600 mt-1">This will set an end date on their experience and mark the application as terminated.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowTerminateModal(false)}
+                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTerminate}
+                disabled={terminating}
+                className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+              >
+                {terminating ? "Processing..." : "Confirm Termination"}
               </button>
             </div>
           </div>

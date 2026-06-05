@@ -6,7 +6,10 @@ import { useAuth } from "../../../../context/AuthContext";
 import ProfileDropdown from ".././../../../components/layout/ProfileDropdpwn";
 import NotificationDropdown from "../../../../components/NotificationDropdown";
 import axiosInstance from "../../../../utils/axiosInstance";
-import { API_PATH } from "../../../../utils/apiPath";
+import { API_PATH, BASE_URL } from "../../../../utils/apiPath";
+
+import io from "socket.io-client";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -27,11 +30,31 @@ const Navbar = () => {
     }
   }, [user, notificationOpen]);
 
+  // Socket.IO for real-time notifications
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      const socket = io(BASE_URL);
+      socket.emit("joinRoom", user._id);
+      
+      socket.on("receiveNotification", (notification) => {
+        setUnreadCount(prev => prev + 1);
+        
+        // Show in-app toast
+        toast(notification.title + ": " + notification.message, {
+          icon: '🔔',
+          duration: 5000,
+        });
+      });
+      
+      return () => socket.disconnect();
+    }
+  }, [user, isAuthenticated]);
+
   // Listen for instant mark-as-read events
   useEffect(() => {
-    const handleReadEvent = () => setUnreadCount(prev => Math.max(0, prev - 1));
-    window.addEventListener('notificationRead', handleReadEvent);
-    return () => window.removeEventListener('notificationRead', handleReadEvent);
+    const handleReadEvent = () => setUnreadCount(0);
+    window.addEventListener('notificationReadAll', handleReadEvent);
+    return () => window.removeEventListener('notificationReadAll', handleReadEvent);
   }, []);
 
   // Close dropdowns when clicking outside

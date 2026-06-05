@@ -1,5 +1,16 @@
 import { Schema, type Document, type Types } from 'mongoose';
 import mongoose from 'mongoose';
+import webpush from 'web-push';
+import User from '@/models/User.model.js';
+import { env } from '@/config/environment.js';
+
+if (env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:contact@gradsync.com',
+    env.VAPID_PUBLIC_KEY,
+    env.VAPID_PRIVATE_KEY
+  );
+}
 
 /**
  * Lightweight Notification model for the initial migration.
@@ -50,6 +61,31 @@ export const createNotification = async (
     message,
     referenceId,
   });
+
+  // Send Web Push Notification if user is subscribed
+  try {
+    const user = await User.findById(recipientId).select('pushSubscription');
+    if (user?.pushSubscription && env.VAPID_PUBLIC_KEY) {
+      const payload = JSON.stringify({
+        title,
+        message,
+        type,
+        referenceId,
+      });
+      await webpush.sendNotification(user.pushSubscription, payload).catch(err => {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          // Subscription has expired or is no longer valid
+          console.log('Push subscription expired, removing...');
+          return User.findByIdAndUpdate(recipientId, { pushSubscription: null });
+        } else {
+          console.error('Error sending push notification:', err);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to process web push:', error);
+  }
+
   return notification;
 };
 

@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { NotFoundError, UnauthenticatedError } from "@/errors/index.js";
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import Notification from "@/utils/notification.helper.js";
+import User from "@/models/User.model.js";
 
 const getNotifications = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -21,5 +22,23 @@ const markAsRead = async (req: AuthRequest, res: Response, next: NextFunction) =
     res.status(StatusCodes.OK).json(notification);
   } catch (error) { next(error); }
 };
+const markAllAsRead = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    await Notification.updateMany({ recipient: req.user._id, isRead: false }, { $set: { isRead: true } });
+    res.status(StatusCodes.OK).json({ message: "All notifications marked as read" });
+  } catch (error) { next(error); }
+};
 
-export { getNotifications, markAsRead };
+const savePushSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { subscription } = req.body;
+    if (!subscription) {
+      res.status(StatusCodes.BAD_REQUEST).json({ message: "Subscription is required" });
+      return;
+    }
+    await User.findByIdAndUpdate(req.user._id, { pushSubscription: subscription });
+    res.status(StatusCodes.OK).json({ message: "Push subscription saved" });
+  } catch (error) { next(error); }
+};
+
+export { getNotifications, markAsRead, markAllAsRead, savePushSubscription };

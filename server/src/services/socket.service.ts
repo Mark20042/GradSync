@@ -5,6 +5,7 @@ import Message from '@/models/Message.model.js';
 import Conversation from '@/models/Conversation.model.js';
 import User from '@/models/User.model.js';
 import { createNotification } from '@/utils/notification.helper.js';
+import webpush from 'web-push';
 import { checkAndSendAutoReply } from '@/services/auto-reply.helper.js';
 
 import { isMessageClean } from '@/controllers/message.controller.js';
@@ -42,23 +43,44 @@ export const initializeSocket = (server: HTTPServer): void => {
         const savedMessage = await newMessage.save();
 
         // Update the conversation's 'lastMessage' for UI previews
-        await Conversation.findByIdAndUpdate(conversationId, {
-          lastMessage: { text: content, sender: senderId, sentAt: new Date() },
-        });
+        const updatedConversation = await Conversation.findByIdAndUpdate(
+          conversationId, 
+          { lastMessage: { text: content, sender: senderId, sentAt: new Date() } },
+          { new: true }
+        ).populate('job', 'title');
 
         // Populate sender info before emitting
         const populatedMessage = await Message.findById(savedMessage._id).populate('sender', 'fullName avatar role');
 
-        // Create notification for the recipient
+        // Send push notification directly instead of saving a Notification DB record
         const sender = await User.findById(senderId).select('fullName');
         if (sender) {
-          await createNotification(
-            recipientId,
-            'MESSAGE',
-            'New Message',
-            `${sender.fullName || 'Someone'} sent you a message`,
-            conversationId
-          );
+          const jobTitle = (updatedConversation?.job as any)?.title;
+          const notificationMessage = jobTitle
+            ? `${sender.fullName || 'Someone'} sent you a message regarding the ${jobTitle} position`
+            : `${sender.fullName || 'Someone'} sent you a message`;
+
+          // Trigger Web Push directly
+          try {
+            const recipient = await User.findById(recipientId).select('pushSubscription');
+            if (recipient?.pushSubscription && env.VAPID_PUBLIC_KEY) {
+              const payload = JSON.stringify({
+                title: 'New Message',
+                message: notificationMessage,
+                type: 'MESSAGE',
+                referenceId: conversationId,
+              });
+              await webpush.sendNotification(recipient.pushSubscription, payload).catch((err: any) => {
+                if (err.statusCode === 410 || err.statusCode === 404) {
+                  User.findByIdAndUpdate(recipientId, { pushSubscription: null }).exec();
+                } else {
+                  console.error('Error sending push notification:', err);
+                }
+              });
+            }
+          } catch (pushErr) {
+            console.error('Failed to send push for message:', pushErr);
+          }
         }
 
         // Emit the message to the recipient's room

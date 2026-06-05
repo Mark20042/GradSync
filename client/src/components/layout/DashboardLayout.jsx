@@ -21,9 +21,11 @@ import NotificationDropdown from "../NotificationDropdown";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { API_PATH } from "../../utils/apiPath";
+import { API_PATH, BASE_URL } from "../../utils/apiPath";
 import { EMPLOYER_MENU, JOB_SEEKER_MENU } from "../../utils/data";
 import ProfileDropdpwn from "./ProfileDropdpwn";
+import io from "socket.io-client";
+import toast from "react-hot-toast";
 
 const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   const Icon = item.icon;
@@ -71,13 +73,31 @@ const DashboardLayout = ({ activeMenu, children }) => {
     }
   }, [user, notificationOpen]);
 
+  // Socket.IO for real-time notifications
+  useEffect(() => {
+    if (user && user.role === "employer") {
+      const socket = io(BASE_URL);
+      socket.emit("joinRoom", user._id);
+      
+      socket.on("receiveNotification", (notification) => {
+        setUnreadCount(prev => prev + 1);
+        
+        // Show in-app toast
+        toast(notification.title + ": " + notification.message, {
+          icon: '🔔',
+          duration: 5000,
+        });
+      });
+      
+      return () => socket.disconnect();
+    }
+  }, [user]);
+
   // Listen for instant mark-as-read events
   useEffect(() => {
-    const handleReadEvent = () =>
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-    window.addEventListener("notificationRead", handleReadEvent);
-    return () =>
-      window.removeEventListener("notificationRead", handleReadEvent);
+    const handleReadEvent = () => setUnreadCount(0);
+    window.addEventListener("notificationReadAll", handleReadEvent);
+    return () => window.removeEventListener("notificationReadAll", handleReadEvent);
   }, []);
 
   //Handle responsive behavior
