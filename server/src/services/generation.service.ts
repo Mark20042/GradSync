@@ -188,10 +188,20 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
   throw new Error('Max retries exceeded for rate-limited invoke');
 };
 
-// ─── Assessment Generation ───────────────────────────────────────────────────
 export const generateAssessment = async (skill: string, candidateId: string, awaitChunks = false) => {
   const model = getModel();
   const useQueue = isGemini();
+
+  // Check if an assessment for this skill already exists to prevent duplicates
+  const existingAssessment = await Assessment.findOne({
+    candidateId,
+    skill: skill.toLowerCase()
+  });
+
+  if (existingAssessment) {
+    console.log(`[${skill}] Assessment already exists for candidate ${candidateId}. Skipping generation.`);
+    return existingAssessment;
+  }
 
   // Create the assessment immediately in 'generating' status
   const assessment = new Assessment({

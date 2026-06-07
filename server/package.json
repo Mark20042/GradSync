@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --tsconfig tsconfig.json src/server.ts",
+    "dev:worker": "tsx watch --tsconfig tsconfig.json src/worker.ts",
     "build": "tsc || true",
     "start": "node dist/server.js",
     "worker": "node dist/worker.js",
