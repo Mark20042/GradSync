@@ -47,7 +47,7 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
             name="desiredJobTitle"
             value={formData.jobPreferences.desiredJobTitle}
             onChange={handleJobPreferenceChange}
-            placeholder="e.g. Frontend Developer"
+            placeholder="e.g. Marketing Manager"
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -61,7 +61,7 @@ const JobPreferencesStep = ({ formData, setFormData }) => {
             name="industry"
             value={formData.jobPreferences.industry}
             onChange={handleJobPreferenceChange}
-            placeholder="e.g. Technology, Healthcare, Finance"
+            placeholder="e.g. Finance, Healthcare, Education"
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

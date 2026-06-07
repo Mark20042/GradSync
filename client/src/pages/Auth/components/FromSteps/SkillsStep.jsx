@@ -118,7 +118,7 @@ const SkillsStep = ({ formData, setFormData, validationErrors }) => {
           <input
             type="text"
             name="skills"
-            placeholder="e.g. JavaScript, React, Node.js, Python, UI/UX Design"
+            placeholder="e.g. Project Management, Data Analysis, Public Speaking, UI/UX Design"
             value={formData.skills}
             onChange={handleChange}
             className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
@@ -250,7 +250,7 @@ const SkillsStep = ({ formData, setFormData, validationErrors }) => {
                   onChange={(e) =>
                     handleCertificationChange("name", e.target.value)
                   }
-                  placeholder="e.g. AWS Certified Developer"
+                  placeholder="e.g. Certified Public Accountant"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -266,7 +266,7 @@ const SkillsStep = ({ formData, setFormData, validationErrors }) => {
                   onChange={(e) =>
                     handleCertificationChange("issuer", e.target.value)
                   }
-                  placeholder="e.g. Amazon Web Services"
+                  placeholder="e.g. Board of Accountancy"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -311,7 +311,7 @@ const SkillsStep = ({ formData, setFormData, validationErrors }) => {
                   onChange={(e) =>
                     handleCertificationChange("credentialID", e.target.value)
                   }
-                  placeholder="e.g. AWS-12345"
+                  placeholder="e.g. CPA-12345"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>

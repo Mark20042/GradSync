@@ -223,7 +223,7 @@ const SetupProfileJobseeker = () => {
               {currentStep === 2 && (
                 <div className="space-y-6">
                   <div className="mb-6 flex items-center justify-between">
-                    <div><h3 className="text-2xl font-bold text-gray-900">Professional Presence</h3><p className="text-gray-500 text-sm mt-1">Add links to showcase your portfolio.</p></div>
+                    <div><h3 className="text-2xl font-bold text-gray-900">Professional Presence</h3><p className="text-gray-500 text-sm mt-1">Add links to showcase your portfolio. <span className="italic text-gray-400">Don't worry, you can skip this step if you don't have anything to add yet! ✨</span></p></div>
                     <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded-full uppercase tracking-wider">Optional</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -250,7 +250,7 @@ const SetupProfileJobseeker = () => {
               {currentStep === 3 && (
                 <div className="space-y-6">
                   <div className="mb-6 flex items-center justify-between">
-                    <div><h3 className="text-2xl font-bold text-gray-900">Work Experience</h3><p className="text-gray-500 text-sm mt-1">Add your professional or internship history.</p></div>
+                    <div><h3 className="text-2xl font-bold text-gray-900">Work Experience</h3><p className="text-gray-500 text-sm mt-1">Add your professional or internship history. <span className="italic text-gray-400">Don't worry, you can skip this step if you don't have anything to add yet! ✨</span></p></div>
                     <span className="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-semibold rounded-full uppercase tracking-wider">Optional</span>
                   </div>
 
@@ -269,7 +269,7 @@ const SetupProfileJobseeker = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">{formData.experienceType === "work" ? "Job Title" : "Internship Role"} *</label>
                       <input type="text" value={newExp.title} onChange={(e) => handleExpChange("title", e.target.value)}
-                        placeholder={formData.experienceType === "work" ? "e.g. Software Engineer" : "e.g. Software Dev Intern"}
+                        placeholder={formData.experienceType === "work" ? "e.g. Marketing Specialist" : "e.g. Marketing Intern"}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all" />
                     </div>
                     <div>
@@ -346,7 +346,7 @@ const SetupProfileJobseeker = () => {
                     </div>
                     <div className="relative group">
                       <FileText className="absolute left-3.5 top-4 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
-                      <textarea name="bio" value={formData.bio} onChange={handleChange} rows="4" placeholder="I am a passionate developer with 3 years of experience..."
+                      <textarea name="bio" value={formData.bio} onChange={handleChange} rows="4" placeholder="I am a passionate professional with a strong background in..."
                         className={`w-full pl-11 pr-4 py-3.5 rounded-xl border ${validationErrors.bio ? "border-red-500 bg-red-50" : "border-gray-200 bg-white"} focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-500 transition-all text-gray-700 resize-none`} />
                     </div>
                     {validationErrors.bio && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{validationErrors.bio}</p>}
@@ -357,7 +357,7 @@ const SetupProfileJobseeker = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Key Skills * <span className="text-gray-400 font-normal ml-1">(comma separated)</span></label>
                     <div className="relative group">
                       <Code className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
-                      <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="JavaScript, React, Node.js"
+                      <input type="text" name="skills" value={formData.skills} onChange={handleChange} placeholder="e.g. Project Management, Data Analysis, Public Speaking"
                         className={inputCls(validationErrors.skills)} />
                     </div>
                     {validationErrors.skills && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{validationErrors.skills}</p>}
@@ -378,14 +378,14 @@ const SetupProfileJobseeker = () => {
                     <InputField icon={Briefcase} label="Desired Job Title" required error={validationErrors.desiredJobTitle}>
                       <div className="relative group">
                         <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
-                        <input type="text" name="desiredJobTitle" value={formData.jobPreferences.desiredJobTitle} onChange={handlePreferenceChange} placeholder="e.g. Frontend Developer" className={inputCls(validationErrors.desiredJobTitle)} />
+                        <input type="text" name="desiredJobTitle" value={formData.jobPreferences.desiredJobTitle} onChange={handlePreferenceChange} placeholder="e.g. Marketing Manager" className={inputCls(validationErrors.desiredJobTitle)} />
                       </div>
                     </InputField>
 
                     <InputField icon={Globe} label="Industry">
                       <div className="relative group">
                         <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
-                        <input type="text" name="industry" value={formData.jobPreferences.industry} onChange={handlePreferenceChange} placeholder="e.g. Information Technology" className={inputCls(false)} />
+                        <input type="text" name="industry" value={formData.jobPreferences.industry} onChange={handlePreferenceChange} placeholder="e.g. Finance, Healthcare, Education" className={inputCls(false)} />
                       </div>
                     </InputField>
 

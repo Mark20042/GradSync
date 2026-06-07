@@ -58,6 +58,11 @@ const FormSteps = ({
       </h2>
       <p className="text-gray-600 text-sm">
         Complete this section to continue building your profile
+        {[2, 3, 5].includes(currentStep) && (
+          <span className="block mt-1 italic text-gray-400">
+            Don't worry, you can skip this step if you don't have anything to add yet! ✨
+          </span>
+        )}
       </p>
 
       <form className="space-y-6 mt-4">

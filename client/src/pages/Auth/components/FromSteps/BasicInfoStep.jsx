@@ -163,7 +163,7 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
           <input
             type="text"
             name="degree"
-            placeholder="e.g. Bachelor of Science in Computer Science"
+            placeholder="e.g. Bachelor of Science in Business Administration"
             value={formData.degree}
             onChange={handleChange}
             className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.degree ? "border-red-500" : "border-gray-300"
@@ -184,7 +184,7 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
         <input
           type="text"
           name="major"
-          placeholder="e.g. Computer Science"
+          placeholder="e.g. Business Administration"
           value={formData.major}
           onChange={handleChange}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

@@ -57,7 +57,7 @@ const ProjectsStep = ({ formData, setFormData }) => {
             onChange={(e) =>
               setNewProject({ ...newProject, name: e.target.value })
             }
-            placeholder="e.g. E-commerce Website"
+            placeholder="e.g. Marketing Campaign"
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -115,7 +115,7 @@ const ProjectsStep = ({ formData, setFormData }) => {
             onChange={(e) =>
               setNewProject({ ...newProject, technologies: e.target.value })
             }
-            placeholder="e.g. React, Node.js, MongoDB, AWS"
+            placeholder="e.g. SEO, Content Creation, Analytics, Design"
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

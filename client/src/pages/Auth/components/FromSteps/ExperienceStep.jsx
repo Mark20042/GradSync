@@ -108,8 +108,8 @@ const ExperienceStep = ({ formData, setFormData }) => {
             onChange={(e) => handleExperienceChange("title", e.target.value)}
             placeholder={
               formData.experienceType === "work"
-                ? "e.g. Software Engineer"
-                : "e.g. Software Development Intern"
+                ? "e.g. Marketing Specialist"
+                : "e.g. Marketing Intern"
             }
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
