@@ -303,9 +303,9 @@ export const generateAllAssessments = async (skills: string[], candidateId: stri
 
   console.log(`[Batch] Starting sequential generation for ${skills.length} skills: ${skills.join(', ')}`);
 
-  for (let i = 0; i < skills.length; i++) {
-    const skill = skills[i];
-    console.log(`[Batch] ──── Processing skill ${i + 1}/${skills.length}: ${skill} ────`);
+  for (const skill of skills) {
+    if (!skill) continue;
+    console.log(`[Batch] ──── Processing skill: ${skill} ────`);
     try {
       // awaitChunks = true so each skill fully completes before moving to the next
       const assessment = await generateAssessment(skill, candidateId, true);
@@ -327,7 +327,7 @@ export const generateInterviewDraft = async (candidateId: string) => {
   const user = await User.findById(candidateId);
   if (!user) throw new Error("Candidate not found.");
 
-  const desiredJob = user.jobPreferences?.desiredJobTitle || user.jobPreferences?.jobTitle || '';
+  const desiredJob = user.jobPreferences?.desiredJobTitle || '';
 
   const prompt = `You are an expert HR and Technical Interviewer. Create a tailored interview consisting of exactly 20 questions for the following candidate based on their professional background.
 

@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { connectDB } from './config/db.js';
+import { connectDB } from '@/config/db.js';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

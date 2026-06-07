@@ -11,7 +11,7 @@ import { checkAndSendAutoReply } from '@/services/auto-reply.helper.js';
 import { isMessageClean } from '@/controllers/message.controller.js';
 
 import { createAdapter } from '@socket.io/redis-adapter';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 
 let io: SocketIOServer;
 
