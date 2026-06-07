@@ -25,6 +25,7 @@ import { autoGenerateForUser } from "@/services/generation.service.js";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import bcrypt from "bcrypt";
 
 /**
  * Helper: write buffer to a temp file for OCR processing
@@ -83,13 +84,16 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     const isEmployer = role === "employer";
     const isJobSeeker = role === "jobseeker";
 
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const user = new User({
       firstName,
       middleName,
       lastName,
       fullName,
       email,
-      password,
+      password: hashedPassword,
       role,
       degree,
       companyName,
@@ -244,8 +248,10 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) throw new UnauthenticatedError("Invalid credentials");
-    if (user.password !== password)
-      throw new UnauthenticatedError("Invalid email or password");
+    
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new UnauthenticatedError("Invalid email or password");
+    
     if (!user.verified && !user.isAdmin) {
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Your account is not yet verified.",
@@ -556,7 +562,8 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
       throw new NotFoundError("User not found");
     }
 
-    user.password = newPassword; // Replace with hashed password if encryption is added
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
     // Automatically delete OTP record upon successful reset
@@ -577,11 +584,13 @@ const changePassword = async (req: Request, res: Response, next: NextFunction) =
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User not found");
 
-    if (user.password !== oldPassword) {
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
       throw new BadRequestError("Incorrect old password");
     }
 
-    user.password = newPassword; // Replace with hash logic if added
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
     await user.save();
 
     res.status(StatusCodes.OK).json({ message: "Password updated successfully" });
