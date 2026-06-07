@@ -291,7 +291,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
 const logout = async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    res.clearCookie("accessToken");
+    const isProduction = env.NODE_ENV === "production";
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "strict",
+    });
     res.status(StatusCodes.OK).json({ message: "User logged out" });
   } catch (error) {
     next(error);

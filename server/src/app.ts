@@ -34,6 +34,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust Heroku's proxy so secure cookies work
+app.set("trust proxy", 1);
+
 // ─── Log Config ──────────────────────────────────────────────────────────
 const stream = {
   write: (message: string) => {
