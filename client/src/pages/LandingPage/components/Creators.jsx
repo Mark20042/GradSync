@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import pototImage from "../../../assets/images/potot.png";
 import kennethImage from "../../../assets/images/kenneth.jpg";
-import michaillaImage from "../../../assets/images/mikays.png";
+import michaillaImage from "../../../assets/images/mikayz.png";
 import cogalImage from "../../../assets/images/dar.png";
 
 const creators = [
