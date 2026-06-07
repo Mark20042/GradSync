@@ -11,7 +11,7 @@ const creators = [
     role: "Document Specialist",
 
     image: michaillaImage,
-    description: "Managing and organizing critical documentation to ensure seamless platform operations.",
+    description: "Spearheading research documentation, ensuring academic rigor, and maintaining comprehensive project compliance.",
     socials: {
       email: "mailto:tamposmichailla@gmail.com"
     },
