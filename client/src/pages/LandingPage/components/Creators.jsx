@@ -1,38 +1,44 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import pototImage from "../../../assets/images/potot.png";
 import kennethImage from "../../../assets/images/kenneth.jpg";
+import michaillaImage from "../../../assets/images/mikays.png";
 
 const creators = [
   {
+    name: "Michailla Tampos",
+    role: "Document Specialist",
+
+    image: michaillaImage,
+    description: "Managing and organizing critical documentation to ensure seamless platform operations.",
+    socials: {
+      email: "mailto:tamposmichailla@gmail.com"
+    },
+    color: "from-pink-500 to-rose-500"
+  },
+  {
     name: "Mark Joseph Potot",
     role: "Fullstack Developer",
-    // TODO: Attach your actual image here. You can import it at the top or put it in the public folder.
-    // Example: image: "/assets/mark-image.jpg"
+
     image: pototImage,
     description: "Architecting scalable systems and crafting seamless user experiences across the stack.",
     socials: {
-      github: "#",
-      linkedin: "#",
-      email: "mailto:mark@example.com"
+      email: "mailto:mark.potot2004@gmail.com"
     },
     color: "from-purple-500 to-indigo-600"
   },
   {
     name: "Kenneth Alcontin",
     role: "System Analyst",
-    // TODO: Attach your actual image here.
-    // Example: image: "/assets/kenneth-image.jpg"
+
     image: kennethImage,
     description: "Translating complex requirements into efficient architectures and optimized workflows.",
     socials: {
-      github: "#",
-      linkedin: "#",
-      email: "mailto:kenneth@example.com"
+      email: "mailto:kennethalcontin07@gmail.com"
     },
     color: "from-blue-500 to-cyan-500"
-  },
+  }
 ];
 
 const Creators = () => {
@@ -69,7 +75,7 @@ const Creators = () => {
         </div>
 
         {/* Creators Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:px-4">
           {creators.map((creator, index) => (
             <motion.div
               key={creator.name}
@@ -79,7 +85,7 @@ const Creators = () => {
               viewport={{ once: true, margin: "-100px" }}
               className="group relative bg-white rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden"
             >
-              
+
               <div className="relative h-full bg-white p-8 md:p-10 flex flex-col items-center text-center z-10">
                 {/* Image Container with Hover Effects */}
                 <div className="relative w-40 h-40 md:w-48 md:h-48 mb-8 rounded-full p-1.5 bg-gray-100 transition-all duration-500">
@@ -115,15 +121,13 @@ const Creators = () => {
                 </p>
 
                 {/* Social Links */}
-                <div className="flex items-center justify-center space-x-4 mt-auto">
-                  <a href={creator.socials.github} className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 text-gray-400 hover:bg-gray-900 hover:text-white transform hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <Github className="w-5 h-5" />
-                  </a>
-                  <a href={creator.socials.linkedin} className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 text-gray-400 hover:bg-blue-600 hover:text-white transform hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                  <a href={creator.socials.email} className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-50 text-gray-400 hover:bg-red-500 hover:text-white transform hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md">
+                <div className="flex items-center justify-center mt-auto w-full">
+                  <a
+                    href={creator.socials.email}
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-600 transform hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-md border border-gray-100"
+                  >
                     <Mail className="w-5 h-5" />
+                    <span className="font-medium text-sm">Reach out via Email</span>
                   </a>
                 </div>
               </div>
