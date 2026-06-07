@@ -4,7 +4,7 @@
   "description": "GradSync Capstone Server-only Deployment",
   "scripts": {
     "start": "npm start --prefix server",
-    "heroku-postbuild": "npm install --prefix server && npm run build --prefix server"
+    "heroku-postbuild": "npm install --prefix server --legacy-peer-deps && npm run build --prefix server"
   },
   "engines": {
     "node": "22.x"
