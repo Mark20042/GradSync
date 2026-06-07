@@ -70,6 +70,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/pdfkit": "^0.13.9",
     "@types/web-push": "^3.6.4",
+    "tsc-alias": "^1.8.17",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
