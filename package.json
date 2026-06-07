@@ -1,0 +1,12 @@
+{
+  "name": "gradsync-server",
+  "version": "1.0.0",
+  "description": "GradSync Capstone Server-only Deployment",
+  "scripts": {
+    "start": "npm start --prefix server",
+    "heroku-postbuild": "npm install --prefix server && npm run build --prefix server"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

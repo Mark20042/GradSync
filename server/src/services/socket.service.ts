@@ -10,6 +10,9 @@ import { checkAndSendAutoReply } from '@/services/auto-reply.helper.js';
 
 import { isMessageClean } from '@/controllers/message.controller.js';
 
+import { createAdapter } from '@socket.io/redis-adapter';
+import Redis from 'ioredis';
+
 let io: SocketIOServer;
 
 export const initializeSocket = (server: HTTPServer): void => {
@@ -20,6 +23,14 @@ export const initializeSocket = (server: HTTPServer): void => {
       allowedHeaders: ['Content-Type', 'Authorization'],
     },
   });
+
+  // Setup Redis Adapter if REDIS_URL exists
+  if (process.env.REDIS_URL) {
+    const pubClient = new Redis(process.env.REDIS_URL);
+    const subClient = pubClient.duplicate();
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log('🔗 Socket.IO configured with Redis Adapter');
+  }
 
   io.on('connection', (socket) => {
     console.log(`📡 User connected to Socket.IO: ${socket.id}`);

@@ -24,7 +24,6 @@ import employerRoutes from "@/routes/employer.route.js";
 import aiRoutes from "@/routes/ai.route.js";
 import adminRoutes from "@/routes/admin.route.js";
 import generationRoutes from "@/routes/generation.route.js";
-import { initCronJobs } from "@/jobs/cron.js";
 
 // middlewares import
 import { errorHandler } from "@/middlewares/errorHandler.js";
@@ -126,8 +125,5 @@ app.use("/api", apiRouter);
 // ─── Error Middleware ────────────────────────────────────────────────────
 app.use(notFoundMiddleware);
 app.use(errorHandler);
-
-// ─── Initialize Background Jobs ──────────────────────────────────────────
-initCronJobs();
 
 export default app;

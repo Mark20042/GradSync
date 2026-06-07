@@ -8,6 +8,8 @@
     "dev": "tsx watch --tsconfig tsconfig.json src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "worker": "node dist/worker.js",
+    "scheduler": "node dist/scheduler.js",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -24,7 +26,9 @@
     "@langchain/google-genai": "^2.1.31",
     "@langchain/langgraph": "^0.2.0",
     "@langchain/ollama": "^1.0.1",
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.78.0",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -35,6 +39,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "http-status-codes": "^2.3.0",
+    "ioredis": "^5.11.1",
     "jsonwebtoken": "^9.0.2",
     "mailtrap": "^4.5.1",
     "mongoose": "^8.17.2",
