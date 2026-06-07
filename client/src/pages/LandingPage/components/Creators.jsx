@@ -11,7 +11,7 @@ const creators = [
     role: "Document Specialist",
 
     image: michaillaImage,
-    description: "Spearheading research documentation, ensuring academic rigor, and maintaining comprehensive project compliance.",
+    description: "Spearheading the comprehensive research documentation and literature review. Responsible for ensuring academic rigor, formatting compliance, and aligning the technical implementations with the core objectives of the capstone thesis.",
     socials: {
       email: "mailto:tamposmichailla@gmail.com"
     },
@@ -33,7 +33,7 @@ const creators = [
     role: "System Analyst",
 
     image: kennethImage,
-    description: "Translating complex requirements into efficient architectures and optimized workflows.",
+    description: "Responsible for mapping out optimized workflows, conducting system evaluations, and ensuring the platform meets all functional project standards.",
     socials: {
       email: "mailto:kennethalcontin07@gmail.com"
     },
