@@ -4,8 +4,21 @@ import { Mail } from "lucide-react";
 import pototImage from "../../../assets/images/potot.png";
 import kennethImage from "../../../assets/images/kenneth.jpg";
 import michaillaImage from "../../../assets/images/mikays.png";
+import cogalImage from "../../../assets/images/dar.png";
 
 const creators = [
+  {
+    name: "Daralie Cogal",
+    role: "Team Leader",
+
+
+    image: cogalImage,
+    description: "Guiding the project vision, coordinating team efforts, and ensuring the successful delivery of the capstone research platform.",
+    socials: {
+      email: "mailto:cdaralie@gmail.com.com"
+    },
+    color: "from-purple-500 to-indigo-600"
+  },
   {
     name: "Michailla Tampos",
     role: "Document Specialist",
@@ -15,11 +28,11 @@ const creators = [
     socials: {
       email: "mailto:tamposmichailla@gmail.com"
     },
-    color: "from-pink-500 to-rose-500"
+    color: "from-purple-500 to-indigo-600"
   },
   {
     name: "Mark Joseph Potot",
-    role: "Lead Full-Stack Developer",
+    role: "Full-Stack Developer",
 
     image: pototImage,
     description: "Architecting and engineering the entire platform from the ground up. Responsible for building the robust backend, crafting the dynamic frontend, and implementing all advanced AI and real-time features to bring this research vision to life.",
@@ -37,8 +50,9 @@ const creators = [
     socials: {
       email: "mailto:kennethalcontin07@gmail.com"
     },
-    color: "from-blue-500 to-cyan-500"
-  }
+    color: "from-purple-500 to-indigo-600"
+  },
+
 ];
 
 const Creators = () => {
@@ -51,7 +65,7 @@ const Creators = () => {
         <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] rounded-full bg-blue-300 opacity-20 blur-3xl mix-blend-multiply animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto z-10 w-full">
+      <div className="max-w-[1600px] mx-auto z-10 w-full px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-20">
           <motion.h2
@@ -75,7 +89,7 @@ const Creators = () => {
         </div>
 
         {/* Creators Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full">
           {creators.map((creator, index) => (
             <motion.div
               key={creator.name}
