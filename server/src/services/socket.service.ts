@@ -26,7 +26,9 @@ export const initializeSocket = (server: HTTPServer): void => {
 
   // Setup Redis Adapter if REDIS_URL exists
   if (process.env.REDIS_URL) {
-    const pubClient = new Redis(process.env.REDIS_URL);
+    const redisUrl = process.env.REDIS_URL;
+    const redisOptions = redisUrl.startsWith('rediss://') ? { tls: { rejectUnauthorized: false } } : {};
+    const pubClient = new Redis(redisUrl, redisOptions);
     const subClient = pubClient.duplicate();
     io.adapter(createAdapter(pubClient, subClient));
     console.log('🔗 Socket.IO configured with Redis Adapter');

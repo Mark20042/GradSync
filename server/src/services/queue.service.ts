@@ -1,9 +1,15 @@
 import { Queue } from 'bullmq';
 import { env } from '@/config/environment.js';
 
+import { Redis } from 'ioredis';
+
 // Setup connection options
-const connection = process.env.REDIS_URL ? 
-  { url: process.env.REDIS_URL } : 
+const redisUrl = process.env.REDIS_URL;
+const connection = redisUrl ? 
+  new Redis(redisUrl, { 
+    maxRetriesPerRequest: null,
+    tls: redisUrl.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+  }) : 
   { host: '127.0.0.1', port: 6379 };
 
 // Create our main task queue

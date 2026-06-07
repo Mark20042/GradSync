@@ -4,8 +4,14 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const connection = process.env.REDIS_URL ? 
-  { url: process.env.REDIS_URL } : 
+import { Redis } from 'ioredis';
+
+const redisUrl = process.env.REDIS_URL;
+const connection = redisUrl ? 
+  new Redis(redisUrl, { 
+    maxRetriesPerRequest: null,
+    tls: redisUrl.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+  }) : 
   { host: '127.0.0.1', port: 6379 };
 
 const startWorker = async () => {
