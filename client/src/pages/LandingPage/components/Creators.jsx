@@ -19,10 +19,10 @@ const creators = [
   },
   {
     name: "Mark Joseph Potot",
-    role: "Fullstack Developer",
+    role: "Lead Full-Stack Developer",
 
     image: pototImage,
-    description: "Architecting scalable systems and crafting seamless user experiences across the stack.",
+    description: "Architecting and engineering the entire platform from the ground up. Responsible for building the robust Node.js backend, crafting the dynamic frontend, and implementing all advanced AI and real-time features to bring this research vision to life.",
     socials: {
       email: "mailto:mark.potot2004@gmail.com"
     },
