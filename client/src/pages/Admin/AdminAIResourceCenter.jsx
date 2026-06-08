@@ -20,8 +20,8 @@ const AdminAIResourceCenter = () => {
   const fetchData = async () => {
     try {
       const [metricsRes, settingsRes] = await Promise.all([
-        axiosInstance.get("/api/v1/admin/system-metrics"),
-        axiosInstance.get("/api/v1/admin/system-settings")
+        axiosInstance.get("/api/admin/system-metrics"),
+        axiosInstance.get("/api/admin/system-settings")
       ]);
       setMetrics(metricsRes.data);
       if (settingsRes.data && settingsRes.data.aiCosts) {
@@ -43,7 +43,7 @@ const AdminAIResourceCenter = () => {
   const handleSaveCosts = async () => {
     setSaving(true);
     try {
-      await axiosInstance.put("/api/v1/admin/system-settings", { aiCosts: costs });
+      await axiosInstance.put("/api/admin/system-settings", { aiCosts: costs });
       toast.success("AI costs updated successfully!");
     } catch (error) {
       console.error("Failed to update costs:", error);
