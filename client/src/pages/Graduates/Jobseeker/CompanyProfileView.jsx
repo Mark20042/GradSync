@@ -20,6 +20,7 @@ import Navbar from "./components/Navbar";
 import JobCard from "../../../components/Cards/JobCard";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
+import LocationMap from "../../../components/Map/LocationMap";
 
 const CompanyProfileView = () => {
     const { id } = useParams();
@@ -294,6 +295,17 @@ const CompanyProfileView = () => {
                                         )}
                                     </div>
                                 </div>
+                                
+                                {/* Location Map */}
+                                {company.latitude && company.longitude && (
+                                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm sticky top-[380px]">
+                                        <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
+                                            <MapPin className="w-5 h-5 text-red-500" />
+                                            Company Location
+                                        </h3>
+                                        <LocationMap lat={company.latitude} lng={company.longitude} />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
