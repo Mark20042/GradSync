@@ -90,6 +90,8 @@ const userSchema = new Schema<IUser>(
     bio: String,
     phone: String,
     address: String,
+    latitude: Number,
+    longitude: Number,
     website: String,
 
     // Graduate-specific fields

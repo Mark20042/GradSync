@@ -54,6 +54,8 @@ const updateProfile = async (
     user.phone = body.phone !== undefined ? body.phone : user.phone;
     user.address = body.address !== undefined ? body.address : user.address;
     user.website = body.website !== undefined ? body.website : user.website;
+    user.latitude = body.latitude !== undefined ? body.latitude : user.latitude;
+    user.longitude = body.longitude !== undefined ? body.longitude : user.longitude;
     user.resume = body.resume !== undefined ? body.resume : user.resume;
 
     if (user.role === "graduate" || user.role === "jobseeker") {

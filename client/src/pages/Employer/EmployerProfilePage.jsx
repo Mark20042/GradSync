@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import MapLocationInput from "../../components/Map/MapLocationInput";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -24,6 +25,8 @@ const EmployerProfilePage = () => {
     website: "",
     address: "",
     phone: "",
+    latitude: null,
+    longitude: null,
   });
 
   useEffect(() => {
@@ -37,6 +40,8 @@ const EmployerProfilePage = () => {
         website: user.website || "",
         address: user.address || "",
         phone: user.phone || "",
+        latitude: user.latitude || null,
+        longitude: user.longitude || null,
       });
     }
   }, [user]);
@@ -243,6 +248,12 @@ const EmployerProfilePage = () => {
                     value={formData.address}
                     onChange={handleChange}
                     placeholder="City, Country"
+                  />
+                  <p className="text-sm text-gray-500 mt-2 mb-1">Pinpoint your location on the map:</p>
+                  <MapLocationInput 
+                    position={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null} 
+                    setPosition={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
+                    className="mt-2"
                   />
                 </div>
               </div>

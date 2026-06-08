@@ -237,7 +237,7 @@ const getJobById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = req.query as any;
     let applicationStatus = null; let isSaved = false;
-    const job = await Job.findById(req.params.id).populate("company", "fullName companyName companyLogo companyDescription website address");
+    const job = await Job.findById(req.params.id).populate("company", "fullName companyName companyLogo companyDescription website address latitude longitude");
     if (!job) throw new NotFoundError("Job not found");
     if (userId) {
       const app = await Application.findOne({ job: req.params.id, applicant: userId }).select("status");

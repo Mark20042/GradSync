@@ -29,6 +29,7 @@ import StatusBadge from "../../../components/StatusBadge";
 import toast from "react-hot-toast";
 import JobDetailsSkeleton from "./components/skeletons/JobDetailsSkeleton";
 import FormattedText from "../../../components/FormattedText";
+import LocationMap from "../../../components/Map/LocationMap";
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -483,6 +484,17 @@ const JobDetails = () => {
               )}
               {/* Note: Actions moved to Hero for better visibility */}
             </div>
+
+            {/* Location Map */}
+            {jobDetails?.company?.latitude && jobDetails?.company?.longitude && (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-6">
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-red-500" />
+                  Company Location
+                </h3>
+                <LocationMap lat={jobDetails.company.latitude} lng={jobDetails.company.longitude} />
+              </div>
+            )}
           </div>
         </div>
       </div>

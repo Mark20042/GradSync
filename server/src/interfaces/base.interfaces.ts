@@ -86,6 +86,8 @@ export interface IUser extends Document {
   bio?: string;
   phone?: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
   website?: string;
 
   // Graduate-specific
