@@ -36,7 +36,6 @@ const SetupProfileJobseeker = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [summaryLoading, setSummaryLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     phone: "", address: "", birthdate: "", bio: "",
@@ -87,15 +86,6 @@ const SetupProfileJobseeker = () => {
     setFormData((p) => ({ ...p, [key]: p[key].filter((_, i) => i !== idx) }));
   };
 
-  const handleGenerateSummary = async () => {
-    setSummaryLoading(true);
-    try {
-      const response = await axiosInstance.post(API_PATH.AI.GENERATE_SUMMARY);
-      setFormData((p) => ({ ...p, bio: response.data.summary }));
-      toast.success("Bio generated!");
-    } catch { toast.error("Failed to generate summary"); }
-    finally { setSummaryLoading(false); }
-  };
 
   const validateStep = (step) => {
     const errors = {};
@@ -339,10 +329,6 @@ const SetupProfileJobseeker = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="text-sm font-semibold text-gray-700">Professional Bio *</label>
-                      <button type="button" onClick={handleGenerateSummary} disabled={summaryLoading}
-                        className="flex items-center gap-2 text-xs bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1.5 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50 font-medium shadow-sm">
-                        {summaryLoading ? (<><div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />Generating...</>) : (<><Sparkles className="w-3 h-3" />Generate with AI</>)}
-                      </button>
                     </div>
                     <div className="relative group">
                       <FileText className="absolute left-3.5 top-4 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
