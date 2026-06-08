@@ -364,11 +364,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
             {!user?.isAdmin && (
               <button 
                 onClick={() => setTokenModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100 ml-2"
+                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 transition-colors px-3 py-1.5 rounded-full border border-blue-100 ml-2"
               >
-                <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
-                <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
-                <span className="text-xs font-medium hidden sm:inline text-blue-700">GradCoins</span>
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 drop-shadow-md object-contain -mt-0.5" />
+                <span className="font-extrabold text-blue-700 text-lg leading-none">{user?.aiTokens || 0}</span>
+                <span className="text-sm font-bold hidden sm:inline text-blue-700 leading-none">GradCoins</span>
               </button>
             )}
             <ProfileDropdpwn

@@ -15,8 +15,8 @@ const TokenInfoModal = ({ isOpen, onClose }) => {
         </button>
 
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white text-center">
-          <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
-            <img src="/gradcoin.svg" alt="GradCoin" className="w-10 h-10 drop-shadow-md" />
+          <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-1">
+            <img src="/gradcoin.svg" alt="GradCoin" className="w-16 h-16 drop-shadow-lg object-contain" />
           </div>
           <h2 className="text-2xl font-bold">AI Tokens (GradCoins)</h2>
           <p className="text-blue-100 mt-1">Your access to intelligent features</p>

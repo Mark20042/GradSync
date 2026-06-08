@@ -275,8 +275,8 @@ const AdminAIResourceCenter = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2 font-extrabold text-gray-900 text-lg">
-                        <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-sm" />
+                      <div className="flex items-center justify-center gap-1.5 font-extrabold text-gray-900 text-xl leading-none">
+                        <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 drop-shadow-sm object-contain -mt-0.5" />
                         {u.aiTokens || 0}
                       </div>
                     </td>
