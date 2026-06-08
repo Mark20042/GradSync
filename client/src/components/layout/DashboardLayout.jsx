@@ -331,15 +331,14 @@ const DashboardLayout = ({ activeMenu, children }) => {
           <div className="flex items-center space-x-3">
             {/* AI Tokens Display */}
             {!user?.isAdmin && (
-              <div 
+              <button 
                 onClick={() => setTokenModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full cursor-pointer border border-blue-200 transition-colors mr-2 shadow-sm"
-                title="Your AI Tokens (Click for info)"
+                className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100 mr-2"
               >
-                <img src="/gradcoin.svg" alt="GradCoin" className="w-5 h-5 drop-shadow-sm" />
-                <span className="font-bold text-sm">{user?.aiTokens || 0}</span>
-                <span className="text-xs font-medium hidden sm:inline">Tokens</span>
-              </div>
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
+                <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
+                <span className="text-xs font-medium hidden sm:inline text-blue-700">Tokens</span>
+              </button>
             )}
 
             {/* Notification Bell */}

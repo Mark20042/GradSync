@@ -237,8 +237,8 @@ const AdminAIResourceCenter = () => {
         {/* User Tokens Table */}
         <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <img src="/gradcoin.svg" alt="GradCoin" className="w-6 h-6" />
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+              <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 drop-shadow-md" />
               User Token Balances
             </h2>
             <p className="text-sm text-gray-600 mt-1">
@@ -275,8 +275,8 @@ const AdminAIResourceCenter = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5 font-bold text-gray-800">
-                        <img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4" />
+                      <div className="flex items-center justify-center gap-2 font-extrabold text-gray-900 text-lg">
+                        <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-sm" />
                         {u.aiTokens || 0}
                       </div>
                     </td>

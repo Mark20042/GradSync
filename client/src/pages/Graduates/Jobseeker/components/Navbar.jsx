@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award, ClipboardList } from "lucide-react";
+import { Briefcase, Bookmark, Bell, MessageCircle, Users, Award, ClipboardList, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/AuthContext";
 
 import ProfileDropdown from ".././../../../components/layout/ProfileDropdpwn";
 import NotificationDropdown from "../../../../components/NotificationDropdown";
+import TokenInfoModal from "../../../../components/TokenInfoModal";
 import axiosInstance from "../../../../utils/axiosInstance";
 import { API_PATH, BASE_URL } from "../../../../utils/apiPath";
 
@@ -16,6 +17,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [tokenModalOpen, setTokenModalOpen] = useState(false);
+  const [newTokensData, setNewTokensData] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -39,11 +42,15 @@ const Navbar = () => {
       socket.on("receiveNotification", (notification) => {
         setUnreadCount(prev => prev + 1);
         
-        // Show in-app toast
-        toast(notification.title + ": " + notification.message, {
-          icon: '🔔',
-          duration: 5000,
-        });
+        if (notification.type === "TOKENS_ADDED") {
+          setNewTokensData(notification);
+        } else {
+          // Show in-app toast
+          toast(notification.title + ": " + notification.message, {
+            icon: '🔔',
+            duration: 5000,
+          });
+        }
       });
       
       return () => socket.disconnect();
@@ -147,6 +154,18 @@ const Navbar = () => {
                 </button>
 
 
+
+                {/* Token Counter */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTokenModalOpen(true);
+                  }}
+                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100"
+                >
+                  <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
+                  <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
+                </button>
 
                 {/* Notifications */}
                 <div className="relative">
@@ -278,6 +297,46 @@ const Navbar = () => {
           </div>
         )}
       </div>
+      {/* Token Info Modal */}
+      <TokenInfoModal 
+        isOpen={tokenModalOpen} 
+        onClose={() => setTokenModalOpen(false)} 
+      />
+
+      {/* New Tokens Received Modal */}
+      {newTokensData && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden relative animate-in fade-in zoom-in duration-300">
+            <button 
+              onClick={() => setNewTokensData(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white text-center">
+              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-12 h-12 drop-shadow-md animate-bounce" />
+              </div>
+              <h2 className="text-2xl font-bold mb-1">Woohoo!</h2>
+              <p className="text-green-50 font-medium">Tokens Received</p>
+            </div>
+            <div className="p-6 text-center">
+              <p className="text-gray-600 mb-6 text-sm">
+                {newTokensData.message}
+              </p>
+              <button 
+                onClick={() => {
+                  setNewTokensData(null);
+                  window.location.reload(); // Quick refresh to update the token balance globally
+                }}
+                className="w-full bg-green-600 text-white font-medium py-2.5 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Awesome!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
