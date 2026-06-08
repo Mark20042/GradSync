@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Maximize, Minimize } from "lucide-react";
@@ -15,6 +15,17 @@ const customMarkerIcon = L.divIcon({
   iconSize: [40, 40],
   iconAnchor: [20, 40],
 });
+
+const MapUpdater = ({ isExpanded }) => {
+  const map = useMap();
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isExpanded, map]);
+  return null;
+};
 
 const LocationMap = ({ lat, lng, className }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -50,6 +61,7 @@ const LocationMap = ({ lat, lng, className }) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapUpdater isExpanded={isExpanded} />
           <Marker position={[lat, lng]} icon={customMarkerIcon}></Marker>
         </MapContainer>
       </div>

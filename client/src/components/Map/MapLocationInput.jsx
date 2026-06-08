@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Maximize, Minimize } from "lucide-react";
@@ -32,6 +32,18 @@ const LocationMarker = ({ position, setPosition }) => {
   return position === null ? null : (
     <Marker position={[position.lat, position.lng]} icon={customMarkerIcon}></Marker>
   );
+};
+
+const MapUpdater = ({ isExpanded }) => {
+  const map = useMap();
+  useEffect(() => {
+    // Force Leaflet to update its size when the container expands/shrinks
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isExpanded, map]);
+  return null;
 };
 
 const MapLocationInput = ({ position, setPosition, className }) => {
@@ -68,6 +80,7 @@ const MapLocationInput = ({ position, setPosition, className }) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <MapUpdater isExpanded={isExpanded} />
           <LocationMarker position={position} setPosition={setPosition} />
         </MapContainer>
       </div>
