@@ -11,6 +11,13 @@ import SavedJob from "@/models/SavedJob.model.js";
 const createJob = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (req.user.role !== "employer") throw new UnauthorizedError("Only employers can post jobs");
+    
+    // Check if the employer has set their location on the map
+    const employer = await User.findById(req.user._id);
+    if (!employer || !employer.latitude || !employer.longitude) {
+      throw new BadRequestError("Please set your company location on the map in your profile before posting a job.");
+    }
+
     const job = new Job({ ...req.body, company: req.user._id });
     await job.save();
     res.status(StatusCodes.CREATED).json(job);

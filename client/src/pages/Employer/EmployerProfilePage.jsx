@@ -52,6 +52,10 @@ const EmployerProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.latitude || !formData.longitude) {
+      toast.error("Please pinpoint your location on the map before saving.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await axiosInstance.put(
@@ -249,7 +253,9 @@ const EmployerProfilePage = () => {
                     onChange={handleChange}
                     placeholder="City, Country"
                   />
-                  <p className="text-sm text-gray-500 mt-2 mb-1">Pinpoint your location on the map:</p>
+                  <p className="text-sm font-medium text-gray-700 mt-2 mb-1">
+                    Pinpoint your location on the map <span className="text-red-500">*</span>
+                  </p>
                   <MapLocationInput 
                     position={formData.latitude && formData.longitude ? { lat: formData.latitude, lng: formData.longitude } : null} 
                     setPosition={(pos) => setFormData({ ...formData, latitude: pos.lat, longitude: pos.lng })}
