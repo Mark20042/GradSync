@@ -19,6 +19,8 @@ import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
 import SystemSettings from "@/models/SystemSettings.model.js";
 import SystemMetrics from "@/models/SystemMetrics.model.js";
 import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/services/cloudinary.service.js";
+import { createNotification } from "@/utils/notification.helper.js";
+import { getIo } from "@/services/socket.service.js";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -284,7 +286,17 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     user.address = body.address || user.address;
     user.website = body.website || user.website;
     user.verified = body.verified !== undefined ? body.verified : user.verified;
-    if (body.aiTokens !== undefined) user.aiTokens = body.aiTokens;
+    
+    let tokensAdded = false;
+    let addedAmount = 0;
+    if (body.aiTokens !== undefined) {
+      if (body.aiTokens > (user.aiTokens || 0)) {
+        tokensAdded = true;
+        addedAmount = body.aiTokens - (user.aiTokens || 0);
+      }
+      user.aiTokens = body.aiTokens;
+    }
+
     if (user.role === "graduate" || user.role === "jobseeker") {
       user.university = body.university || user.university;
       user.degree = body.degree || user.degree;
@@ -307,6 +319,26 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
       user.companyDescription = body.companyDescription || user.companyDescription;
     }
     const updatedUser = await user.save();
+
+    if (tokensAdded) {
+      await createNotification(
+        updatedUser._id,
+        "TOKENS_ADDED",
+        "Tokens Received",
+        `You have received ${addedAmount} GradCoins from the Administrator!`
+      );
+      try {
+        const io = getIo();
+        io.to(updatedUser._id.toString()).emit("receiveNotification", {
+          title: "Tokens Received",
+          message: `You have received ${addedAmount} GradCoins from the Administrator!`,
+          type: "TOKENS_ADDED"
+        });
+      } catch (err) {
+        console.error("Socket emit failed", err);
+      }
+    }
+
     res.json(updatedUser);
   } catch (error) { next(error); }
 };

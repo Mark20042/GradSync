@@ -8,8 +8,10 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 const AdminAIResourceCenter = () => {
   const [metrics, setMetrics] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [addingTokens, setAddingTokens] = useState({});
   const [costs, setCosts] = useState({
     interview: 2,
     jobMatch: 1,
@@ -19,11 +21,13 @@ const AdminAIResourceCenter = () => {
 
   const fetchData = async () => {
     try {
-      const [metricsRes, settingsRes] = await Promise.all([
+      const [metricsRes, settingsRes, usersRes] = await Promise.all([
         axiosInstance.get("/api/admin/system-metrics"),
-        axiosInstance.get("/api/admin/system-settings")
+        axiosInstance.get("/api/admin/system-settings"),
+        axiosInstance.get("/api/admin/users")
       ]);
       setMetrics(metricsRes.data);
+      setUsers(usersRes.data);
       if (settingsRes.data && settingsRes.data.aiCosts) {
         setSettings(settingsRes.data);
         setCosts(settingsRes.data.aiCosts);
@@ -56,6 +60,24 @@ const AdminAIResourceCenter = () => {
   const handleCostChange = (e) => {
     const { name, value } = e.target;
     setCosts(prev => ({ ...prev, [name]: Number(value) }));
+  };
+
+  const handleAddTokens = async (userId, currentTokens, amountToAdd) => {
+    setAddingTokens(prev => ({ ...prev, [userId]: true }));
+    try {
+      const newAmount = (currentTokens || 0) + amountToAdd;
+      await axiosInstance.put(`/api/admin/users/${userId}`, { aiTokens: newAmount });
+      toast.success(`${amountToAdd} GradCoins added successfully!`);
+      // Update local state
+      setUsers(prevUsers => prevUsers.map(u => 
+        u._id === userId ? { ...u, aiTokens: newAmount } : u
+      ));
+    } catch (error) {
+      console.error("Failed to add tokens:", error);
+      toast.error("Failed to add tokens.");
+    } finally {
+      setAddingTokens(prev => ({ ...prev, [userId]: false }));
+    }
   };
 
   if (loading) {
@@ -211,6 +233,78 @@ const AdminAIResourceCenter = () => {
             </div>
           </div>
         </div>
+
+        {/* User Tokens Table */}
+        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <img src="/gradcoin.svg" alt="GradCoin" className="w-6 h-6" />
+              User Token Balances
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Monitor remaining tokens for all users and manually add more GradCoins to their accounts. Users with the lowest balances are shown first.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">User</th>
+                  <th className="px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider text-center">Remaining Tokens</th>
+                  <th className="px-6 py-3 font-semibold text-gray-500 text-xs uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {[...users].sort((a, b) => (a.aiTokens || 0) - (b.aiTokens || 0)).map((u) => (
+                  <tr key={u._id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex flex-shrink-0 items-center justify-center font-bold text-xs uppercase">
+                          {u.fullName?.charAt(0) || u.email.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900 text-sm">{u.fullName || "N/A"}</div>
+                          <div className="text-xs text-gray-500">{u.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.role === 'employer' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-1.5 font-bold text-gray-800">
+                        <img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4" />
+                        {u.aiTokens || 0}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleAddTokens(u._id, u.aiTokens, 5)}
+                          disabled={addingTokens[u._id]}
+                          className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-xs rounded-lg transition-colors border border-green-200 disabled:opacity-50"
+                        >
+                          {addingTokens[u._id] ? "Adding..." : "+5 Tokens"}
+                        </button>
+                        <button
+                          onClick={() => handleAddTokens(u._id, u.aiTokens, 10)}
+                          disabled={addingTokens[u._id]}
+                          className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-xs rounded-lg transition-colors border border-blue-200 disabled:opacity-50"
+                        >
+                          +10 Tokens
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </DashboardLayout>
   );
