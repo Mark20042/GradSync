@@ -367,8 +367,8 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 transition-colors px-3 py-1.5 rounded-full border border-blue-100 ml-2"
               >
                 <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 drop-shadow-md object-contain -mt-0.5" />
-                <span className="font-extrabold text-blue-700 text-lg leading-none">{user?.aiTokens || 0}</span>
-                <span className="text-sm font-bold hidden sm:inline text-blue-700 leading-none">GradCoins</span>
+                <span className="font-extrabold text-gray-900 text-lg leading-none">{user?.aiTokens || 0}</span>
+                <span className="text-sm font-bold hidden sm:inline text-gray-900 leading-none">GradCoins</span>
               </button>
             )}
             <ProfileDropdpwn
