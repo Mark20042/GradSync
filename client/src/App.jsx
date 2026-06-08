@@ -54,6 +54,7 @@ import AdminAssessmentReview from "./pages/Admin/AdminAssessmentReview";
 import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
 import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
 import AdminFeatureFeedbacks from "./pages/Admin/AdminFeatureFeedbacks";
+import AdminAIResourceCenter from "./pages/Admin/AdminAIResourceCenter";
 import FeatureFeedbackModal from "./components/FeatureFeedbackModal";
 
 const App = () => {
@@ -161,6 +162,10 @@ const App = () => {
               <Route
                 path="/admin-interview-scores"
                 element={<AdminInterviewScores />}
+              />
+              <Route
+                path="/admin-ai-resource-center"
+                element={<AdminAIResourceCenter />}
               />
             </Route>
 

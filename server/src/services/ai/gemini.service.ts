@@ -10,6 +10,7 @@ import type {
   InterviewEvalResult,
   FullInterviewEvalResult,
 } from '../../interfaces/ai.interfaces.js';
+import { getAILimitService } from './ai-limit.service.js';
 
 class GeminiService {
   private static instance: GeminiService;
@@ -171,19 +172,25 @@ class GeminiService {
       });
 
       console.log('📡 Sending prompt to Gemini...');
-      const response = await this.model.invoke(input);
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(input);
+        const content =
+          typeof response.content === 'string'
+            ? response.content
+            : JSON.stringify(response.content);
 
-      const content =
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content);
-
-      // Parse JSON from response
-      const jsonStr = this.extractJSON(content);
-      if (jsonStr) {
-        return JSON.parse(jsonStr) as SuitabilityResult;
-      } else {
-        throw new Error('No JSON object found in response');
+        // Parse JSON from response
+        const jsonStr = this.extractJSON(content);
+        if (jsonStr) {
+          return JSON.parse(jsonStr) as SuitabilityResult;
+        } else {
+          throw new Error('No JSON object found in response');
+        }
+      } finally {
+        limitService.releaseSlot();
       }
     } catch (error) {
       console.error('Error analyzing suitability:', error);
@@ -228,17 +235,24 @@ class GeminiService {
       });
 
       console.log('📡 Sending summary prompt to Gemini...');
-      const response = await this.model.invoke(input);
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(input);
 
-      const content =
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content);
+        const content =
+          typeof response.content === 'string'
+            ? response.content
+            : JSON.stringify(response.content);
 
-      // Handle "thinking" block output from Gemma/Gemini
-      const cleanedContent = content.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
+        // Handle "thinking" block output from Gemma/Gemini
+        const cleanedContent = content.replace(/<thinking>[\s\S]*?<\/thinking>/g, '').trim();
 
-      return { summary: cleanedContent };
+        return { summary: cleanedContent };
+      } finally {
+        limitService.releaseSlot();
+      }
     } catch (error) {
       console.error('Error generating summary:', error);
       throw new Error('Failed to generate summary.');
@@ -308,25 +322,32 @@ class GeminiService {
       });
 
       console.log('📡 Sending interview evaluation prompt to Gemini...');
-      const response = await this.model.invoke(input);
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(input);
 
-      const content =
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content);
+        const content =
+          typeof response.content === 'string'
+            ? response.content
+            : JSON.stringify(response.content);
 
-      // Parse JSON from response
-      const jsonStr = this.extractJSON(content);
-      if (jsonStr) {
-        const result = JSON.parse(jsonStr) as InterviewEvalResult;
+        // Parse JSON from response
+        const jsonStr = this.extractJSON(content);
+        if (jsonStr) {
+          const result = JSON.parse(jsonStr) as InterviewEvalResult;
 
-        // Ensure score is within bounds
-        result.score = Math.max(0, Math.min(100, Math.round(result.score || 0)));
-        result.feedback = result.feedback || 'No feedback generated.';
+          // Ensure score is within bounds
+          result.score = Math.max(0, Math.min(100, Math.round(result.score || 0)));
+          result.feedback = result.feedback || 'No feedback generated.';
 
-        return result;
-      } else {
-        throw new Error('No JSON object found in AI response');
+          return result;
+        } else {
+          throw new Error('No JSON object found in AI response');
+        }
+      } finally {
+        limitService.releaseSlot();
       }
     } catch (error) {
       console.error('Error evaluating interview answer:', error);
@@ -379,17 +400,24 @@ class GeminiService {
 
     try {
       console.log('📡 Sending bulk interview evaluation to Gemini...');
-      const response = await this.model.invoke(template);
-      const content =
-        typeof response.content === 'string'
-          ? response.content
-          : JSON.stringify(response.content);
-          
-      const jsonStr = this.extractJSON(content);
-      if (jsonStr) {
-        return JSON.parse(jsonStr) as FullInterviewEvalResult;
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(template);
+        const content =
+          typeof response.content === 'string'
+            ? response.content
+            : JSON.stringify(response.content);
+            
+        const jsonStr = this.extractJSON(content);
+        if (jsonStr) {
+          return JSON.parse(jsonStr) as FullInterviewEvalResult;
+        }
+        throw new Error('Invalid JSON from AI');
+      } finally {
+        limitService.releaseSlot();
       }
-      throw new Error('Invalid JSON from AI');
     } catch (error) {
       console.error('Bulk evaluation error:', error);
       throw error;

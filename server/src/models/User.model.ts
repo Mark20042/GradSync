@@ -168,6 +168,7 @@ const userSchema = new Schema<IUser>(
 
     // Admin
     isAdmin: { type: Boolean, default: false },
+    aiTokens: { type: Number, default: 0 },
 
     // Verification
     verified: { type: Boolean, default: false },

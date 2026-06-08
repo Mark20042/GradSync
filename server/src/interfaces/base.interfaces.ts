@@ -141,6 +141,7 @@ export interface IUser extends Document {
   lastScanDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  aiTokens?: number;
 
   // Web Push Subscription
   pushSubscription?: any;

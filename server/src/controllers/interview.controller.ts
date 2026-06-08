@@ -12,6 +12,8 @@ import { interviewGraph } from "@/services/ai/workflows/interview-agent.workflow
 import { HumanMessage } from "@langchain/core/messages";
 import mongoose from "mongoose";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
+import User from "@/models/User.model.js";
+import SystemSettings from "@/models/SystemSettings.model.js";
 import fs from "fs";
 import path from "path";
 
@@ -22,6 +24,16 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
     const userEmail = req.user.email;
     const userName = req.user.fullName;
     if (!answers || !Array.isArray(answers) || answers.length === 0) throw new BadRequestError("No answers provided");
+
+    const user = await User.findById(candidateId).select('aiTokens');
+    if (!user) throw new NotFoundError("User not found");
+    const settings = await SystemSettings.findOne() || { aiCosts: { interview: 2 } };
+    const cost = settings.aiCosts?.interview || 2;
+    if ((user.aiTokens || 0) < cost) {
+      throw new BadRequestError("You have exhausted your free AI tokens. Please contact the Administrator.");
+    }
+    user.aiTokens = (user.aiTokens || 0) - cost;
+    await user.save();
 
     let role: any = null;
     let roleNameForDisplay = roleName || "General";
@@ -241,6 +253,16 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const config = { configurable: { thread_id } };
 
     if (!message) {
+      const user = await User.findById(candidateId).select('aiTokens');
+      if (!user) throw new NotFoundError("User not found");
+      const settings = await SystemSettings.findOne() || { aiCosts: { interview: 2 } };
+      const cost = settings.aiCosts?.interview || 2;
+      if ((user.aiTokens || 0) < cost) {
+        throw new BadRequestError("You have exhausted your free AI tokens. Please contact the Administrator.");
+      }
+      user.aiTokens = (user.aiTokens || 0) - cost;
+      await user.save();
+
       let role: any = null;
       let roleNameForDisplay = roleName;
 

@@ -84,6 +84,10 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     const isEmployer = role === "employer";
     const isJobSeeker = role === "jobseeker";
 
+    let aiTokens = 0;
+    if (isJobSeeker) aiTokens = 5;
+    else if (isEmployer) aiTokens = 10;
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -104,6 +108,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       verified: isJobSeeker ? true : false,
       verificationStatus: isJobSeeker ? "verified" : "pending",
       verificationMessage: isJobSeeker ? "Job Seeker account created successfully." : "Your document is currently being reviewed.",
+      aiTokens,
     });
     await user.save();
 
@@ -283,6 +288,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       isAdmin: user.isAdmin,
       verified: user.verified,
       isProfileComplete,
+      aiTokens: user.aiTokens,
     });
   } catch (error) {
     next(error);

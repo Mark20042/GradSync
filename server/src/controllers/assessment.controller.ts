@@ -9,6 +9,7 @@ import {
   sendAssessmentApprovalEmail,
   sendAssessmentRejectionEmail,
 } from "@/utils/email.service.js";
+import SystemSettings from "@/models/SystemSettings.model.js";
 
 const getAll = async (_req: Request, res: Response, next: NextFunction) => {
   try {
@@ -68,6 +69,16 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
     } = req.body;
     const assessment = await Assessment.findOne({ skill });
     if (!assessment) throw new NotFoundError("Assessment not found");
+
+    const userRecord = await User.findById(req.user._id).select('aiTokens');
+    if (!userRecord) throw new NotFoundError("User not found");
+    const settings = await SystemSettings.findOne() || { aiCosts: { skillVerification: 1 } };
+    const cost = settings.aiCosts?.skillVerification || 1;
+    if ((userRecord.aiTokens || 0) < cost) {
+      throw new BadRequestError("You have exhausted your free AI tokens. Please contact the Administrator.");
+    }
+    userRecord.aiTokens = (userRecord.aiTokens || 0) - cost;
+    await userRecord.save();
     
     let correct = 0;
     const categoryTotals: Record<string, number> = {};

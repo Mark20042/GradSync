@@ -37,5 +37,8 @@ router.post("/employer-settings", adminController.createEmployerSettings);
 router.put("/employer-settings/:id", adminController.updateEmployerSettings);
 router.get("/ai-feedback", adminController.getAIFeedbacks);
 router.delete("/ai-feedback/:id", adminController.deleteAIFeedback);
+router.get("/system-settings", adminController.getSystemSettings);
+router.put("/system-settings", adminController.updateSystemSettings);
+router.get("/system-metrics", adminController.getSystemMetrics);
 
 export default router;

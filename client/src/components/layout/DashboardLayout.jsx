@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import NotificationDropdown from "../NotificationDropdown";
+import TokenInfoModal from "../TokenInfoModal";
 
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -57,6 +58,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
   const [activeNavItem, setActiveNavItem] = useState(activeMenu || "dashboard");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [tokenModalOpen, setTokenModalOpen] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -245,6 +247,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
                   name: "Employer Settings",
                   icon: Settings,
                 },
+                {
+                  id: "admin-ai-resource-center",
+                  name: "AI Resource Center",
+                  icon: Sparkles,
+                },
                 { id: "admin-ai-feedbacks", name: "Feature Feedbacks", icon: Sparkles },
                 { id: "admin-reports", name: "Reports", icon: FileSpreadsheet },
               ].map((item) => (
@@ -316,6 +323,19 @@ const DashboardLayout = ({ activeMenu, children }) => {
           </div>
 
           <div className="flex items-center space-x-3">
+            {/* AI Tokens Display */}
+            {!user?.isAdmin && (
+              <div 
+                onClick={() => setTokenModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full cursor-pointer border border-blue-200 transition-colors mr-2 shadow-sm"
+                title="Your AI Tokens (Click for info)"
+              >
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-5 h-5 drop-shadow-sm" />
+                <span className="font-bold text-sm">{user?.aiTokens || 0}</span>
+                <span className="text-xs font-medium hidden sm:inline">Tokens</span>
+              </div>
+            )}
+
             {/* Notification Bell */}
             {!user?.isAdmin && (
               <div className="relative">
@@ -365,6 +385,12 @@ const DashboardLayout = ({ activeMenu, children }) => {
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+
+      {/* Token Info Modal */}
+      <TokenInfoModal 
+        isOpen={tokenModalOpen} 
+        onClose={() => setTokenModalOpen(false)} 
+      />
     </div>
   );
 };

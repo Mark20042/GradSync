@@ -16,6 +16,8 @@ import Assessment from "@/models/Assessment.model.js";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
 import FeatureFeedback from "@/models/FeatureFeedback.model.js";
 import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
+import SystemSettings from "@/models/SystemSettings.model.js";
+import SystemMetrics from "@/models/SystemMetrics.model.js";
 import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/services/cloudinary.service.js";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
@@ -155,6 +157,7 @@ export const getAllUsers = async (_req: any, res: Response, next: NextFunction) 
       },
       { $project: { password: 0, assessments: 0 } } // Exclude password and heavy assessments array
     ]);
+    // Append system settings to the response if needed, or create a separate endpoint
     res.json(users);
   }
   catch (error) { next(error); }
@@ -281,6 +284,7 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     user.address = body.address || user.address;
     user.website = body.website || user.website;
     user.verified = body.verified !== undefined ? body.verified : user.verified;
+    if (body.aiTokens !== undefined) user.aiTokens = body.aiTokens;
     if (user.role === "graduate" || user.role === "jobseeker") {
       user.university = body.university || user.university;
       user.degree = body.degree || user.degree;
@@ -598,5 +602,39 @@ export const deleteAIFeedback = async (req: any, res: Response, next: NextFuncti
     if (!feedback) throw new NotFoundError("Feedback not found");
     await feedback.deleteOne();
     res.json({ message: "Feedback removed successfully" });
+  } catch (error) { next(error); }
+};
+
+export const getSystemSettings = async (_req: any, res: Response, next: NextFunction) => {
+  try {
+    let settings = await SystemSettings.findOne();
+    if (!settings) {
+      settings = await SystemSettings.create({});
+    }
+    res.json(settings);
+  } catch (error) { next(error); }
+};
+
+export const updateSystemSettings = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    let settings = await SystemSettings.findOne();
+    if (!settings) {
+      settings = new SystemSettings(req.body);
+    } else {
+      settings.aiCosts = req.body.aiCosts || settings.aiCosts;
+    }
+    await settings.save();
+    res.json(settings);
+  } catch (error) { next(error); }
+};
+
+export const getSystemMetrics = async (_req: any, res: Response, next: NextFunction) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    let metrics = await SystemMetrics.findOne({ date: today });
+    if (!metrics) {
+      metrics = await SystemMetrics.create({ date: today });
+    }
+    res.json(metrics);
   } catch (error) { next(error); }
 };

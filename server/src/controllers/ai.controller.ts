@@ -12,6 +12,7 @@ import type {
   UserProfileForAI,
 } from '@/interfaces/ai.interfaces.js';
 import FeatureFeedback from '@/models/FeatureFeedback.model.js';
+import SystemSettings from '@/models/SystemSettings.model.js';
 
 // Choose AI service dynamically
 const getAIService = () => {
@@ -35,10 +36,18 @@ export const checkSuitability = async (
 
     // 1. Fetch User Profile
     const user = await User.findById(userId).select(
-      'degree major skills experiences education verifiedSkills'
+      'degree major skills experiences education verifiedSkills aiTokens'
     );
     if (!user) {
       res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const settings = await SystemSettings.findOne() || { aiCosts: { suitability: 1 } };
+    const cost = settings.aiCosts?.suitability || 1;
+
+    if ((user.aiTokens || 0) < cost) {
+      res.status(403).json({ message: 'You have exhausted your free AI tokens. Please contact the Administrator.' });
       return;
     }
 
@@ -55,6 +64,9 @@ export const checkSuitability = async (
       user as unknown as UserProfileForAI,
       job
     );
+
+    user.aiTokens = (user.aiTokens || 0) - cost;
+    await user.save();
 
     res.status(200).json(result);
   } catch (error) {
@@ -114,11 +126,19 @@ export const scanForMatches = async (
 
     // 1. Fetch User Profile (including job preferences)
     const user = await User.findById(userId).select(
-      'degree major skills experiences education jobPreferences lastScanDate verifiedSkills'
+      'degree major skills experiences education jobPreferences lastScanDate verifiedSkills aiTokens'
     );
 
     if (!user) {
       res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const settings = await SystemSettings.findOne() || { aiCosts: { jobMatch: 1 } };
+    const cost = settings.aiCosts?.jobMatch || 1;
+
+    if ((user.aiTokens || 0) < cost) {
+      res.status(403).json({ message: 'You have exhausted your free AI tokens. Please contact the Administrator.' });
       return;
     }
 
@@ -189,8 +209,10 @@ export const scanForMatches = async (
       }
     }
 
-    // 7. Update user's lastScanDate
-    await User.findByIdAndUpdate(userId, { lastScanDate: new Date() });
+    // 7. Update user's lastScanDate and deduct token
+    user.lastScanDate = new Date();
+    user.aiTokens = (user.aiTokens || 0) - cost;
+    await user.save();
 
     res.status(200).json({
       message: 'Scan complete',
@@ -218,7 +240,21 @@ export const checkCandidateSuitability = async (
   try {
     const { jobId, candidateId } = req.body as CandidateSuitabilityRequestBody;
 
-    // 1. Fetch Candidate Profile
+    // 1. Fetch Candidate Profile (wait, Employer is checking, Employer pays)
+    const employer = await User.findById(req.user._id).select('aiTokens');
+    if (!employer) {
+      res.status(404).json({ message: 'Employer not found' });
+      return;
+    }
+
+    const settings = await SystemSettings.findOne() || { aiCosts: { suitability: 1 } };
+    const cost = settings.aiCosts?.suitability || 1;
+
+    if ((employer.aiTokens || 0) < cost) {
+      res.status(403).json({ message: 'You have exhausted your free AI tokens. Please contact the Administrator.' });
+      return;
+    }
+
     const user = await User.findById(candidateId).select(
       'degree major skills experiences education verifiedSkills'
     );
@@ -240,6 +276,9 @@ export const checkCandidateSuitability = async (
       user as unknown as UserProfileForAI,
       job
     );
+
+    employer.aiTokens = (employer.aiTokens || 0) - cost;
+    await employer.save();
 
     res.status(200).json(result);
   } catch (error) {

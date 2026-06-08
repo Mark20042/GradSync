@@ -4,6 +4,7 @@ import Assessment from '../models/Assessment.model.js';
 import InterviewDraft from '../models/InterviewDraft.model.js';
 import User from '../models/User.model.js';
 import { env } from '../config/environment.js';
+import { getAILimitService } from './ai/ai-limit.service.js';
 
 const getModel = () => {
   return getGeminiService().generationModel;
@@ -151,7 +152,10 @@ const safeParse = (content: string): any => {
 // Wraps a single AI model.invoke() with rate limiting and 429 retry logic.
 const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promise<string> => {
   for (let attempt = 0; attempt < retries; attempt++) {
+    const limitService = getAILimitService();
+    await limitService.acquireSlot();
     try {
+      await limitService.recordGemmaRequest();
       const response = await model.invoke(prompt);
       let content = response.content;
 
@@ -183,6 +187,8 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
 
       // Non-rate-limit error — throw immediately
       throw error;
+    } finally {
+      limitService.releaseSlot();
     }
   }
   throw new Error('Max retries exceeded for rate-limited invoke');
