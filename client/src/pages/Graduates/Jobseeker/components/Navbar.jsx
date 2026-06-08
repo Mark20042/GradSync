@@ -93,9 +93,10 @@ const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-17 h-17 flex items-center justify-center">
@@ -155,18 +156,6 @@ const Navbar = () => {
 
 
 
-                {/* Token Counter */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTokenModalOpen(true);
-                  }}
-                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100"
-                >
-                  <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
-                  <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
-                </button>
-
                 {/* Notifications */}
                 <div className="relative">
                   <button
@@ -191,6 +180,19 @@ const Navbar = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Token Counter */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTokenModalOpen(true);
+                  }}
+                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100"
+                >
+                  <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
+                  <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
+                  <span className="text-xs font-medium text-blue-700 hidden sm:inline">GradCoins</span>
+                </button>
               </>
             )}
 
@@ -295,8 +297,8 @@ const Navbar = () => {
           <div className="absolute top-16 right-0 left-0 mx-4 z-50">
             <NotificationDropdown onClose={() => setNotificationOpen(false)} />
           </div>
-        )}
-      </div>
+      </header>
+
       {/* Token Info Modal */}
       <TokenInfoModal 
         isOpen={tokenModalOpen} 
@@ -337,7 +339,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
 

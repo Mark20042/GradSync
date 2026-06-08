@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
-import { NotFoundError, UnauthorizedError } from "@/errors/index.js";
+import { NotFoundError, UnauthorizedError, BadRequestError } from "@/errors/index.js";
 import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import Job from "@/models/Job.model.js";
 import User from "@/models/User.model.js";
@@ -11,7 +11,7 @@ import SavedJob from "@/models/SavedJob.model.js";
 const createJob = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (req.user.role !== "employer") throw new UnauthorizedError("Only employers can post jobs");
-    
+
     // Check if the employer has set their location on the map
     const employer = await User.findById(req.user._id);
     if (!employer || !employer.latitude || !employer.longitude) {
@@ -27,7 +27,8 @@ const createJob = async (req: AuthRequest, res: Response, next: NextFunction) =>
 const getAllJobs = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { keyword, location, type, minSalary, maxSalary, userId, category } = req.query as any;
-    const query: any = { isClosed: false,
+    const query: any = {
+      isClosed: false,
       ...(keyword && { title: { $regex: keyword, $options: "i" } }),
       ...(location && { location: { $regex: location, $options: "i" } }),
       ...(category && { category }),
@@ -61,7 +62,7 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
     const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) throw new NotFoundError("User not found");
-    
+
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const userSkills = user.skills?.map(s => s.toLowerCase()) || [];
     const preferredLocation = user.address?.toLowerCase() || "";
@@ -70,7 +71,7 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
     const scoredJobs = await Job.aggregate([
       // 1. Only open jobs
       { $match: { isClosed: false } },
-      
+
       // 2. Add searchable text combining skills and requirements for broad matching
       {
         $addFields: {
@@ -93,7 +94,7 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
           }
         }
       },
-      
+
       // 3. Compute base match scores
       {
         $addFields: {
@@ -111,28 +112,28 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
 
           locationMatchScore: preferredLocation ? {
             $cond: [
-              { $gte: [ { $indexOfCP: [ { $toLower: { $ifNull: ["$location", ""] } }, preferredLocation ] }, 0 ] },
+              { $gte: [{ $indexOfCP: [{ $toLower: { $ifNull: ["$location", ""] } }, preferredLocation] }, 0] },
               2,
               0
             ]
           } : 0,
           titleMatchScore: desiredTitle ? {
             $cond: [
-              { $gte: [ { $indexOfCP: [ { $toLower: { $ifNull: ["$title", ""] } }, desiredTitle ] }, 0 ] },
+              { $gte: [{ $indexOfCP: [{ $toLower: { $ifNull: ["$title", ""] } }, desiredTitle] }, 0] },
               2,
               0
             ]
           } : 0
         }
       },
-      
+
       // 4. Compute total score and primary reason
       {
         $addFields: {
           matchScore: {
             $add: [
               { $multiply: ["$skillMatchScore", 2] }, // Weight skills heavily
-              "$locationMatchScore", 
+              "$locationMatchScore",
               "$titleMatchScore"
             ]
           },
@@ -148,14 +149,14 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
           }
         }
       },
-      
+
       // 5. Filter out jobs with 0 score
       { $match: { matchScore: { $gt: 0 } } },
-      
+
       // 6. Sort and Limit
       { $sort: { matchScore: -1 } },
       { $limit: 6 },
-      
+
       // 7. Lookup Company Info
       {
         $lookup: {
@@ -178,31 +179,31 @@ const getRecommendedJobs = async (req: AuthRequest, res: Response, next: NextFun
           }
         }
       },
-      
+
       // 8. Lookup Saved Jobs
       {
         $lookup: {
           from: "savedjobs",
           let: { jobId: "$_id" },
           pipeline: [
-            { $match: { $expr: { $and: [ { $eq: ["$job", "$$jobId"] }, { $eq: ["$graduate", userIdObj] } ] } } }
+            { $match: { $expr: { $and: [{ $eq: ["$job", "$$jobId"] }, { $eq: ["$graduate", userIdObj] }] } } }
           ],
           as: "savedData"
         }
       },
-      
+
       // 9. Lookup Applications
       {
         $lookup: {
           from: "applications",
           let: { jobId: "$_id" },
           pipeline: [
-            { $match: { $expr: { $and: [ { $eq: ["$job", "$$jobId"] }, { $eq: ["$applicant", userIdObj] } ] } } }
+            { $match: { $expr: { $and: [{ $eq: ["$job", "$$jobId"] }, { $eq: ["$applicant", userIdObj] }] } } }
           ],
           as: "appData"
         }
       },
-      
+
       // 10. Extract flags and cleanup
       {
         $addFields: {

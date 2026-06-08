@@ -329,18 +329,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
           </div>
 
           <div className="flex items-center space-x-3">
-            {/* AI Tokens Display */}
-            {!user?.isAdmin && (
-              <button 
-                onClick={() => setTokenModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100 mr-2"
-              >
-                <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
-                <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
-                <span className="text-xs font-medium hidden sm:inline text-blue-700">Tokens</span>
-              </button>
-            )}
-
             {/* Notification Bell */}
             {!user?.isAdmin && (
               <div className="relative">
@@ -370,6 +358,18 @@ const DashboardLayout = ({ activeMenu, children }) => {
                   </div>
                 )}
               </div>
+            )}
+
+            {/* AI Tokens Display */}
+            {!user?.isAdmin && (
+              <button 
+                onClick={() => setTokenModalOpen(true)}
+                className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition-colors px-4 py-2 rounded-full border border-blue-100 ml-2"
+              >
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-7 h-7 drop-shadow-md" />
+                <span className="font-extrabold text-blue-700 text-base">{user?.aiTokens || 0}</span>
+                <span className="text-xs font-medium hidden sm:inline text-blue-700">GradCoins</span>
+              </button>
             )}
             <ProfileDropdpwn
               isOpen={profileDropdownOpen}
