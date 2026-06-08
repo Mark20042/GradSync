@@ -297,6 +297,8 @@ const Navbar = () => {
           <div className="absolute top-16 right-0 left-0 mx-4 z-50">
             <NotificationDropdown onClose={() => setNotificationOpen(false)} />
           </div>
+        )}
+      </div>
       </header>
 
       {/* Token Info Modal */}
