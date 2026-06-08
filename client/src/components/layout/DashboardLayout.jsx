@@ -154,7 +154,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
           : "translate-x-0"
       }
       ${sidebarCollapsed ? "w-16" : "w-64"}
-      bg-white border-r border-gray-200`}
+      bg-white border-r border-gray-200 flex flex-col`}
       >
         {/* Company Logo */}
         <div className="flex items-center h-16 pl-6 border-b border-gray-200">
@@ -177,7 +177,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 flex-1 overflow-y-auto pb-24 no-scrollbar">
           {/* Employer Navigation - Only if NOT admin */}
           {!user?.isAdmin &&
             user?.role === "employer" &&
