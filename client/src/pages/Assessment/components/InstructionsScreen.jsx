@@ -54,10 +54,10 @@ const InstructionsScreen = ({ assessment, onStart, onCancel }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 max-w-[1100px] w-full mx-auto my-5 p-6">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 max-w-[1100px] w-full mx-auto my-3 md:my-5 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-3">
-        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+      <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-3">
+        <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shrink-0">
           <BookOpen className="w-6 h-6 text-white" />
         </div>
         <div>
@@ -69,8 +69,8 @@ const InstructionsScreen = ({ assessment, onStart, onCancel }) => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-4 mt-5 mb-5">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-5 mb-5">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 md:p-4 border border-blue-200">
           <p className="text-xs font-semibold text-blue-600 uppercase mb-1">
             Questions
           </p>
@@ -78,24 +78,24 @@ const InstructionsScreen = ({ assessment, onStart, onCancel }) => {
             {assessment.questions?.length || 0}
           </p>
         </div>
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-          <p className="text-xs font-semibold text-purple-600 uppercase mb-1">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 md:p-4 border border-purple-200">
+          <p className="text-[10px] md:text-xs font-semibold text-purple-600 uppercase mb-1">
             Time Limit
           </p>
           <p className="text-2xl font-bold text-purple-900">
             {assessment.timeLimit || 15}m
           </p>
         </div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-          <p className="text-xs font-semibold text-green-600 uppercase mb-1">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 md:p-4 border border-green-200">
+          <p className="text-[10px] md:text-xs font-semibold text-green-600 uppercase mb-1">
             Passing Score
           </p>
           <p className="text-2xl font-bold text-green-900">
             {assessment.passingScore || 80}%
           </p>
         </div>
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-          <p className="text-xs font-semibold text-orange-600 uppercase mb-1">
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-3 md:p-4 border border-orange-200">
+          <p className="text-[10px] md:text-xs font-semibold text-orange-600 uppercase mb-1">
             Difficulty
           </p>
           <p className="text-2xl font-bold text-orange-900">
@@ -157,17 +157,17 @@ const InstructionsScreen = ({ assessment, onStart, onCancel }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-6">
         <button
           onClick={onStart}
-          className="flex-1 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl transition-all hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5"
+          className="flex-1 flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl transition-all hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transform hover:-translate-y-0.5"
         >
           <span>Begin Assessment</span>
           <ArrowRight className="w-5 h-5" />
         </button>
         <button
           onClick={onCancel}
-          className="px-8 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl transition-all hover:bg-gray-200"
+          className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-gray-100 text-gray-700 font-bold rounded-xl transition-all hover:bg-gray-200 order-last sm:order-none"
         >
           Cancel
         </button>

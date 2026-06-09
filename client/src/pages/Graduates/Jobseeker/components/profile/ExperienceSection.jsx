@@ -121,10 +121,10 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
             </h3>
 
             {/* Tabs */}
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-col sm:flex-row gap-2 mb-6">
                 <button
                     onClick={() => setActiveTab('experiences')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'experiences'
+                    className={`w-full sm:w-auto justify-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'experiences'
                             ? 'bg-green-500 text-white shadow-sm'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
@@ -133,7 +133,7 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                 </button>
                 <button
                     onClick={() => setActiveTab('internships')}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'internships'
+                    className={`w-full sm:w-auto justify-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'internships'
                             ? 'bg-blue-500 text-white shadow-sm'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}

@@ -134,7 +134,7 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
             {/* Professional Job Overview Grid */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="p-3 bg-green-50 rounded-xl text-green-600">
+                <div className="p-3 bg-green-50 rounded-xl text-green-600 group-hover:scale-110 transition-transform">
                   <PhilippinePeso className="w-6 h-6" />
                 </div>
                 <div>

@@ -95,17 +95,17 @@ const ConversationList = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Navbar />
-      <div className="container mx-auto pt-24 px-4 pb-12 max-w-4xl">
+      <div className="container mx-auto pt-20 md:pt-24 px-4 pb-28 md:pb-12 max-w-4xl">
 
         {/* Header Section */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Messages</h1>
-            <p className="text-gray-500 mt-1">Manage your communications with companies</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Messages</h1>
+            <p className="text-sm md:text-base text-gray-500 mt-1">Manage your communications with companies</p>
           </div>
           <button
             onClick={() => navigate("/find-jobs")}
-            className="group flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200"
+            className="w-full sm:w-auto justify-center group flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-blue-200 transition-all duration-200"
           >
             <ArrowLeft className="w-4 h-4 text-gray-500 group-hover:text-blue-600 transition-colors" />
             <span className="font-medium text-gray-600 group-hover:text-blue-600 transition-colors">Back to Jobs</span>
@@ -141,11 +141,11 @@ const ConversationList = () => {
                         <img
                           src={convo.recipient.avatar || convo.recipient.companyLogo}
                           alt={convo.recipient.fullName || convo.recipient.companyName}
-                          className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-gray-100 group-hover:scale-105 transition-transform duration-200"
+                          className="w-12 h-12 md:w-14 md:h-14 rounded-2xl object-cover shadow-sm border border-gray-100 group-hover:scale-105 transition-transform duration-200"
                         />
                       ) : (
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20">
-                          <Building2 className="w-7 h-7 text-white" />
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20">
+                          <Building2 className="w-6 h-6 md:w-7 md:h-7 text-white" />
                         </div>
                       )}
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
@@ -154,10 +154,10 @@ const ConversationList = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate pr-4">
+                        <h3 className="text-base md:text-lg font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate pr-2 md:pr-4">
                           {convo.recipient?.companyName || convo.recipient?.fullName || 'Unknown'}
                         </h3>
-                        <span className="text-xs font-medium text-gray-400 whitespace-nowrap">
+                        <span className="text-[10px] md:text-xs font-medium text-gray-400 whitespace-nowrap pt-1">
                           {moment(convo.updatedAt).fromNow(true)}
                         </span>
                       </div>

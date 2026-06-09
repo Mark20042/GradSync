@@ -48,17 +48,19 @@ const ProfileDropdown = ({
       {/* Profile button */}
       <button
         onClick={onToggle}
-        className="flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+        className={`flex items-center space-x-3 p-1 pr-4 rounded-full transition-all duration-300 border h-12 ${
+          isOpen ? 'bg-white border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.06)]' : 'bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm'
+        }`}
       >
         {avatar ? (
           <img
             src={avatar}
             alt="Avatar"
-            className="h-9 w-9 rounded-xl object-cover"
+            className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
           />
         ) : (
-          <div className="h-9 w-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <span className="font-semibold text-white text-sm">
+          <div className="h-10 w-10 bg-gradient-to-tr from-gray-900 to-gray-700 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
+            <span className="font-bold text-white text-sm tracking-wider">
               {(isGradOrSeeker ? fullName : companyName)
                 ?.charAt(0)
                 .toUpperCase()}
@@ -66,17 +68,17 @@ const ProfileDropdown = ({
           </div>
         )}
 
-        <div className="hidden sm:block text-left">
-          <p className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+        <div className="hidden sm:flex flex-col items-start text-left ml-1">
+          <span className="text-[13px] font-bold text-gray-900 truncate max-w-[130px] leading-tight tracking-tight">
             {isGradOrSeeker ? fullName : companyName}
-          </p>
-          <p className="text-xs text-gray-500">
+          </span>
+          <span className="text-[11px] font-semibold text-gray-500 leading-tight mt-0.5 tracking-wide">
             {displayRole}
-          </p>
+          </span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-            }`}
+          className={`w-4 h-4 text-gray-400 transition-transform duration-300 ml-1 ${isOpen ? "rotate-180" : ""}`}
+          strokeWidth={2.5}
         />
       </button>
 

@@ -189,8 +189,8 @@ const Messages = () => {
       <Navbar />
 
       {/* Main Chat Container */}
-      <div className="flex-1 flex flex-col pt-20 px-4 pb-6 max-w-5xl mx-auto w-full min-h-0">
-        <div className="flex-1 flex flex-col bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
+      <div className="flex-1 flex flex-col pt-20 px-2 md:px-4 pb-[90px] md:pb-6 max-w-5xl mx-auto w-full min-h-0">
+        <div className="flex-1 flex flex-col bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
 
           {/* Header */}
           <div className="flex-none p-4 border-b border-gray-100 bg-white/80 backdrop-blur-md z-10 flex items-center justify-between">
@@ -226,12 +226,12 @@ const Messages = () => {
                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div>
-                  <h2 className="font-bold text-gray-900 text-base leading-tight group-hover:text-blue-600 transition-colors">
+                  <h2 className="font-bold text-gray-900 text-sm md:text-base leading-tight group-hover:text-blue-600 transition-colors">
                     {localRecipient?.companyName || localRecipient?.fullName || "User"}
                   </h2>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium mt-0.5">
+                  <div className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-xs text-gray-500 font-medium mt-0.5">
                     <Briefcase className="w-3 h-3" />
-                    <span className="truncate max-w-[200px]">{localJob?.title || "General Inquiry"}</span>
+                    <span className="truncate max-w-[130px] sm:max-w-[200px]">{localJob?.title || "General Inquiry"}</span>
                   </div>
                 </div>
               </div>
@@ -239,7 +239,7 @@ const Messages = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-gray-50/50 to-white">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 bg-gradient-to-b from-gray-50/50 to-white">
             {loading ? (
               <MessageListSkeleton />
             ) : processedMessages.length === 0 ? (
@@ -264,7 +264,7 @@ const Messages = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       className={`flex ${item.sender._id === user._id ? "justify-end" : "justify-start"}`}
                     >
-                      <div className={`flex items-end gap-3 max-w-[85%] ${item.sender._id === user._id ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className={`flex items-end gap-2 md:gap-3 max-w-[92%] md:max-w-[85%] ${item.sender._id === user._id ? "flex-row-reverse" : "flex-row"}`}>
                         {/* Avatar */}
                         <div className="flex-shrink-0">
                           {item.sender._id === user._id ? (
@@ -283,12 +283,12 @@ const Messages = () => {
                         </div>
 
                         {/* Message Bubble */}
-                        <div className={`relative p-4 rounded-2xl shadow-sm ${item.sender._id === user._id
+                        <div className={`relative p-3 md:p-4 rounded-2xl shadow-sm ${item.sender._id === user._id
                           ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-br-sm"
                           : "bg-white text-gray-800 border border-gray-100 rounded-bl-sm"
                           }`}>
                           
-                          <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                          <p className="text-sm md:text-[15px] leading-relaxed whitespace-pre-wrap break-words">{item.content}</p>
                           
                           <p className={`text-[10px] mt-1.5 text-right ${item.sender._id === user._id ? "text-blue-100" : "text-gray-400"
                             }`}>
@@ -305,7 +305,7 @@ const Messages = () => {
           </div>
 
           {/* Input Area */}
-          <div className="flex-none p-4 bg-white border-t border-gray-100">
+          <div className="flex-none p-3 md:p-4 bg-white border-t border-gray-100 z-10">
             {/* FAQs */}
             {faqs.length > 0 && (
               <div className="mb-4 flex gap-2 overflow-x-auto pb-2 no-scrollbar mask-linear-fade">

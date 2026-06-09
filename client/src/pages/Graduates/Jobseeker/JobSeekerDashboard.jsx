@@ -324,7 +324,7 @@ const JobSeekerDashboard = () => {
       <Navbar />
 
       {/* Premium Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 pt-32 pb-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 pt-24 md:pt-32 pb-20 md:pb-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Abstract Background Patterns */}
         <div className="absolute inset-0 pointer-events-none">
           <div
@@ -340,7 +340,7 @@ const JobSeekerDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 md:mb-6 tracking-tight drop-shadow-md leading-tight">
               Build Your Professional Future
             </h1>
             <p className="text-xl text-blue-100 max-w-2xl mx-auto leading-relaxed font-medium">
@@ -364,7 +364,7 @@ const JobSeekerDashboard = () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-12 relative z-20">
+      <div className="w-full xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-24 md:pb-12 relative z-20">
         <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
           <RecommendedJobs
             recommendedJobs={recommendedJobs}
@@ -375,7 +375,7 @@ const JobSeekerDashboard = () => {
 
           {/* All Jobs Section */}
           <div
-            className={`w-full ${!recommendedLoading && recommendedJobs.length > 0 ? "xl:w-2/3" : "w-full"} flex flex-col bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] 2xl:h-[860px]`}
+            className={`w-full ${!recommendedLoading && recommendedJobs.length > 0 ? "xl:w-2/3" : "w-full"} flex flex-col bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-200px)] md:h-[calc(100vh-140px)] 2xl:h-[860px]`}
           >
             <div className="p-4 border-b border-gray-100 bg-white rounded-t-2xl sticky top-0 z-30 flex flex-row items-center justify-between gap-4 flex-wrap xl:flex-nowrap">
               {/* Left Side: Title and Count */}

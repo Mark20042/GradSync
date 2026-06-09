@@ -60,6 +60,12 @@ const DashboardLayout = ({ activeMenu, children }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [tokenModalOpen, setTokenModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenTokenModal = () => setTokenModalOpen(true);
+    window.addEventListener("openTokenModal", handleOpenTokenModal);
+    return () => window.removeEventListener("openTokenModal", handleOpenTokenModal);
+  }, []);
   const [newTokensData, setNewTokensData] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -328,7 +334,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             {/* Notification Bell */}
             {!user?.isAdmin && (
               <div className="relative">
@@ -338,20 +344,17 @@ const DashboardLayout = ({ activeMenu, children }) => {
                     setNotificationOpen(!notificationOpen);
                     setProfileDropdownOpen(false);
                   }}
-                  className="flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-200 relative"
+                  className={`relative flex items-center justify-center h-12 w-12 rounded-full transition-all duration-300 ${
+                    notificationOpen ? "bg-blue-600 text-white shadow-lg shadow-blue-200/50" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
                 >
-                  <div className="relative">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                    )}
-                  </div>
-                  <span className="hidden md:inline font-medium text-sm">
-                    Notifications
-                  </span>
+                  <Bell className="w-5 h-5" strokeWidth={notificationOpen ? 2.5 : 2} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-transparent"></span>
+                  )}
                 </button>
                 {notificationOpen && (
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()} className="absolute right-0 mt-3 z-50">
                     <NotificationDropdown
                       onClose={() => setNotificationOpen(false)}
                     />
@@ -364,13 +367,22 @@ const DashboardLayout = ({ activeMenu, children }) => {
             {!user?.isAdmin && (
               <button 
                 onClick={() => setTokenModalOpen(true)}
-                className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 transition-colors px-3 py-1.5 rounded-full border border-blue-100 ml-2"
+                className="group flex items-center gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 p-1 pr-5 rounded-full shadow-md shadow-blue-200/50 ring-1 ring-blue-500/30 relative overflow-hidden mx-2 h-12"
               >
-                <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 drop-shadow-md object-contain -mt-0.5" />
-                <span className="font-extrabold text-gray-900 text-lg leading-none">{user?.aiTokens || 0}</span>
-                <span className="text-sm font-bold hidden sm:inline text-gray-900 leading-none">GradCoins</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -skew-x-12"></div>
+                
+                <div className="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner ring-1 ring-white/30 z-10 shrink-0">
+                  <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] group-hover:rotate-12 group-hover:scale-110 transition-transform duration-500" />
+                </div>
+                
+                <div className="flex items-center gap-1.5 z-10 text-white pr-1">
+                  <span className="font-black text-[16px] tracking-tight">{user?.aiTokens || 0}</span>
+                  <span className="text-[12px] font-bold text-blue-100 hidden sm:inline tracking-wide">GradCoins</span>
+                </div>
               </button>
             )}
+            
+            <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
             <ProfileDropdpwn
               isOpen={profileDropdownOpen}
               onToggle={(e) => {

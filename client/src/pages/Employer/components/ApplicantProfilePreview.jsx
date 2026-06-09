@@ -1,6 +1,7 @@
 import { Download, X, User, Sparkles, BrainCircuit, UserX } from "lucide-react";
 
 import { useState, useEffect } from "react";
+import { useAuth } from "../../../context/AuthContext";
 import { getInitials } from "../../../utils/helper";
 import moment from "moment";
 import axiosInstance from "../../../utils/axiosInstance";
@@ -30,6 +31,7 @@ const ApplicantProfilePreview = ({
   const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
   const [showTerminateModal, setShowTerminateModal] = useState(false);
   const [terminating, setTerminating] = useState(false);
+  const { user } = useAuth();
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -229,11 +231,18 @@ const ApplicantProfilePreview = ({
               </div>
 
               <button
-                onClick={handleOpenAiAnalysis}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-all shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95"
+                
+                onClick={() => {
+                  if (!aiAnalysis && user?.aiTokens < 1) {
+                    window.dispatchEvent(new CustomEvent("openTokenModal"));
+                    return;
+                  }
+                  handleOpenAiAnalysis();
+                }}
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all shadow-md flex items-center gap-2 active:scale-95 ${!aiAnalysis && user?.aiTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200"}`}
               >
                 <BrainCircuit className="w-4 h-4" />
-                {aiAnalysis ? "View Analysis" : "Run Analysis"}
+                {aiAnalysis ? "View Analysis" : <span className="flex items-center gap-1">Run Analysis <span className="flex items-center gap-0.5 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span></span>}
               </button>
             </div>
 

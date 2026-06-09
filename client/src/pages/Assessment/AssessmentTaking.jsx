@@ -376,14 +376,14 @@ const AssessmentTaking = () => {
           }
         `}</style>
 
-        <div className="bg-white w-full max-w-2xl rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] p-10 text-center relative z-10 animate-fade-in border border-slate-100">
+        <div className="bg-white w-full max-w-2xl rounded-2xl md:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.12)] p-6 md:p-10 text-center relative z-10 animate-fade-in border border-slate-100">
           {/* Big Premium Icon Container */}
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20 relative group overflow-hidden">
+          <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/20 relative group overflow-hidden">
             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <Trophy size={48} className="text-white animate-bounce" style={{ animationDuration: '3s' }} />
+            <Trophy size={40} className="text-white animate-bounce md:w-12 md:h-12" style={{ animationDuration: '3s' }} />
           </div>
 
-          <h1 className="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-950 mb-3">
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-950 mb-3">
             Assessment Submitted!
           </h1>
 
@@ -452,7 +452,7 @@ const AssessmentTaking = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 relative overflow-hidden quiz-page-wrapper">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden quiz-page-wrapper">
         <style>{`
               .quiz-page-wrapper::before {
                 content: '';
@@ -478,14 +478,14 @@ const AssessmentTaking = () => {
               }
             `}</style>
 
-        <div className="bg-white w-full max-w-[900px] min-h-[600px] rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] flex flex-col relative z-10 overflow-hidden animate-fade-in">
+        <div className="bg-white w-full max-w-[900px] md:min-h-[600px] rounded-2xl md:rounded-3xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] flex flex-col relative z-10 overflow-hidden animate-fade-in h-[85vh] md:h-auto">
           {/* Header */}
-          <div className="px-8 py-6 bg-white border-b border-gray-200 flex justify-between items-center">
+          <div className="p-4 md:px-8 md:py-6 bg-white border-b border-gray-200 flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">
+              <h1 className="text-lg md:text-xl font-bold text-gray-900 line-clamp-1">
                 {assessment.title}
               </h1>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-500 text-xs md:text-sm">
                 {assessment.difficulty} Level
               </p>
             </div>
@@ -493,9 +493,9 @@ const AssessmentTaking = () => {
 
               {/* Timer */}
               <div
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold tabular-nums transition-colors ${timeLeft < 60 ? "bg-red-100 text-red-500" : "bg-blue-50 text-blue-500"}`}
+                className={`flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base font-bold tabular-nums transition-colors w-fit ${timeLeft < 60 ? "bg-red-100 text-red-500" : "bg-blue-50 text-blue-500"}`}
               >
-                <Clock size={16} />
+                <Clock size={16} className="shrink-0" />
                 {formatTime(timeLeft)}
               </div>
             </div>
@@ -510,19 +510,19 @@ const AssessmentTaking = () => {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-10 overflow-y-auto flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">
+          <div className="flex-1 p-5 md:p-10 overflow-y-auto flex flex-col">
+            <div className="flex flex-col-reverse sm:flex-row justify-between sm:items-center gap-2 mb-4 md:mb-6">
+              <span className="text-xs md:text-sm font-bold text-blue-600 uppercase tracking-wider">
                 Question {currentIndex + 1} of {assessment.questions.length}
               </span>
               {currentQuestion.category && (
-                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full uppercase tracking-wide">
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-[10px] md:text-xs font-bold rounded-full uppercase tracking-wide w-fit">
                   {currentQuestion.category}
                 </span>
               )}
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 leading-relaxed">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 leading-relaxed">
               {currentQuestion.questionText}
             </h2>
 
@@ -547,7 +547,7 @@ const AssessmentTaking = () => {
                   placeholder="Type your answer here..."
                   value={answers[currentQuestion._id] || ""}
                   onChange={(e) => handleOptionSelect(e.target.value)}
-                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none text-lg font-medium text-gray-800 transition-all"
+                  className="w-full p-3 md:p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none text-base md:text-lg font-medium text-gray-800 transition-all"
                   autoComplete="off"
                 />
               </div>
@@ -559,7 +559,7 @@ const AssessmentTaking = () => {
                     <button
                       key={index}
                       onClick={() => handleOptionSelect(option)}
-                      className={`text-left p-5 rounded-xl border-2 font-medium transition-all flex items-center gap-4 hover:border-blue-500 hover:bg-slate-50 ${isSelected ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
+                      className={`text-left p-4 md:p-5 rounded-xl border-2 font-medium transition-all flex items-center gap-3 md:gap-4 hover:border-blue-500 hover:bg-slate-50 ${isSelected ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
                     >
                       <span
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-transparent"}`}
@@ -575,11 +575,11 @@ const AssessmentTaking = () => {
           </div>
 
           {/* Footer */}
-          <div className="px-8 py-6 border-t border-gray-200 bg-gray-50 flex justify-between">
+          <div className="p-4 md:px-8 md:py-6 border-t border-gray-200 bg-gray-50 flex flex-col-reverse sm:flex-row gap-3 justify-between">
             <button
               onClick={handlePrevious}
               disabled={currentIndex === 0}
-              className="px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-4 md:px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowLeft size={16} /> Previous
             </button>
@@ -589,7 +589,7 @@ const AssessmentTaking = () => {
                 disabled={
                   Object.keys(answers).length < assessment.questions.length
                 }
-                className="px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 md:px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 Submit Assessment <CheckCircle size={16} />
               </button>
@@ -597,7 +597,7 @@ const AssessmentTaking = () => {
               <button
                 onClick={handleNext}
                 disabled={!answers[currentQuestion._id]}
-                className="px-6 py-3 rounded-xl font-semibold flex items-center gap-2 transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-4 md:px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 Next Question <ArrowRight size={16} />
               </button>

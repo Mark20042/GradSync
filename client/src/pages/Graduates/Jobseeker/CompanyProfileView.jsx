@@ -116,7 +116,7 @@ const CompanyProfileView = () => {
         <div className="min-h-screen bg-gray-50">
             <Navbar />
 
-            <div className="container mx-auto px-4 py-8 mt-16">
+            <div className="container mx-auto px-4 py-6 md:py-8 pb-28 md:pb-8 mt-16">
                 <button
                     onClick={() => navigate(-1)}
                     className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors group"
@@ -165,7 +165,7 @@ const CompanyProfileView = () => {
                                 className="flex-1 pt-2 md:pt-0"
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-                                    <h1 className="text-4xl font-bold text-gray-900">
+                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                         {company.companyName || company.fullName}
                                     </h1>
 

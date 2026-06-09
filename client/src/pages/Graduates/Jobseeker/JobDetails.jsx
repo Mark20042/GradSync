@@ -297,8 +297,8 @@ const JobDetails = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 pb-28 md:pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
 
@@ -340,7 +340,7 @@ const JobDetails = () => {
             </section>
 
             {/* Description */}
-            <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+            <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                   <Briefcase className="w-5 h-5" />
@@ -351,7 +351,7 @@ const JobDetails = () => {
             </section>
 
             {/* Requirements */}
-            <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+            <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
                   <CheckCircle className="w-5 h-5" />
@@ -363,7 +363,7 @@ const JobDetails = () => {
 
             {/* Qualifications */}
             {jobDetails.qualifications && (
-              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                     <Award className="w-5 h-5" />
@@ -376,7 +376,7 @@ const JobDetails = () => {
 
             {/* Skills */}
             {jobDetails.skills && jobDetails.skills.length > 0 && (
-              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
                     <Star className="w-5 h-5" />
@@ -395,7 +395,7 @@ const JobDetails = () => {
 
             {/* Benefits */}
             {jobDetails.benefits && (
-              <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <section className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <div className="p-2 bg-green-50 rounded-lg text-green-600">
                     <Gift className="w-5 h-5" />
@@ -422,10 +422,17 @@ const JobDetails = () => {
                 See how well your profile matches this job description using our AI to improve your chances.
               </p>
               <button
-                onClick={() => setShowSuitabilityModal(true)}
-                className="w-full bg-white text-indigo-600 font-bold py-3 rounded-xl hover:bg-indigo-50 transition-colors relative z-10 flex items-center justify-center gap-2 shadow-sm"
+                
+                onClick={() => {
+                  if (user?.aiTokens < 1) {
+                    window.dispatchEvent(new CustomEvent("openTokenModal"));
+                    return;
+                  }
+                  setShowSuitabilityModal(true);
+                }}
+                className={`w-full font-bold py-3 rounded-xl transition-colors relative z-10 flex items-center justify-center gap-2 shadow-sm ${user?.aiTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white text-indigo-600 hover:bg-indigo-50"}`}
               >
-                Check My Match
+                Check My Match <span className="flex items-center gap-1 ml-1 text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span>
               </button>
             </div>
 

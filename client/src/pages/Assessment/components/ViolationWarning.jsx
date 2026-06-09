@@ -69,16 +69,16 @@ const ViolationWarning = ({ violationCount, violationType, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
-      <div className={`${config.bgColor} border-2 ${config.borderColor} rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-300`}>
+      <div className={`${config.bgColor} border-2 ${config.borderColor} rounded-2xl shadow-2xl max-w-md w-full p-4 md:p-6 animate-in zoom-in-95 duration-300`}>
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 ${config.bgColor} rounded-xl flex items-center justify-center border-2 ${config.borderColor}`}>
-              <Icon className={`w-6 h-6 ${config.iconColor}`} />
+            <div className={`w-10 h-10 md:w-12 md:h-12 ${config.bgColor} rounded-xl flex items-center justify-center border-2 ${config.borderColor} shrink-0`}>
+              <Icon className={`w-5 h-5 md:w-6 md:h-6 ${config.iconColor}`} />
             </div>
             <div>
-              <h3 className={`text-xl font-bold ${config.iconColor} m-0`}>{config.title}</h3>
-              <p className="text-sm text-gray-600 mt-1 m-0">Violation Type: {getViolationTypeText()}</p>
+              <h3 className={`text-lg md:text-xl font-bold ${config.iconColor} m-0`}>{config.title}</h3>
+              <p className="text-xs md:text-sm text-gray-600 mt-1 m-0">Violation Type: {getViolationTypeText()}</p>
             </div>
           </div>
           {violationCount < 3 && (

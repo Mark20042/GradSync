@@ -21,10 +21,12 @@ import {
 import { getBadgeComponent } from "../../components/Badges/SkillBadges";
 import EmployerSuitabilityModal from "./components/EmployerSuitabilityModal";
 import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 const ApplicantProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const applicantId = location.state?.applicantId || null;
 
   const [applicant, setApplicant] = useState(null);
@@ -288,11 +290,18 @@ const ApplicantProfile = () => {
                 <p className="text-sm font-medium text-indigo-600/80 uppercase tracking-wide">Evaluate match with job requirements</p>
               </div>
               <button
-                onClick={handleOpenAiAnalysis}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg transition-all shadow-md shadow-indigo-200 flex items-center gap-2 active:scale-95"
+                
+                onClick={() => {
+                  if (!aiAnalysis && user?.aiTokens < 1) {
+                    window.dispatchEvent(new CustomEvent("openTokenModal"));
+                    return;
+                  }
+                  handleOpenAiAnalysis();
+                }}
+                className={`px-6 py-2.5 font-semibold rounded-lg transition-all shadow-md flex items-center gap-2 active:scale-95 ${!aiAnalysis && user?.aiTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200"}`}
               >
                 <BrainCircuit className="w-5 h-5" />
-                {aiAnalysis ? "View Analysis" : "Run Analysis"}
+                {aiAnalysis ? "View Analysis" : <span className="flex items-center gap-1">Run Analysis <span className="flex items-center gap-0.5 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span></span>}
               </button>
             </div>
 

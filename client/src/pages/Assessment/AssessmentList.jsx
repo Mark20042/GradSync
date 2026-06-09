@@ -22,6 +22,7 @@ const AssessmentList = () => {
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState([]);
   const [userSkills, setUserSkills] = useState([]);
+  const [userTokens, setUserTokens] = useState(0);
   const [mySubmissions, setMySubmissions] = useState([]);
   const [myInterviews, setMyInterviews] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -44,6 +45,7 @@ const AssessmentList = () => {
     try {
       const userRes = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
       setUserSkills(userRes.data.verifiedSkills || []);
+      setUserTokens(userRes.data.aiTokens || 0);
     } catch (error) {
       console.error("Error fetching user skills", error);
     }
@@ -137,41 +139,42 @@ const AssessmentList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
-      <div className="px-6 py-4 mt-20 ml-90">
+      <div className="px-4 md:px-6 py-4 mt-20 max-w-6xl mx-auto">
         <button
           onClick={() => navigate("/find-jobs")}
-          className="flex items-center gap-2 text-blue-500 font-semibold px-4 py-2 rounded-lg transition-all hover:bg-blue-50"
+          className="flex items-center gap-2 text-blue-500 font-semibold py-2 rounded-lg transition-all hover:text-blue-700 w-fit"
         >
           <ArrowLeft size={18} />
           Back to Find Jobs
         </button>
       </div>
 
-      <div className="px-6 pb-8 max-w-6xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-900 to-blue-500 p-10 rounded-2xl text-white mb-8 shadow-[0_10px_25px_-5px_rgba(59,130,246,0.5)]">
-          <div className="flex items-center gap-3 mb-2">
-            <Trophy size={28} className="text-yellow-300" />
-            <h1 className="text-3xl font-extrabold mb-3">
+      <div className="px-4 md:px-6 pb-8 max-w-6xl mx-auto">
+        <div className="bg-gradient-to-br from-blue-900 to-blue-500 p-6 md:p-10 rounded-2xl text-white mb-8 shadow-[0_10px_25px_-5px_rgba(59,130,246,0.5)]">
+          <div className="flex items-start md:items-center gap-3 mb-3 md:mb-2 flex-col md:flex-row">
+            <Trophy size={28} className="text-yellow-300 hidden md:block" />
+            <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-2">
+              <Trophy size={24} className="text-yellow-300 md:hidden" />
               Skill & Interview Center
             </h1>
           </div>
-          <p className="text-base text-white/90">
+          <p className="text-sm md:text-base text-white/90">
             Earn verified badges and practice with our AI interviewer to stand
             out to employers.
           </p>
         </div>
 
         {/* Mock Interviewer Section */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
           <Video size={24} className="text-purple-500" />
           AI Practice Interviewer
         </h2>
 
 
 
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {roles.map((role) => {
             // Check if the user has already completed this interview
             const completedInterview = myInterviews.find(i => i.roleName === role.roleName || i.roleName === role.displayName);
@@ -184,10 +187,14 @@ const AssessmentList = () => {
                     toast.error("You have already completed this interview.");
                     return;
                   }
+                  if (userTokens < 20) {
+                    window.dispatchEvent(new CustomEvent("openTokenModal"));
+                    return;
+                  }
                   navigate("/interview-room", { state: { jobRole: role.roleName } });
                 }}
                 className={`bg-white rounded-xl border-2 border-gray-200 p-5 transition-all duration-300 relative flex items-start gap-4 ${
-                  completedInterview ? "opacity-90 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
+                  completedInterview || userTokens < 20 ? "opacity-90 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
                 }`}
               >
                 {completedInterview && (
@@ -211,8 +218,9 @@ const AssessmentList = () => {
                 </div>
 
                 <div className="flex-1 pr-12">
-                  <h4 className="font-bold text-gray-900 mb-1">
-                    {role.displayName || role.roleName}
+                  <h4 className="font-bold text-gray-900 mb-1 flex items-center justify-between">
+                    <span>{role.displayName || role.roleName}</span>
+                    {!completedInterview && <span className="flex items-center gap-1 text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 20</span>}
                   </h4>
                   <p className="text-sm text-gray-500 flex items-center gap-1">
                     {role.questions?.length || 0} Questions Available
@@ -238,11 +246,11 @@ const AssessmentList = () => {
 
 
         {/* Skill Assessments Section */}
-        <h2 className="text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-5 flex items-center gap-3">
           <Trophy size={24} className="text-yellow-500" />
           Skill Assessments
         </h2>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {assessments.length > 0 ? (
             assessments.map((assessment) => {
               const verified = isVerified(assessment.skill);
@@ -277,6 +285,7 @@ const AssessmentList = () => {
                     Pass: {assessment.passingScore || 80}%
                   </p>
                   <button
+                    
                     onClick={() => {
                       if (verified) {
                         const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
@@ -294,14 +303,14 @@ const AssessmentList = () => {
                     }}
                     className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${verified
                       ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      : userTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
                       }`}
                   >
                     {verified ? (
                       "✓ Verified"
                     ) : (
                       <>
-                        <Play size={16} /> Take Assessment
+                        <Play size={16} /> Take Assessment <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span>
                       </>
                     )}
                   </button>
@@ -337,14 +346,14 @@ const AssessmentList = () => {
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                  <p className="text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
-                  <p className="text-3xl font-black text-blue-700">{selectedSubmission.score}%</p>
+            <div className="p-4 md:p-6 overflow-y-auto flex-1">
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+                <div className="w-full sm:flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
+                  <p className="text-xs md:text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
+                  <p className="text-2xl md:text-3xl font-black text-blue-700">{selectedSubmission.score}%</p>
                 </div>
-                <div className={`flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
-                  <p className={`text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
+                <div className={`w-full sm:flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                  <p className={`text-xs md:text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
                   <div className={`flex items-center justify-center gap-2 text-xl font-bold capitalize ${selectedSubmission.passed ? 'text-green-700' : 'text-red-700'}`}>
                     {selectedSubmission.passed ? <><CheckCircle size={22} /> Passed</> : <><X size={22} /> Failed</>}
                   </div>
@@ -503,8 +512,8 @@ const AssessmentList = () => {
                 {selectedInterviewResult.answers?.map((answer, idx) => {
                   const displayCat = getDisplayCategory(answer);
                   return (
-                    <div key={idx} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
-                      <div className="flex justify-between items-start mb-3 gap-4">
+                    <div key={idx} className="bg-white rounded-xl p-4 md:p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
+                      <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-3 md:gap-4">
                         <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
                           {displayCat && (
                             <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
@@ -513,7 +522,7 @@ const AssessmentList = () => {
                           )}
                           Q{idx + 1}: {answer.questionText}
                         </p>
-                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 ${getScoreColor(answer.score)}`}>
+                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 self-start sm:self-auto ${getScoreColor(answer.score)}`}>
                         {answer.score}/100
                       </span>
                     </div>

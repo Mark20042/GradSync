@@ -61,7 +61,7 @@ const SavedJobs = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 mt-16">
+      <div className="max-w-7xl mx-auto py-6 md:py-8 pb-28 md:pb-8 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="flex items-center mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -69,18 +69,18 @@ const SavedJobs = () => {
           >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Bookmark className="w-8 h-8 text-blue-600" />
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Bookmark className="w-6 h-6 md:w-8 md:h-8 text-blue-600 shrink-0" />
             Saved Jobs
           </h1>
         </div>
 
         {jobs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
-            <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Bookmark className="w-10 h-10 text-blue-500" />
+          <div className="text-center py-12 md:py-20 px-6 bg-white rounded-3xl shadow-sm border border-gray-100">
+            <div className="bg-blue-50 w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Bookmark className="w-8 h-8 md:w-10 md:h-10 text-blue-500" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
               No saved jobs yet
             </h3>
             <p className="text-gray-500 max-w-md mx-auto mb-8">

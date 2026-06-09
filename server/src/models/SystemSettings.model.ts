@@ -11,7 +11,7 @@ export interface ISystemSettings extends Document {
 
 const systemSettingsSchema = new Schema<ISystemSettings>({
   aiCosts: {
-    interview: { type: Number, default: 2 },
+    interview: { type: Number, default: 20 },
     jobMatch: { type: Number, default: 1 },
     suitability: { type: Number, default: 1 },
     skillVerification: { type: Number, default: 1 },

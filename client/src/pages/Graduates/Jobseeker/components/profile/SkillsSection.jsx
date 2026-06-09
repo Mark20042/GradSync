@@ -93,7 +93,7 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
 
                 {/* Add Skill Input (Edit Mode) */}
                 {editing && (
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex flex-col sm:flex-row gap-2 mb-4">
                         <input
                             type="text"
                             value={newSkill}
@@ -104,7 +104,7 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
                         />
                         <button
                             onClick={handleAddSkill}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            className="w-full sm:w-auto justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
                             Add
@@ -197,7 +197,7 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
 
                 {/* Add Language Input (Edit Mode) */}
                 {editing && (
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex flex-col sm:flex-row gap-2 mb-4">
                         <input
                             type="text"
                             value={newLanguage.language}
@@ -217,7 +217,7 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
                         </select>
                         <button
                             onClick={handleAddLanguage}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                            className="w-full sm:w-auto justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
                             Add

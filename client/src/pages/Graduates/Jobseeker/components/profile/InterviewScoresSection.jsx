@@ -166,7 +166,7 @@ const InterviewScoresSection = () => {
       ) : (
         <>
           {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
               <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider mb-1">
                 Average Score

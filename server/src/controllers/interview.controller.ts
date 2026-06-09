@@ -27,8 +27,8 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
 
     const user = await User.findById(candidateId).select('aiTokens');
     if (!user) throw new NotFoundError("User not found");
-    const settings = await SystemSettings.findOne() || { aiCosts: { interview: 2 } };
-    const cost = settings.aiCosts?.interview || 2;
+    const settings = await SystemSettings.findOne() || { aiCosts: { interview: 20 } };
+    const cost = settings.aiCosts?.interview || 20;
     if ((user.aiTokens || 0) < cost) {
       throw new BadRequestError("You have exhausted your free AI tokens. Please contact the Administrator.");
     }
@@ -255,8 +255,8 @@ const chat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!message) {
       const user = await User.findById(candidateId).select('aiTokens');
       if (!user) throw new NotFoundError("User not found");
-      const settings = await SystemSettings.findOne() || { aiCosts: { interview: 2 } };
-      const cost = settings.aiCosts?.interview || 2;
+      const settings = await SystemSettings.findOne() || { aiCosts: { interview: 20 } };
+      const cost = settings.aiCosts?.interview || 20;
       if ((user.aiTokens || 0) < cost) {
         throw new BadRequestError("You have exhausted your free AI tokens. Please contact the Administrator.");
       }

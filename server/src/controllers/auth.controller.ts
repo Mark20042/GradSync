@@ -85,8 +85,8 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     const isJobSeeker = role === "jobseeker";
 
     let aiTokens = 0;
-    if (isJobSeeker) aiTokens = 5;
-    else if (isEmployer) aiTokens = 10;
+    if (isJobSeeker) aiTokens = 25;
+    else if (isEmployer) aiTokens = 30;
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);

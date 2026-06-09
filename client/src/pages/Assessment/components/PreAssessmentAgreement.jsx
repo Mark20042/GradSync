@@ -51,16 +51,16 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-auto my-6 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-auto my-3 md:my-6 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white m-0">
+              <h2 className="text-xl md:text-2xl font-bold text-white m-0">
                 Assessment Agreement
               </h2>
               <p className="text-blue-100 text-sm mt-1 m-0">
@@ -83,26 +83,26 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 mb-6 border border-blue-100">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-gray-500 text-xs font-semibold uppercase mb-1">
+              <p className="text-gray-500 text-[10px] md:text-xs font-semibold uppercase mb-1">
                 Questions
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg md:text-2xl font-bold text-gray-900">
                 {assessment.questions?.length || 0}
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-xs font-semibold uppercase mb-1">
+              <p className="text-gray-500 text-[10px] md:text-xs font-semibold uppercase mb-1">
                 Time Limit
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg md:text-2xl font-bold text-gray-900">
                 {assessment.timeLimit || 15}m
               </p>
             </div>
             <div>
-              <p className="text-gray-500 text-xs font-semibold uppercase mb-1">
+              <p className="text-gray-500 text-[10px] md:text-xs font-semibold uppercase mb-1">
                 Passing Score
               </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-lg md:text-2xl font-bold text-gray-900">
                 {assessment.passingScore || 80}%
               </p>
             </div>
@@ -187,7 +187,7 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
               </span>
             </label>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={onAgree}
                 disabled={!agreed}
@@ -198,7 +198,7 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
               </button>
               <button
                 onClick={onCancel}
-                className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300"
+                className="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:bg-gray-300 order-last sm:order-none"
               >
                 Cancel
               </button>

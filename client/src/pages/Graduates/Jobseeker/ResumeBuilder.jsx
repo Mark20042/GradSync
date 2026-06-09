@@ -117,9 +117,9 @@ const ResumeBuilder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen bg-gray-100 py-8 pb-28 md:pb-8">
       {/* Toolbar */}
-      <div className="max-w-[210mm] mx-auto mb-6 flex justify-between items-center px-4 print:hidden">
+      <div className="max-w-[210mm] mx-auto mb-6 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center px-4 print:hidden">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
