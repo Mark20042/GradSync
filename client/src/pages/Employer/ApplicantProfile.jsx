@@ -781,7 +781,7 @@ const ApplicantProfile = () => {
                                 <span
                                   className={`text-xs font-bold px-2 py-1 rounded-lg ${scoreBadge}`}
                                 >
-                                  {interview.aiScore}
+                                  {Math.round(interview.aiScore)}
                                 </span>
                                 <button
                                   onClick={() =>
@@ -850,7 +850,7 @@ const ApplicantProfile = () => {
                                   : "bg-red-100 text-red-700"
                           }`}
                         >
-                          Score: {selectedInterview.aiScore}/100
+                          Score: {Math.round(selectedInterview.aiScore)}/100
                         </span>
                       </div>
                       <p className="text-sm text-gray-600 leading-relaxed">
@@ -872,7 +872,7 @@ const ApplicantProfile = () => {
                               <span className="font-semibold text-indigo-900">{cat}</span>
                               <div className="w-px h-3 bg-indigo-100"></div>
                               <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                {score}%
+                                {Math.round(score)}%
                               </span>
                             </div>
                           ))}
@@ -921,7 +921,7 @@ const ApplicantProfile = () => {
                                 <span
                                   className={`text-xs font-bold px-2 py-1 rounded ${ansColor.replace("border-", "border").replace(" shadow-sm transition-all hover:shadow-md", "")} flex-shrink-0`}
                                 >
-                                  {answer.score}/100
+                                  {Math.round(answer.score)}/100
                                 </span>
                               </div>
                               <div className="space-y-3 bg-gray-50/80 rounded-lg p-3">
@@ -973,7 +973,7 @@ const ApplicantProfile = () => {
               <div className="flex items-center gap-4">
                 <div className="flex-1 bg-blue-50 p-4 rounded-xl border border-blue-100 text-center">
                   <p className="text-sm text-blue-600 font-bold mb-1 uppercase tracking-wider">Assessment Score</p>
-                  <p className="text-3xl font-black text-blue-700">{selectedSkill.score || 0}%</p>
+                  <p className="text-3xl font-black text-blue-700">{Math.round(selectedSkill.score || 0)}%</p>
                 </div>
                 <div className="flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center bg-green-50 border-green-100">
                   <p className="text-sm font-bold mb-1 uppercase tracking-wider text-green-600">Status</p>
@@ -994,7 +994,7 @@ const ApplicantProfile = () => {
                       <div key={cat} className="bg-white px-3 py-2 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-3 text-sm flex-1 min-w-[140px] justify-between">
                         <span className="font-semibold text-indigo-900">{cat}</span>
                         <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {score}%
+                          {Math.round(score)}%
                         </span>
                       </div>
                     ))}

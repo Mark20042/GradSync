@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import { Sparkles, BarChart2, DollarSign, Settings, Save } from "lucide-react";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { Sparkles, BarChart2, DollarSign, Settings, Save, Loader2 } from "lucide-react";
 
 const AdminAIResourceCenter = () => {
   const [metrics, setMetrics] = useState(null);
@@ -13,10 +13,21 @@ const AdminAIResourceCenter = () => {
   const [saving, setSaving] = useState(false);
   const [addingTokens, setAddingTokens] = useState({});
   const [costs, setCosts] = useState({
-    interview: 2,
+    interview: 20,
     jobMatch: 1,
     suitability: 1,
-    skillVerification: 1
+    skillVerification: 1,
+    profileGeneration: 1
+  });
+  const [initialTokens, setInitialTokens] = useState({
+    graduate: 5,
+    jobseeker: 5,
+    employer: 5
+  });
+  const [tokenPackages, setTokenPackages] = useState({
+    basic: { tokens: 5, price: 109 },
+    popular: { tokens: 15, price: 239 },
+    premium: { tokens: 30, price: 549 }
   });
 
   const fetchData = async () => {
@@ -28,9 +39,17 @@ const AdminAIResourceCenter = () => {
       ]);
       setMetrics(metricsRes.data);
       setUsers(usersRes.data);
-      if (settingsRes.data && settingsRes.data.aiCosts) {
-        setSettings(settingsRes.data);
-        setCosts(settingsRes.data.aiCosts);
+      if (settingsRes.data) {
+        if (settingsRes.data.aiCosts) {
+          setSettings(settingsRes.data);
+          setCosts(settingsRes.data.aiCosts);
+        }
+        if (settingsRes.data.initialTokens) {
+          setInitialTokens(settingsRes.data.initialTokens);
+        }
+        if (settingsRes.data.tokenPackages) {
+          setTokenPackages(settingsRes.data.tokenPackages);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch AI data:", error);
@@ -47,8 +66,26 @@ const AdminAIResourceCenter = () => {
   const handleSaveCosts = async () => {
     setSaving(true);
     try {
-      await axiosInstance.put("/api/admin/system-settings", { aiCosts: costs });
-      toast.success("AI costs updated successfully!");
+      const safeCosts = {};
+      for (const key in costs) safeCosts[key] = isNaN(costs[key]) || costs[key] === "" ? 0 : Number(costs[key]);
+      
+      const safeInitial = {};
+      for (const key in initialTokens) safeInitial[key] = isNaN(initialTokens[key]) || initialTokens[key] === "" ? 0 : Number(initialTokens[key]);
+
+      const safePackages = {};
+      for (const pkg in tokenPackages) {
+        safePackages[pkg] = {
+          tokens: isNaN(tokenPackages[pkg].tokens) || tokenPackages[pkg].tokens === "" ? 0 : Number(tokenPackages[pkg].tokens),
+          price: isNaN(tokenPackages[pkg].price) || tokenPackages[pkg].price === "" ? 0 : Number(tokenPackages[pkg].price)
+        };
+      }
+
+      await axiosInstance.put("/api/admin/system-settings", { 
+        aiCosts: safeCosts,
+        initialTokens: safeInitial,
+        tokenPackages: safePackages
+      });
+      toast.success("AI settings updated successfully!");
     } catch (error) {
       console.error("Failed to update costs:", error);
       toast.error("Failed to update AI costs.");
@@ -59,22 +96,45 @@ const AdminAIResourceCenter = () => {
 
   const handleCostChange = (e) => {
     const { name, value } = e.target;
-    setCosts(prev => ({ ...prev, [name]: Number(value) }));
+    setCosts(prev => ({ ...prev, [name]: value === "" ? "" : Number(value) }));
   };
 
-  const handleAddTokens = async (userId, currentTokens, amountToAdd) => {
+  const handleInitialTokenChange = (e) => {
+    const { name, value } = e.target;
+    setInitialTokens(prev => ({
+      ...prev,
+      [name]: value === "" ? "" : Number(value)
+    }));
+  };
+
+  const handlePackageChange = (pkg, field, value) => {
+    setTokenPackages(prev => ({
+      ...prev,
+      [pkg]: {
+        ...prev[pkg],
+        [field]: value === "" ? "" : Number(value)
+      }
+    }));
+  };
+
+  const handleAdjustTokens = async (userId, currentTokens, amountToAdjust) => {
     setAddingTokens(prev => ({ ...prev, [userId]: true }));
     try {
-      const newAmount = (currentTokens || 0) + amountToAdd;
+      const newAmount = Math.max(0, (currentTokens || 0) + amountToAdjust);
+      if (newAmount === currentTokens) {
+        setAddingTokens(prev => ({ ...prev, [userId]: false }));
+        return;
+      }
       await axiosInstance.put(`/api/admin/users/${userId}`, { aiTokens: newAmount });
-      toast.success(`${amountToAdd} GradCoins added successfully!`);
+      const message = amountToAdjust > 0 ? `${amountToAdjust} GradCoins added successfully!` : `${Math.abs(amountToAdjust)} GradCoins removed successfully!`;
+      toast.success(message);
       // Update local state
       setUsers(prevUsers => prevUsers.map(u => 
         u._id === userId ? { ...u, aiTokens: newAmount } : u
       ));
     } catch (error) {
-      console.error("Failed to add tokens:", error);
-      toast.error("Failed to add tokens.");
+      console.error("Failed to adjust tokens:", error);
+      toast.error("Failed to adjust tokens.");
     } finally {
       setAddingTokens(prev => ({ ...prev, [userId]: false }));
     }
@@ -213,6 +273,103 @@ const AdminAIResourceCenter = () => {
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Profile Generation Cost</label>
+                <input
+                  type="number"
+                  name="profileGeneration"
+                  min="0"
+                  value={costs.profileGeneration || 1}
+                  onChange={handleCostChange}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <hr className="my-6 border-gray-100" />
+
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <img src="/gradcoin.svg" alt="GradCoin" className="w-5 h-5 drop-shadow-sm" />
+              Initial Registration Tokens
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Set the number of free tokens given to new users when they register.
+            </p>
+
+            <div className="grid grid-cols-3 gap-4 mb-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Graduate</label>
+                <input
+                  type="number"
+                  name="graduate"
+                  min="0"
+                  value={initialTokens.graduate}
+                  onChange={handleInitialTokenChange}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Job Seeker</label>
+                <input
+                  type="number"
+                  name="jobseeker"
+                  min="0"
+                  value={initialTokens.jobseeker}
+                  onChange={handleInitialTokenChange}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employer</label>
+                <input
+                  type="number"
+                  name="employer"
+                  min="0"
+                  value={initialTokens.employer}
+                  onChange={handleInitialTokenChange}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <hr className="my-6 border-gray-100" />
+
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <img src="/gradcoin.svg" alt="GradCoin" className="w-5 h-5 drop-shadow-sm" />
+              Token Purchase Packages
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Configure the 3 token purchase packages shown to users.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-2">
+              {['basic', 'popular', 'premium'].map((pkg) => (
+                <div key={pkg} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <h4 className="font-semibold text-gray-700 capitalize mb-3 pb-2 border-b border-gray-200">{pkg} Package</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Number of Tokens</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={tokenPackages[pkg].tokens}
+                        onChange={(e) => handlePackageChange(pkg, 'tokens', e.target.value)}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Price (₱)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={tokenPackages[pkg].price}
+                        onChange={(e) => handlePackageChange(pkg, 'price', e.target.value)}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-end mt-8">
@@ -222,7 +379,10 @@ const AdminAIResourceCenter = () => {
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {saving ? (
-                  <LoadingSpinner className="w-5 h-5 text-white" />
+                  <>
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    Saving...
+                  </>
                 ) : (
                   <>
                     <Save className="w-5 h-5" />
@@ -283,14 +443,28 @@ const AdminAIResourceCenter = () => {
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleAddTokens(u._id, u.aiTokens, 5)}
+                          onClick={() => handleAdjustTokens(u._id, u.aiTokens, -10)}
+                          disabled={addingTokens[u._id] || (u.aiTokens || 0) < 10}
+                          className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-medium text-xs rounded-lg transition-colors border border-red-200 disabled:opacity-50"
+                        >
+                          -10 Tokens
+                        </button>
+                        <button
+                          onClick={() => handleAdjustTokens(u._id, u.aiTokens, -5)}
+                          disabled={addingTokens[u._id] || (u.aiTokens || 0) < 5}
+                          className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-medium text-xs rounded-lg transition-colors border border-orange-200 disabled:opacity-50"
+                        >
+                          -5 Tokens
+                        </button>
+                        <button
+                          onClick={() => handleAdjustTokens(u._id, u.aiTokens, 5)}
                           disabled={addingTokens[u._id]}
                           className="px-3 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-xs rounded-lg transition-colors border border-green-200 disabled:opacity-50"
                         >
-                          {addingTokens[u._id] ? "Adding..." : "+5 Tokens"}
+                          {addingTokens[u._id] ? "Processing..." : "+5 Tokens"}
                         </button>
                         <button
-                          onClick={() => handleAddTokens(u._id, u.aiTokens, 10)}
+                          onClick={() => handleAdjustTokens(u._id, u.aiTokens, 10)}
                           disabled={addingTokens[u._id]}
                           className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-xs rounded-lg transition-colors border border-blue-200 disabled:opacity-50"
                         >

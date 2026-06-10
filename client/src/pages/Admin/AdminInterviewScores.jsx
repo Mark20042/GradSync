@@ -223,7 +223,7 @@ const AdminInterviewScores = () => {
                   <span className="font-semibold text-gray-700">{interview.roleName || "General"}</span>
                   <div>
                     <span className={`inline-flex items-center justify-center px-4 py-1 rounded-full font-bold text-xs ${getScoreColor(interview.aiScore)}`}>
-                      {interview.aiScore}/100
+                      {Math.round(interview.aiScore)}/100
                     </span>
                   </div>
                   <span className="text-gray-500 text-xs font-medium">
@@ -294,7 +294,7 @@ const AdminInterviewScores = () => {
                         <div key={cat} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
                           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 truncate">{cat}</p>
                           <p className={`text-lg font-extrabold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            {score}<span className="text-xs text-gray-400 font-medium">/100</span>
+                            {Math.round(score)}<span className="text-xs text-gray-400 font-medium">/100</span>
                           </p>
                         </div>
                       ))}
@@ -326,7 +326,7 @@ const AdminInterviewScores = () => {
                         Q{idx + 1}: {answer.questionText}
                       </p>
                       <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 ${getScoreColor(answer.score)}`}>
-                        {answer.score}/100
+                        {Math.round(answer.score)}/100
                       </span>
                     </div>
                     <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-3">

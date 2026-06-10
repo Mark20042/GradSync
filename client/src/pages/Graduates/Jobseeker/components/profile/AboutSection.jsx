@@ -2,6 +2,16 @@ import React from 'react';
 import { User, Sparkles, FileText } from 'lucide-react';
 
 const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, handleGenerateSummary }) => {
+    const aiCost = user?.systemSettings?.aiCosts?.profileGeneration || 1;
+
+    const onGenerateClick = () => {
+        if ((user?.aiTokens || 0) < aiCost) {
+            window.dispatchEvent(new CustomEvent("openTokenModal"));
+            return;
+        }
+        handleGenerateSummary();
+    };
+
     return (
         <div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -13,7 +23,7 @@ const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, ha
                 <div className="space-y-3">
                     <div className="flex justify-end">
                         <button
-                            onClick={handleGenerateSummary}
+                            onClick={onGenerateClick}
                             disabled={summaryLoading}
                             className="flex items-center gap-2 text-sm bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all disabled:opacity-50 font-medium shadow-sm"
                         >
@@ -26,6 +36,9 @@ const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, ha
                                 <>
                                     <Sparkles className="w-4 h-4" />
                                     Generate with AI
+                                    <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full">
+                                        <img src="/gradcoin.svg" alt="GradCoin" className="w-3.5 h-3.5 object-contain" /> {aiCost}
+                                    </span>
                                 </>
                             )}
                         </button>

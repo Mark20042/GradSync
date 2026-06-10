@@ -56,10 +56,11 @@ const InterviewRoom = () => {
   const [answers, setAnswers] = useState([]); // Per-question answers array
   const [isEvaluating, setIsEvaluating] = useState(false);
 
-  // Pre-interview setup states
   const [setupStep, setSetupStep] = useState(1); // 1=Rules, 2=Agreement, 3=Camera Setup
   const [hasAgreed, setHasAgreed] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // Integrity tracking
   const [violations, setViolations] = useState([]);
@@ -471,6 +472,10 @@ const InterviewRoom = () => {
   };
 
   const handleEndInterview = async () => {
+    if (isSubmittingRef.current || isEvaluating || isSubmitted) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+
     // Save the last answer
     const lastTranscript = saveCurrentAnswer();
     window.speechSynthesis.cancel();
@@ -487,6 +492,8 @@ const InterviewRoom = () => {
     const answeredCount = finalAnswers.filter((a) => a.candidateAnswer.trim()).length;
     if (answeredCount === 0) {
       toast.error("Please answer at least one question before finishing.");
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -511,6 +518,8 @@ const InterviewRoom = () => {
 
       setIsSubmitted(true);
       setIsEvaluating(false);
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
 
       // Cleanup
       if (stream) {
@@ -520,6 +529,8 @@ const InterviewRoom = () => {
       console.error("Evaluation failed:", error);
       toast.error("Failed to submit interview. Please try again.");
       setIsEvaluating(false);
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -706,12 +717,19 @@ const InterviewRoom = () => {
 
           <button
             onClick={nextQuestion}
-            className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-0.5 border-none"
+            disabled={isSubmitting || isEvaluating}
+            className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {currentQIndex === questions.length - 1 ? (
-              <>
-                Finish <Check size={20} />
-              </>
+              isSubmitting ? (
+                <>
+                  Finishing <Loader2 size={20} className="animate-spin" />
+                </>
+              ) : (
+                <>
+                  Finish <Check size={20} />
+                </>
+              )
             ) : (
               <>
                 Next <ChevronRight size={20} />
@@ -722,10 +740,11 @@ const InterviewRoom = () => {
 
         <button
           onClick={handleEndInterview}
-          className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 border-none"
+          disabled={isSubmitting || isEvaluating}
+          className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
         >
           <PhoneOff size={20} />
-          End
+          {isSubmitting ? "Ending..." : "End"}
         </button>
       </div>
     </div>

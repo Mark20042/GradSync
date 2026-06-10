@@ -23,6 +23,7 @@ const AssessmentList = () => {
   const [assessments, setAssessments] = useState([]);
   const [userSkills, setUserSkills] = useState([]);
   const [userTokens, setUserTokens] = useState(0);
+  const [aiCosts, setAiCosts] = useState({ interview: 20, skillVerification: 1 });
   const [mySubmissions, setMySubmissions] = useState([]);
   const [myInterviews, setMyInterviews] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -46,6 +47,9 @@ const AssessmentList = () => {
       const userRes = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
       setUserSkills(userRes.data.verifiedSkills || []);
       setUserTokens(userRes.data.aiTokens || 0);
+      if (userRes.data.systemSettings?.aiCosts) {
+        setAiCosts(userRes.data.systemSettings.aiCosts);
+      }
     } catch (error) {
       console.error("Error fetching user skills", error);
     }
@@ -182,20 +186,7 @@ const AssessmentList = () => {
             return (
               <div
                 key={role._id}
-                onClick={() => {
-                  if (completedInterview) {
-                    toast.error("You have already completed this interview.");
-                    return;
-                  }
-                  if (userTokens < 20) {
-                    window.dispatchEvent(new CustomEvent("openTokenModal"));
-                    return;
-                  }
-                  navigate("/interview-room", { state: { jobRole: role.roleName } });
-                }}
-                className={`bg-white rounded-xl border-2 border-gray-200 p-5 transition-all duration-300 relative flex items-start gap-4 ${
-                  completedInterview || userTokens < 20 ? "opacity-90 cursor-not-allowed" : "cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-500"
-                }`}
+                className={`bg-white rounded-xl border border-gray-200 p-6 transition-all duration-300 relative hover:-translate-y-1 hover:shadow-lg hover:border-blue-500`}
               >
                 {completedInterview && (
                   <div className="absolute top-4 right-4 flex flex-col items-center gap-1 z-10">
@@ -213,6 +204,7 @@ const AssessmentList = () => {
                   </div>
                 )}
 
+                <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
                   <Briefcase size={24} className="text-purple-500" />
                 </div>
@@ -220,7 +212,6 @@ const AssessmentList = () => {
                 <div className="flex-1 pr-12">
                   <h4 className="font-bold text-gray-900 mb-1 flex items-center justify-between">
                     <span>{role.displayName || role.roleName}</span>
-                    {!completedInterview && <span className="flex items-center gap-1 text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 20</span>}
                   </h4>
                   <p className="text-sm text-gray-500 flex items-center gap-1">
                     {role.questions?.length || 0} Questions Available
@@ -231,6 +222,36 @@ const AssessmentList = () => {
                     </p>
                   )}
                 </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (completedInterview) {
+                      toast.error("You have already completed this interview.");
+                      return;
+                    }
+                    if (userTokens < aiCosts.interview) {
+                      window.dispatchEvent(new CustomEvent("openTokenModal"));
+                      return;
+                    }
+                    navigate("/interview-room", { state: { jobRole: role.roleName } });
+                  }}
+                  className={`w-full py-3 mt-4 rounded-lg font-bold flex items-center justify-center gap-2 ${
+                    completedInterview
+                      ? "bg-green-100 text-green-700 hover:bg-green-200"
+                      : userTokens < aiCosts.interview
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
+                  {completedInterview ? (
+                    "✓ Completed"
+                  ) : (
+                    <>
+                      <Play size={16} /> Take Interview <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.interview}</span>
+                    </>
+                  )}
+                </button>
               </div>
             );
           })}
@@ -303,14 +324,14 @@ const AssessmentList = () => {
                     }}
                     className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${verified
                       ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : userTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+                      : userTokens < aiCosts.skillVerification ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
                       }`}
                   >
                     {verified ? (
                       "✓ Verified"
                     ) : (
                       <>
-                        <Play size={16} /> Take Assessment <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span>
+                        <Play size={16} /> Take Assessment <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.skillVerification}</span>
                       </>
                     )}
                   </button>
@@ -350,7 +371,7 @@ const AssessmentList = () => {
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
                 <div className="w-full sm:flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
                   <p className="text-xs md:text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
-                  <p className="text-2xl md:text-3xl font-black text-blue-700">{selectedSubmission.score}%</p>
+                  <p className="text-2xl md:text-3xl font-black text-blue-700">{Math.round(selectedSubmission.score)}%</p>
                 </div>
                 <div className={`w-full sm:flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
                   <p className={`text-xs md:text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
@@ -371,7 +392,7 @@ const AssessmentList = () => {
                       <div key={cat} className="bg-white px-3 py-2 rounded-lg shadow-sm border border-indigo-50 flex items-center gap-3 text-sm flex-1 min-w-[140px] justify-between">
                         <span className="font-semibold text-indigo-900">{cat}</span>
                         <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                          {score}%
+                          {Math.round(score)}%
                         </span>
                       </div>
                     ))}

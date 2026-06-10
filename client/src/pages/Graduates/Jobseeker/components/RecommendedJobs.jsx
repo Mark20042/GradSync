@@ -15,7 +15,7 @@ const RecommendedJobs = ({
   if (!loading && (!recommendedJobs || recommendedJobs.length === 0)) return null;
 
   return (
-    <div className="w-full xl:w-1/3 flex flex-col bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-100/50 sticky top-28 h-[calc(100vh-140px)] overflow-hidden">
+    <div className="w-full xl:w-1/3 flex flex-col bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-100/50 xl:sticky xl:top-28 h-[400px] xl:h-[calc(100vh-140px)] overflow-hidden">
       <div className="p-5 border-b border-gray-100 bg-white sticky top-0 z-10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 border border-purple-200 bg-purple-50 rounded-lg">

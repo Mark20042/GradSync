@@ -90,7 +90,7 @@ export const generateSummary = async (
     const userId = req.user._id;
 
     const user = await User.findById(userId).select(
-      'degree major skills experiences education verifiedSkills'
+      'degree major skills experiences education verifiedSkills aiTokens'
     );
 
     if (!user) {
@@ -98,10 +98,21 @@ export const generateSummary = async (
       return;
     }
 
+    const settings = await SystemSettings.findOne() || { aiCosts: { profileGeneration: 1 } };
+    const cost = settings.aiCosts?.profileGeneration || 1;
+
+    if ((user.aiTokens || 0) < cost) {
+      res.status(403).json({ message: 'You have exhausted your free AI tokens. Please contact the Administrator.' });
+      return;
+    }
+
     const aiService = getAIService();
     const result = await aiService.generateAISummary(
       user as unknown as UserProfileForAI
     );
+
+    user.aiTokens = (user.aiTokens || 0) - cost;
+    await user.save();
 
     res.status(200).json(result);
   } catch (error) {

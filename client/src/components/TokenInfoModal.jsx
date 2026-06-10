@@ -1,9 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sparkles, X, Info, Shield, Zap, Check } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
 
 const TokenInfoModal = ({ isOpen, onClose }) => {
-  const [selectedPackage, setSelectedPackage] = useState(10);
+  const { user } = useAuth();
+  const [selectedPackage, setSelectedPackage] = useState(15);
+
+  useEffect(() => {
+    if (user?.systemSettings?.tokenPackages?.popular?.tokens) {
+      setSelectedPackage(user.systemSettings.tokenPackages.popular.tokens);
+    }
+  }, [user?.systemSettings?.tokenPackages?.popular?.tokens]);
 
   if (!isOpen) return null;
 
@@ -76,68 +84,67 @@ const TokenInfoModal = ({ isOpen, onClose }) => {
 
             {/* Pricing Tiers */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-              {[
-                {
-                  coins: 5,
-                  price: "₱109.00",
-                  popular: false,
-                  bullets: ["5 AI Skill Assessments", "5 Instant Job Matches", "No AI Mock Interviews"]
-                },
-                {
-                  coins: 15,
-                  price: "₱239.00",
-                  popular: true,
-                  bullets: ["15 AI Skill Assessments", "15 Instant Job Matches", "No AI Mock Interviews"]
-                },
-                {
-                  coins: 30,
-                  price: "₱549.00",
-                  popular: false,
-                  bullets: ["1 AI Mock Interview", "10 AI Skill Assessments", "10 Instant Job Matches"]
-                }
-              ].map((pkg) => (
-                <button
-                  key={pkg.coins}
-                  onClick={() => setSelectedPackage(pkg.coins)}
-                  className={`w-full relative flex flex-col items-center justify-start p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${selectedPackage === pkg.coins
-                    ? "border-indigo-500 bg-indigo-50/40 shadow-[0_8px_25px_-5px_rgba(99,102,241,0.3)] transform scale-[1.03] z-10"
-                    : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50 hover:shadow-lg"
-                    }`}
-                >
-                  {pkg.popular && (
-                    <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[11px] font-extrabold py-1 shadow-sm tracking-widest uppercase text-center">
-                      Best Value
+              {['basic', 'popular', 'premium'].map((pkgName) => {
+                const pkg = user?.systemSettings?.tokenPackages?.[pkgName] || { tokens: 5, price: 109 };
+                const aiCosts = user?.systemSettings?.aiCosts || { interview: 20, jobMatch: 1, skillVerification: 2 };
+
+                // Calculate dynamic usage
+                const mockInterviews = Math.floor(pkg.tokens / aiCosts.interview);
+                const skillAssessments = Math.floor(pkg.tokens / aiCosts.skillVerification);
+                const jobMatches = Math.floor(pkg.tokens / aiCosts.jobMatch);
+
+                const bullets = [
+                  mockInterviews > 0 ? `${mockInterviews} AI Mock Interview${mockInterviews > 1 ? 's' : ''}` : "No AI Mock Interviews",
+                  `${skillAssessments} AI Skill Assessments`,
+                  `${jobMatches} Instant Job Matches`
+                ];
+
+                const isPopular = pkgName === 'popular';
+
+                return (
+                  <button
+                    key={pkgName}
+                    onClick={() => setSelectedPackage(pkg.tokens)}
+                    className={`w-full relative flex flex-col items-center justify-start p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${selectedPackage === pkg.tokens
+                      ? "border-indigo-500 bg-indigo-50/40 shadow-[0_8px_25px_-5px_rgba(99,102,241,0.3)] transform scale-[1.03] z-10"
+                      : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50 hover:shadow-lg"
+                      }`}
+                  >
+                    {isPopular && (
+                      <div className="absolute top-0 left-0 w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-[11px] font-extrabold py-1 shadow-sm tracking-widest uppercase text-center">
+                        Best Value
+                      </div>
+                    )}
+
+                    <div className={`mt-3 w-7 h-7 rounded-full border-2 flex shrink-0 items-center justify-center transition-colors mb-4 ${selectedPackage === pkg.tokens ? "border-indigo-600 bg-indigo-600 shadow-md" : "border-gray-300"
+                      }`}>
+                      {selectedPackage === pkg.tokens && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
                     </div>
-                  )}
 
-                  <div className={`mt-3 w-7 h-7 rounded-full border-2 flex shrink-0 items-center justify-center transition-colors mb-4 ${selectedPackage === pkg.coins ? "border-indigo-600 bg-indigo-600 shadow-md" : "border-gray-300"
-                    }`}>
-                    {selectedPackage === pkg.coins && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
-                  </div>
+                    <span className={`block font-black text-3xl mb-1 ${selectedPackage === pkg.tokens ? "text-indigo-900" : "text-gray-900"}`}>
+                      {pkg.tokens} <span className="text-xl font-bold text-gray-500">Coins</span>
+                    </span>
 
-                  <span className={`block font-black text-3xl mb-1 ${selectedPackage === pkg.coins ? "text-indigo-900" : "text-gray-900"}`}>
-                    {pkg.coins} <span className="text-xl font-bold text-gray-500">Coins</span>
-                  </span>
+                    <span className={`font-black text-2xl mb-5 ${selectedPackage === pkg.tokens ? "text-indigo-600" : "text-gray-600"}`}>
+                      ₱{pkg.price}.00
+                    </span>
 
-                  <span className={`font-black text-2xl mb-5 ${selectedPackage === pkg.coins ? "text-indigo-600" : "text-gray-600"}`}>
-                    {pkg.price}
-                  </span>
+                    <div className="w-full h-px bg-gray-200/60 mb-5"></div>
 
-                  <div className="w-full h-px bg-gray-200/60 mb-5"></div>
-
-                  <ul className="w-full space-y-3 text-left mb-2">
-                    <li className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-4">Estimated Usage</li>
-                    {pkg.bullets.map((bullet, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5">
-                        <Check className={`w-5 h-5 shrink-0 ${selectedPackage === pkg.coins ? "text-indigo-500" : "text-gray-300"}`} strokeWidth={2.5} />
-                        <span className={`text-sm font-semibold leading-snug ${selectedPackage === pkg.coins ? "text-indigo-900" : "text-gray-600"}`}>
-                          {bullet}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
+                    <ul className="w-full space-y-3 text-left mb-2">
+                      <li className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-4">Estimated Usage</li>
+                      {bullets.map((bullet, idx) => (
+                        <li key={idx} className="flex items-start gap-2.5">
+                          <Check className={`w-5 h-5 shrink-0 ${selectedPackage === pkg.tokens ? "text-indigo-500" : "text-gray-300"}`} strokeWidth={2.5} />
+                          <span className={`text-sm font-semibold leading-snug ${selectedPackage === pkg.tokens ? "text-indigo-900" : "text-gray-600"}`}>
+                            {bullet}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                );
+              })}
             </div>
 
           </div>

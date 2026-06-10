@@ -33,6 +33,7 @@ const AssessmentTaking = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [result, setResult] = useState(null);
+  const isSubmittingRef = useRef(false);
 
   // New states for security
   const [showAgreement, setShowAgreement] = useState(true);
@@ -226,7 +227,9 @@ const AssessmentTaking = () => {
   };
 
   const handleSubmit = async (forcedByViolation = false) => {
-    if (isSubmitted) return;
+    if (isSubmitted || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
     clearInterval(timerRef.current);
 
     const formattedAnswers = Object.entries(answers).map(
@@ -281,6 +284,9 @@ const AssessmentTaking = () => {
     } catch (error) {
       console.error("Submission failed", error);
       toast.error("Failed to submit assessment");
+    } finally {
+      setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -510,9 +516,9 @@ const AssessmentTaking = () => {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-5 md:p-10 overflow-y-auto flex flex-col">
-            <div className="flex flex-col-reverse sm:flex-row justify-between sm:items-center gap-2 mb-4 md:mb-6">
-              <span className="text-xs md:text-sm font-bold text-blue-600 uppercase tracking-wider">
+          <div className="flex-1 p-4 md:p-10 overflow-y-auto flex flex-col">
+            <div className="flex flex-col-reverse sm:flex-row justify-between sm:items-center gap-2 mb-3 md:mb-6">
+              <span className="text-[11px] md:text-sm font-bold text-blue-600 uppercase tracking-wider">
                 Question {currentIndex + 1} of {assessment.questions.length}
               </span>
               {currentQuestion.category && (
@@ -522,12 +528,12 @@ const AssessmentTaking = () => {
               )}
             </div>
 
-            <h2 className="text-lg md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 leading-relaxed">
+            <h2 className="text-base md:text-2xl font-bold text-gray-900 mb-4 md:mb-8 leading-relaxed">
               {currentQuestion.questionText}
             </h2>
 
             {currentQuestion.codeSnippet && (
-              <pre className="bg-slate-800 text-slate-200 p-4 rounded-lg overflow-x-auto font-mono text-sm mb-6">
+              <pre className="bg-slate-800 text-slate-200 p-3 md:p-4 rounded-lg overflow-x-auto font-mono text-[10px] md:text-sm mb-4 md:mb-6 leading-tight">
                 {currentQuestion.codeSnippet}
               </pre>
             )}
@@ -536,7 +542,7 @@ const AssessmentTaking = () => {
               <img
                 src={currentQuestion.imageUrl}
                 alt="Question Reference"
-                className="max-h-64 object-contain mb-6 rounded-lg border border-gray-200"
+                className="max-h-40 md:max-h-64 object-contain mb-4 md:mb-6 rounded-lg border border-gray-200"
               />
             )}
 
@@ -552,14 +558,14 @@ const AssessmentTaking = () => {
                 />
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-2.5 md:gap-4">
                 {currentQuestion.options.filter(opt => opt && opt.trim() !== "").map((option, index) => {
                   const isSelected = answers[currentQuestion._id] === option;
                   return (
                     <button
                       key={index}
                       onClick={() => handleOptionSelect(option)}
-                      className={`text-left p-4 md:p-5 rounded-xl border-2 font-medium transition-all flex items-center gap-3 md:gap-4 hover:border-blue-500 hover:bg-slate-50 ${isSelected ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
+                      className={`text-left p-3 md:p-5 rounded-xl border-2 font-medium transition-all flex items-center gap-3 md:gap-4 text-sm md:text-base hover:border-blue-500 hover:bg-slate-50 ${isSelected ? "border-blue-500 bg-blue-50 text-blue-800" : "border-gray-200 bg-white text-gray-700"}`}
                     >
                       <span
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${isSelected ? "border-blue-500 bg-blue-500" : "border-gray-300 bg-transparent"}`}

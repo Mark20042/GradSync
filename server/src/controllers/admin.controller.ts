@@ -288,11 +288,18 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     user.verified = body.verified !== undefined ? body.verified : user.verified;
     
     let tokensAdded = false;
+    let tokensReduced = false;
     let addedAmount = 0;
+    let reducedAmount = 0;
+    
     if (body.aiTokens !== undefined) {
-      if (body.aiTokens > (user.aiTokens || 0)) {
+      const currentTokens = user.aiTokens || 0;
+      if (body.aiTokens > currentTokens) {
         tokensAdded = true;
-        addedAmount = body.aiTokens - (user.aiTokens || 0);
+        addedAmount = body.aiTokens - currentTokens;
+      } else if (body.aiTokens < currentTokens) {
+        tokensReduced = true;
+        reducedAmount = currentTokens - body.aiTokens;
       }
       user.aiTokens = body.aiTokens;
     }
@@ -333,6 +340,25 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
           title: "Tokens Received",
           message: `You have received ${addedAmount} GradCoins from the Administrator!`,
           type: "TOKENS_ADDED"
+        });
+      } catch (err) {
+        console.error("Socket emit failed", err);
+      }
+    }
+
+    if (tokensReduced) {
+      await createNotification(
+        updatedUser._id,
+        "TOKENS_DEDUCTED",
+        "Tokens Adjusted",
+        `${reducedAmount} GradCoins have been deducted from your account by the Administrator.`
+      );
+      try {
+        const io = getIo();
+        io.to(updatedUser._id.toString()).emit("receiveNotification", {
+          title: "Tokens Adjusted",
+          message: `${reducedAmount} GradCoins have been deducted from your account by the Administrator.`,
+          type: "TOKENS_DEDUCTED"
         });
       } catch (err) {
         console.error("Socket emit failed", err);
@@ -598,6 +624,26 @@ export const createUser = async (req: any, res: Response, next: NextFunction) =>
     if ((role === "graduate" || role === "jobseeker") && !userData.degree) userData.degree = "Not Specified";
     if (role === "employer" && !userData.companyName) userData.companyName = "Not Specified";
     if (role === "employer") ["degree","university","major","graduationYear","jobPreferences","skills","experiences","internships","education","awards","certifications","projects","languages"].forEach(f => delete userData[f]);
+
+    // Apply initial AI Tokens based on system settings
+    if (userData.aiTokens === undefined) {
+      try {
+        const settings = await SystemSettings.findOne();
+        if (settings && settings.initialTokens) {
+          if (role === "jobseeker") userData.aiTokens = settings.initialTokens.jobseeker;
+          else if (role === "employer") userData.aiTokens = settings.initialTokens.employer;
+          else if (role === "graduate") userData.aiTokens = settings.initialTokens.graduate;
+        } else {
+          // Defaults if not set
+          if (role === "jobseeker") userData.aiTokens = 5;
+          else if (role === "employer") userData.aiTokens = 5;
+          else if (role === "graduate") userData.aiTokens = 5;
+        }
+      } catch (err) {
+        console.error("Failed to assign initial tokens to new user", err);
+      }
+    }
+
     const user = await User.create(userData);
     const resp = user.toObject(); delete (resp as { password?: string }).password;
     res.status(201).json(resp);
@@ -653,7 +699,42 @@ export const updateSystemSettings = async (req: any, res: Response, next: NextFu
     if (!settings) {
       settings = new SystemSettings(req.body);
     } else {
-      settings.aiCosts = req.body.aiCosts || settings.aiCosts;
+      if (req.body.aiCosts) {
+        if (!settings.aiCosts) settings.aiCosts = { interview: 20, jobMatch: 1, suitability: 1, skillVerification: 1, profileGeneration: 1 };
+        if (req.body.aiCosts.interview !== undefined) settings.aiCosts.interview = req.body.aiCosts.interview;
+        if (req.body.aiCosts.jobMatch !== undefined) settings.aiCosts.jobMatch = req.body.aiCosts.jobMatch;
+        if (req.body.aiCosts.suitability !== undefined) settings.aiCosts.suitability = req.body.aiCosts.suitability;
+        if (req.body.aiCosts.skillVerification !== undefined) settings.aiCosts.skillVerification = req.body.aiCosts.skillVerification;
+        if (req.body.aiCosts.profileGeneration !== undefined) settings.aiCosts.profileGeneration = req.body.aiCosts.profileGeneration;
+      }
+      if (req.body.initialTokens) {
+        if (!settings.initialTokens) settings.initialTokens = { graduate: 5, jobseeker: 5, employer: 5 };
+        if (req.body.initialTokens.graduate !== undefined) settings.initialTokens.graduate = req.body.initialTokens.graduate;
+        if (req.body.initialTokens.jobseeker !== undefined) settings.initialTokens.jobseeker = req.body.initialTokens.jobseeker;
+        if (req.body.initialTokens.employer !== undefined) settings.initialTokens.employer = req.body.initialTokens.employer;
+      }
+      if (req.body.tokenPackages) {
+        if (!settings.tokenPackages) settings.tokenPackages = {
+          basic: { tokens: 5, price: 109 },
+          popular: { tokens: 15, price: 239 },
+          premium: { tokens: 30, price: 549 }
+        };
+        ['basic', 'popular', 'premium'].forEach(pkg => {
+          if (req.body.tokenPackages[pkg]) {
+            if (req.body.tokenPackages[pkg].tokens !== undefined) settings.tokenPackages[pkg].tokens = req.body.tokenPackages[pkg].tokens;
+            if (req.body.tokenPackages[pkg].price !== undefined) settings.tokenPackages[pkg].price = req.body.tokenPackages[pkg].price;
+          }
+        });
+      }
+    }
+    if (req.body.aiCosts) {
+      settings.markModified('aiCosts');
+    }
+    if (req.body.initialTokens) {
+      settings.markModified('initialTokens');
+    }
+    if (req.body.tokenPackages) {
+      settings.markModified('tokenPackages');
     }
     await settings.save();
     res.json(settings);

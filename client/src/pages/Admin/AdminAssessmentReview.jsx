@@ -442,7 +442,7 @@ const AdminAssessmentReview = () => {
                               <span className="font-semibold text-indigo-900">{cat}</span>
                               <div className="w-px h-4 bg-indigo-100"></div>
                               <span className={`font-bold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                {score}%
+                                {Math.round(score)}%
                               </span>
                             </div>
                           ))}

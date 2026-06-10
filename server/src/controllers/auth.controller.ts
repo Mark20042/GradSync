@@ -9,6 +9,7 @@ import { type AuthRequest } from "@/middlewares/auth.middleware.js";
 import { generateTokens } from "@/utils/generateToken.js";
 import { env } from "@/config/environment.js";
 import User from "@/models/User.model.js";
+import SystemSettings from "@/models/SystemSettings.model.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -83,10 +84,27 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
     const isEmployer = role === "employer";
     const isJobSeeker = role === "jobseeker";
+    const isGraduate = role === "graduate";
 
     let aiTokens = 0;
-    if (isJobSeeker) aiTokens = 25;
-    else if (isEmployer) aiTokens = 30;
+    try {
+      const settings = await SystemSettings.findOne();
+      if (settings && settings.initialTokens) {
+        if (isJobSeeker) aiTokens = settings.initialTokens.jobseeker;
+        else if (isEmployer) aiTokens = settings.initialTokens.employer;
+        else if (isGraduate) aiTokens = settings.initialTokens.graduate;
+      } else {
+        // Fallbacks if not set
+        if (isJobSeeker) aiTokens = 5;
+        else if (isEmployer) aiTokens = 5;
+        else if (isGraduate) aiTokens = 5;
+      }
+    } catch (err) {
+      console.error("Failed to fetch SystemSettings for tokens", err);
+      if (isJobSeeker) aiTokens = 5;
+      else if (isEmployer) aiTokens = 5;
+      else if (isGraduate) aiTokens = 5;
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -253,10 +271,10 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
     if (!user) throw new UnauthenticatedError("Invalid credentials");
-    
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new UnauthenticatedError("Invalid email or password");
-    
+
     if (!user.verified && !user.isAdmin) {
       res.status(StatusCodes.FORBIDDEN).json({
         message: "Your account is not yet verified.",
@@ -311,9 +329,21 @@ const logout = async (_req: Request, res: Response, next: NextFunction) => {
 
 const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user._id).select("-password").lean();
     if (!user) throw new NotFoundError("User not found");
-    res.status(StatusCodes.OK).json(user);
+    const settings = await SystemSettings.findOne().lean();
+    res.status(StatusCodes.OK).json({
+      ...user,
+      systemSettings: settings || {
+        aiCosts: { interview: 20, jobMatch: 1, suitability: 1, skillVerification: 1, profileGeneration: 1 },
+        initialTokens: { graduate: 5, jobseeker: 5, employer: 5 },
+        tokenPackages: {
+          basic: { tokens: 5, price: 109 },
+          popular: { tokens: 15, price: 239 },
+          premium: { tokens: 30, price: 549 }
+        }
+      }
+    });
   } catch (error) {
     next(error);
   }

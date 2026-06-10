@@ -294,6 +294,11 @@ const UserProfile = () => {
       const response = await axiosInstance.post(API_PATH.AI.GENERATE_SUMMARY);
       const { summary } = response.data;
       setEditData((prev) => ({ ...prev, bio: summary }));
+      
+      const cost = user?.systemSettings?.aiCosts?.profileGeneration || 1;
+      setUser((prev) => ({ ...prev, aiTokens: (prev.aiTokens || 0) - cost }));
+      updateUser({ aiTokens: (user?.aiTokens || 0) - cost });
+
       toast.success("Bio generated!");
     } catch (error) {
       console.error("Error generating summary:", error);
