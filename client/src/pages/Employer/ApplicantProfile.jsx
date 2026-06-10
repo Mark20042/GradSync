@@ -26,7 +26,7 @@ import { useAuth } from "../../context/AuthContext";
 const ApplicantProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const applicantId = location.state?.applicantId || null;
 
   const [applicant, setApplicant] = useState(null);
@@ -90,6 +90,12 @@ const ApplicantProfile = () => {
           candidateId: applicant.applicant._id
         });
         setAiAnalysis(response.data);
+        
+        // Update aiTokens globally without refreshing the page
+        const cost = user?.systemSettings?.aiCosts?.suitability || 1;
+        if (user && user.aiTokens > 0) {
+          updateUser({ aiTokens: user.aiTokens - cost });
+        }
       } catch (error) {
         console.error("Analysis failed:", error);
         toast.error("Failed to analyze candidate");

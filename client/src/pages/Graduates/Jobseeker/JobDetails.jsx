@@ -33,7 +33,7 @@ import LocationMap from "../../../components/Map/LocationMap";
 
 const JobDetails = () => {
   const { jobId } = useParams();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [jobDetails, setJobDetails] = useState(null);
   const [loading, setLoading] = useState(true); // New loading state
   const [showSuitabilityModal, setShowSuitabilityModal] = useState(false);
@@ -62,6 +62,12 @@ const JobDetails = () => {
         jobId,
       });
       setSuitabilityResult(response.data);
+      
+      // Update aiTokens globally without refreshing the page
+      const cost = user?.systemSettings?.aiCosts?.suitability || 1;
+      if (user && user.aiTokens > 0) {
+        updateUser({ aiTokens: user.aiTokens - cost });
+      }
     } catch (error) {
       console.error("Error checking suitability:", error);
       toast.error("Failed to analyze suitability");
