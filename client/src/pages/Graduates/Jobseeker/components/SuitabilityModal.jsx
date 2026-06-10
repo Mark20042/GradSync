@@ -30,23 +30,29 @@ const SuitabilityModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative animate-in fade-in zoom-in duration-200">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-6">
-          <div className=" p-3 ">
-            <Sparkles className="w-6 h-6 text-indigo-600" />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[150] p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full flex flex-col relative animate-in fade-in zoom-in duration-200 max-h-[90vh]">
+        
+        {/* Header */}
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-50 rounded-lg">
+              <Sparkles className="w-5 h-5 text-indigo-600" />
+            </div>
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 m-0">
+              AI Suitability Analysis
+            </h2>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
-            AI Suitability Analysis
-          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Scrollable Content */}
+        <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
 
         {loading ? (
           <div className="space-y-4">
@@ -132,9 +138,9 @@ const SuitabilityModal = ({
 
             <button
               onClick={onClose}
-              className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition mt-2"
+              className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition mt-4"
             >
-              Close
+              Close Analysis
             </button>
           </div>
         ) : (
@@ -150,6 +156,7 @@ const SuitabilityModal = ({
             </button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
