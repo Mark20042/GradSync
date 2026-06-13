@@ -4,17 +4,10 @@ import {
   XCircle,
   AlertTriangle,
   Eye,
-  Clock,
-  User,
   Award,
   Search,
   Filter,
-  ChevronDown,
-  ChevronUp,
-
-  Trash2,
-  Settings,
-  Save,
+  Trash2
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -28,8 +21,6 @@ const AdminAssessmentReview = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
