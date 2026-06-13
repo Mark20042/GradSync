@@ -99,6 +99,8 @@ export const API_PATH = {
     DELETE_FAQ: (id) => `/api/admin/faqs/${id}`,
     CREATE_EMPLOYER_SETTINGS: "/api/admin/employer-settings",
     UPDATE_EMPLOYER_SETTINGS: (id) => `/api/admin/employer-settings/${id}`,
+    ASSESSMENTS_REVIEWS: "api/assessments/submissions/review",
+    ASSESSMENTS_REVIEWS_ID: (id) => `/api/assessments/submissions/${id}`,
     AI_FEEDBACKS: "/api/admin/ai-feedback",
     DELETE_AI_FEEDBACK: (id) => `/api/admin/ai-feedback/${id}`,
   },

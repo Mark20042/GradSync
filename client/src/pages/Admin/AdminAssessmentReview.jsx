@@ -19,6 +19,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import toast from "react-hot-toast";
+import {API_PATH} from "../../utils/apiPath.js";
 
 const AdminAssessmentReview = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -37,7 +38,7 @@ const AdminAssessmentReview = () => {
   const fetchSubmissions = async () => {
     try {
       const res = await axiosInstance.get(
-        "/api/assessments/submissions/review",
+        API_PATH.ADMIN.ASSESSMENTS_REVIEWS
       );
       setSubmissions(res.data);
     } catch (error) {
@@ -53,7 +54,7 @@ const AdminAssessmentReview = () => {
 
     try {
       await axiosInstance.delete(
-        `/api/assessments/submissions/${submissionId}`,
+        API_PATH.ADMIN.ASSESSMENTS_REVIEWS_ID(submissionId)
       );
       toast.success("Review deleted.");
       fetchSubmissions();
