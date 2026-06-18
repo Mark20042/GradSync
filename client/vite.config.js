@@ -12,6 +12,9 @@ export default defineConfig({
     nodePolyfills(),
     VitePWA({
       registerType: "autoUpdate",
+      devOptions: {
+        enabled: true,
+      },
       includeAssets: ["3dgradsynnclogo.png", "gradsynclogoapp.png"],
       workbox: {
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024, // Increase limit to 12MB
