@@ -183,8 +183,8 @@ const ManageJobs = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex flex-row items-center justify-between">
-              <div className="mb-4 sm:mb-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
                 <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
                   Job Management
                 </h1>
@@ -194,12 +194,11 @@ const ManageJobs = () => {
               </div>
 
               <button
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:to-blue-800 text-sm text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 
-                hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:-translate-y-0.5 whitespace-nowrap"
+                className="flex w-full sm:w-auto items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:to-blue-800 text-sm text-white font-semibold rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-200 transform hover:-translate-y-0.5 whitespace-nowrap"
                 onClick={() => navigate("/post-job")}
               >
                 <Plus className="w-5 h-5 mr-2" />
-                Post a Job
+                <span>Post a Job</span>
               </button>
             </div>
           </div>
@@ -258,143 +257,229 @@ const ManageJobs = () => {
                   </p>
                 </div>
               ) : (
-                <div className="w-[75vw] md:w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50">
-                      <tr>
-                        <th
-                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200 min-w-[200px] sm:min-w-0"
-                          onClick={() => handleSort("title")}
-                        >
-                          <div className="flex items-center space-x-1">
-                            <span>Job Title</span>
-                            <SortIcon field="title" />
-                          </div>
-                        </th>
-                        <th
-                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200 min-w-[120px] sm:min-w-0"
-                          onClick={() => handleSort("status")}
-                        >
-                          <div className="flex items-center space-x-1">
-                            <span>Status</span>
-                            <SortIcon field="status" />
-                          </div>
-                        </th>
-                        <th
-                          className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200 min-w-[130px] sm:min-w-0"
-                          onClick={() => handleSort("applicants")}
-                        >
-                          <div className="flex items-center space-x-1">
-                            <span>Applicants</span>
-                            <SortIcon field="applicants" />
-                          </div>
-                        </th>
-                        <th className="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider mn-w-[180px] sm:min-w-0">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {isLoading
-                        ? Array.from({ length: 5 }).map((_, index) => (
-                            <LoadingRow key={index} />
-                          ))
-                        : paginatedJobs.map((job) => (
-                            <tr
-                              key={job.id}
-                              className="hover:bg-blue-50/30 transition-all duration-200 border-b border-gray-100/60"
-                            >
-                              <td className="px-6 py-5 whitespace-nowrap min-w-[200px]sm:min-w-0">
-                                <div>
-                                  <div className="text-sm font-semibold text-gray-900">
-                                    {job.title}
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden md:block w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50">
+                        <tr>
+                          <th
+                            className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200"
+                            onClick={() => handleSort("title")}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Job Title</span>
+                              <SortIcon field="title" />
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200"
+                            onClick={() => handleSort("status")}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Status</span>
+                              <SortIcon field="status" />
+                            </div>
+                          </th>
+                          <th
+                            className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100/60 transition-all duration-200"
+                            onClick={() => handleSort("applicants")}
+                          >
+                            <div className="flex items-center space-x-1">
+                              <span>Applicants</span>
+                              <SortIcon field="applicants" />
+                            </div>
+                          </th>
+                          <th className="px-6 py-4 text-left font-semibold text-gray-600 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {isLoading
+                          ? Array.from({ length: 5 }).map((_, index) => (
+                              <LoadingRow key={index} />
+                            ))
+                          : paginatedJobs.map((job) => (
+                              <tr
+                                key={job.id}
+                                className="hover:bg-blue-50/30 transition-all duration-200 border-b border-gray-100/60"
+                              >
+                                <td className="px-6 py-5 whitespace-nowrap">
+                                  <div>
+                                    <div className="text-sm font-semibold text-gray-900">
+                                      {job.title}
+                                    </div>
+                                    <div className="text-xs text-gray-500 font-medium">
+                                      {job.company}
+                                    </div>
                                   </div>
-                                  <div className="text-xs text-gray-500 font-medium">
-                                    {job.company}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-5 whitespace-nowrap min-w-[120px] sm:min-w-0">
-                                <span
-                                  className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
-                                    job.status === "Active"
-                                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                      : "bg-gray-100 text-gray-700 border border-gray-200"
-                                  }`}
-                                >
-                                  {job.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-5 whitespace-nowrap min-w-[130px] sm:min-w-0">
-                                <button
-                                  className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 hover:bg-blue-50 px-2 py-1 rounded-lg cursor-pointer"
-                                  onClick={() =>
-                                    navigate("/applicants", {
-                                      state: { jobId: job.id },
-                                    })
-                                  }
-                                >
-                                  <Users className="w-4 h-4 mr-1.5" />
-                                  {job.applicants} Applicants
-                                </button>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium min-w-[150px] sm:min-w-0">
-                                <div className="flex space-x-1 sm:space-x-2">
-                                  {/* Edit */}
+                                </td>
+                                <td className="px-6 py-5 whitespace-nowrap">
+                                  <span
+                                    className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
+                                      job.status === "Active"
+                                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                        : "bg-gray-100 text-gray-700 border border-gray-200"
+                                    }`}
+                                  >
+                                    {job.status}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-5 whitespace-nowrap">
                                   <button
-                                    className="flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors duration-200 cursor-pointer"
+                                    className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-semibold transition-colors duration-200 hover:bg-blue-50 px-2 py-1 rounded-lg cursor-pointer"
                                     onClick={() =>
-                                      navigate("/post-job", {
+                                      navigate("/applicants", {
                                         state: { jobId: job.id },
                                       })
                                     }
                                   >
-                                    <Edit className="w-4 h-4" />
-                                    <span className="hidden md:inline">
-                                      Edit
-                                    </span>
+                                    <Users className="w-4 h-4 mr-1.5" />
+                                    {job.applicants} Applicants
                                   </button>
-
-                                  {/* Toggle Status */}
-                                  {job.status === "Active" ? (
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                  <div className="flex space-x-2">
+                                    {/* Edit */}
                                     <button
-                                      className="flex items-center gap-1 text-orange-600 hover:text-orange-800 px-2 py-1 rounded-lg hover:bg-orange-50 transition-colors duration-200 cursor-pointer"
-                                      onClick={() => handleStatusChange(job.id)}
+                                      className="flex items-center gap-1 text-blue-600 hover:text-blue-800 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors duration-200 cursor-pointer"
+                                      onClick={() =>
+                                        navigate("/post-job", {
+                                          state: { jobId: job.id },
+                                        })
+                                      }
                                     >
-                                      <X className="w-4 h-4" />
-                                      <span className="hidden md:inline">
-                                        Close
-                                      </span>
+                                      <Edit className="w-4 h-4" />
+                                      <span>Edit</span>
                                     </button>
-                                  ) : (
-                                    <button
-                                      className="flex items-center gap-1 text-green-600 hover:text-green-800 px-2 py-1 rounded-lg hover:bg-green-50 transition-colors duration-200 cursor-pointer"
-                                      onClick={() => handleStatusChange(job.id)}
-                                    >
-                                      <Plus className="w-4 h-4" />
-                                      <span className="hidden md:inline">
-                                        Activate
-                                      </span>
-                                    </button>
-                                  )}
 
-                                  {/* Delete */}
+                                    {/* Toggle Status */}
+                                    {job.status === "Active" ? (
+                                      <button
+                                        className="flex items-center gap-1 text-orange-600 hover:text-orange-800 px-2 py-1 rounded-lg hover:bg-orange-50 transition-colors duration-200 cursor-pointer"
+                                        onClick={() => handleStatusChange(job.id)}
+                                      >
+                                        <X className="w-4 h-4" />
+                                        <span>Close</span>
+                                      </button>
+                                    ) : (
+                                      <button
+                                        className="flex items-center gap-1 text-green-600 hover:text-green-800 px-2 py-1 rounded-lg hover:bg-green-50 transition-colors duration-200 cursor-pointer"
+                                        onClick={() => handleStatusChange(job.id)}
+                                      >
+                                        <Plus className="w-4 h-4" />
+                                        <span>Activate</span>
+                                      </button>
+                                    )}
+
+                                    {/* Delete */}
+                                    <button
+                                      onClick={() => handleDeleteJob(job.id)}
+                                      className="flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="md:hidden flex flex-col divide-y divide-gray-100">
+                    {isLoading
+                      ? Array.from({ length: 5 }).map((_, index) => (
+                          <div key={index} className="p-4 animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                            <div className="flex justify-between items-center">
+                               <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                               <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                            </div>
+                          </div>
+                        ))
+                      : paginatedJobs.map((job) => (
+                          <div key={job.id} className="p-5 hover:bg-gray-50/50 transition-colors">
+                            <div className="flex justify-between items-start mb-3 gap-2">
+                              <div>
+                                <h3 className="text-base font-bold text-gray-900 leading-tight mb-0.5">
+                                  {job.title}
+                                </h3>
+                                <p className="text-sm text-gray-500 font-medium">
+                                  {job.company}
+                                </p>
+                              </div>
+                              <span
+                                className={`flex-shrink-0 inline-flex px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide rounded-full ${
+                                  job.status === "Active"
+                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                    : "bg-gray-100 text-gray-700 border border-gray-200"
+                                }`}
+                              >
+                                {job.status}
+                              </span>
+                            </div>
+                            
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4">
+                              <button
+                                className="flex items-center justify-center w-full sm:w-auto text-sm text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 font-bold transition-colors duration-200 px-4 py-2 rounded-xl shadow-sm cursor-pointer"
+                                onClick={() =>
+                                  navigate("/applicants", {
+                                    state: { jobId: job.id },
+                                  })
+                                }
+                              >
+                                <Users className="w-4 h-4 mr-2" />
+                                {job.applicants} Applicants
+                              </button>
+                              
+                              <div className="flex items-center justify-between sm:justify-end space-x-2">
+                                <button
+                                  className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-blue-600 hover:text-blue-800 px-3 py-2 rounded-lg bg-blue-50/50 hover:bg-blue-100 transition-colors duration-200 cursor-pointer"
+                                  onClick={() =>
+                                    navigate("/post-job", {
+                                      state: { jobId: job.id },
+                                    })
+                                  }
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  <span className="text-xs font-semibold">Edit</span>
+                                </button>
+
+                                {job.status === "Active" ? (
                                   <button
-                                    onClick={() => handleDeleteJob(job.id)}
-                                    className="flex items-center gap-1 text-red-600 hover:text-red-800 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-orange-600 hover:text-orange-800 px-3 py-2 rounded-lg bg-orange-50/50 hover:bg-orange-100 transition-colors duration-200 cursor-pointer"
+                                    onClick={() => handleStatusChange(job.id)}
                                   >
-                                    <Trash2 className="w-4 h-4" />
-                                    <span className="hidden md:inline">
-                                      Delete
-                                    </span>
+                                    <X className="w-4 h-4" />
+                                    <span className="text-xs font-semibold">Close</span>
                                   </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                    </tbody>
-                  </table>
-                </div>
+                                ) : (
+                                  <button
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 text-green-600 hover:text-green-800 px-3 py-2 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors duration-200 cursor-pointer"
+                                    onClick={() => handleStatusChange(job.id)}
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                    <span className="text-xs font-semibold">Activate</span>
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => handleDeleteJob(job.id)}
+                                  className="flex items-center justify-center p-2 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 transition-colors duration-200 cursor-pointer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                  </div>
+                </>
               )}
             </div>
 

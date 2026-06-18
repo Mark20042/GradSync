@@ -93,24 +93,28 @@ const ApplicationViewer = () => {
         {/* Header */}
         <div className=" mb-8 px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
-            <Breadcrumbs 
-              items={[
-                { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
-                { label: currentJobTitle }
-              ]} 
-            />
-
-            <div className="flex justify-between items-center mt-2">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {currentJobTitle}
-              </h1>
+            <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4">
+              <div className="w-full sm:w-auto overflow-hidden">
+                <Breadcrumbs 
+                  items={[
+                    { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
+                    { label: currentJobTitle }
+                  ]} 
+                />
+              </div>
               <button
-                className="group inline-flex items-center space-x-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
+                className="group flex-shrink-0 flex items-center space-x-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors sm:mt-[-10px]"
                 onClick={() => navigate("/manage-jobs")}
               >
                 <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                 <span>Back to Jobs</span>
               </button>
+            </div>
+
+            <div className="mt-4">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                {currentJobTitle}
+              </h1>
             </div>
           </div>
         </div>
@@ -138,33 +142,32 @@ const ApplicationViewer = () => {
                     className="p-4 bg-white rounded-xl shadow-md overflow-hidden"
                   >
                     {/* Job Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-4 rounded-lg">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-5 rounded-t-xl sm:rounded-lg">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                         {/* Left side: Job title + details */}
                         <div>
-                          <h2 className="text-lg font-semibold text-white">
+                          <h2 className="text-xl sm:text-lg font-bold text-white leading-tight">
                             {job.title}
                           </h2>
-                          <div className="flex flex-wrap items-center gap-4 mt-2 text-blue-100">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              <span className="text-sm">{job.location}</span>
+                          <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-blue-100">
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4 opacity-80" />
+                              <span className="text-sm font-medium">{job.location}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Briefcase className="w-4 h-4" />
-                              <span className="text-sm">{job.type}</span>
+                            <div className="flex items-center gap-1.5">
+                              <Briefcase className="w-4 h-4 opacity-80" />
+                              <span className="text-sm font-medium">{job.type}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm">{job.category}</span>
+                            <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-0.5 rounded-md">
+                              <span className="text-xs font-bold text-white uppercase tracking-wider">{job.category}</span>
                             </div>
                           </div>
                         </div>
 
                         {/* Right side: Application count */}
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-2 self-start sm:self-center">
-                          <span className="text-sm text-white font-medium">
-                            {applications.length} Application
-                            {applications.length !== 1 ? "s" : ""}
+                        <div className="bg-white/20 backdrop-blur-sm shadow-sm rounded-lg px-4 py-2 self-start sm:self-center shrink-0">
+                          <span className="text-sm text-white font-bold">
+                            {applications.length} Application{applications.length !== 1 ? "s" : ""}
                           </span>
                         </div>
                       </div>
@@ -274,10 +277,12 @@ const ApplicationViewer = () => {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3 mt-4 md:m-0">
-                                <StatusBadge status={application.status} />
+                              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
+                                <div className="col-span-2 sm:col-auto flex justify-start sm:mr-2">
+                                  <StatusBadge status={application.status} />
+                                </div>
                                 <button
-                                  className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors "
+                                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                                   onClick={() =>
                                     handleDownloadResume(
                                       application.applicant.resume
@@ -285,17 +290,17 @@ const ApplicationViewer = () => {
                                   }
                                 >
                                   <Download className="w-4 h-4" />
-                                  Resume
+                                  <span>Resume</span>
                                 </button>
 
                                 <button
-                                  className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
                                   onClick={() =>
                                     setSelectedApplicant(application)
                                   }
                                 >
                                   <Eye className="w-4 h-4" />
-                                  Preview
+                                  <span>Preview</span>
                                 </button>
                               </div>
                             </div>

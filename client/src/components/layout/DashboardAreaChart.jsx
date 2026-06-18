@@ -15,7 +15,7 @@ const DashboardAreaChart = ({ data }) => {
       <div className="flex items-center justify-between mb-4"></div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={240}>
         <AreaChart
           data={data}
           margin={{ top: 10, right: 30, left: 30, bottom: 0 }}

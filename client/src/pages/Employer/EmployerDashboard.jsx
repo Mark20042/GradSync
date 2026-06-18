@@ -20,22 +20,22 @@ import DashboardAreaChart from "../../components/layout/DashboardAreaChart";
 const Card = ({ className, title, subtitle, headerAction, children }) => {
   return (
     <div
-      className={`bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 ${className}`}
+      className={`bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col ${className || ""}`}
     >
       {(title || headerAction) && (
-        <div className="flex items-start justify-between p-6 pb-4">
+        <div className="flex items-center justify-between p-4 sm:p-6 pb-3 sm:pb-4 border-b border-gray-50/50">
           <div>
             {title && (
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">{title}</h3>
             )}
             {subtitle && (
-              <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-0.5">{subtitle}</p>
             )}
           </div>
           {headerAction}
         </div>
       )}
-      <div className={title ? "p-6 pb-6" : "p-6"}>{children}</div>
+      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 };

@@ -173,16 +173,18 @@ const ApplicantProfile = () => {
     <DashboardLayout activeMenu="messages">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header Breadcrumbs & Back */}
-        <div className="flex justify-between items-center mb-6">
-          <Breadcrumbs 
-            items={[
-              { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
-              { label: applicant?.job?.title || 'Job', onClick: () => navigate('/manage-jobs') },
-              { label: applicant?.applicant?.fullName || 'Applicant Profile' }
-            ]}
-          />
+        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-6 gap-4">
+          <div className="w-full sm:w-auto overflow-hidden">
+            <Breadcrumbs 
+              items={[
+                { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
+                { label: applicant?.job?.title || 'Job', onClick: () => navigate('/manage-jobs') },
+                { label: applicant?.applicant?.fullName || 'Applicant Profile' }
+              ]}
+            />
+          </div>
           <button
-            className="group flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors mt-[-10px]"
+            className="group flex-shrink-0 flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors sm:mt-[-10px]"
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -374,12 +376,12 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.experiences.map((exp, index) => (
                         <div key={index}>
-                          <div className="flex justify-between items-start">
+                          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                             <div>
                               <h3 className="font-medium text-gray-900">{exp.title}</h3>
                               <p className="text-gray-600 text-sm">{exp.company}</p>
                             </div>
-                            <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                            <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4">
                               {moment(exp.startDate).format("MMM YYYY")} – {exp.endDate ? moment(exp.endDate).format("MMM YYYY") : "Present"}
                             </p>
                           </div>
@@ -402,12 +404,12 @@ const ApplicantProfile = () => {
                       {applicant.applicant.internships.map(
                         (internship, index) => (
                           <div key={index}>
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                               <div>
                                 <h3 className="font-medium text-gray-900">{internship.title}</h3>
                                 <p className="text-gray-600 text-sm">{internship.company}</p>
                               </div>
-                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                              <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4">
                                 {moment(internship.startDate).format("MMM YYYY")} – {internship.endDate ? moment(internship.endDate).format("MMM YYYY") : "Present"}
                               </p>
                             </div>
@@ -430,13 +432,13 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.education.map((edu, index) => (
                         <div key={index}>
-                          <div className="flex justify-between items-start">
+                          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                             <div>
                               <h3 className="font-medium text-gray-900">{edu.degree}</h3>
                               <p className="text-gray-600 text-sm">{edu.school}</p>
                             </div>
                             {(edu.startDate || edu.endDate) && (
-                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4">
+                              <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4">
                                 {edu.startDate ? moment(edu.startDate).format("MMM YYYY") : ""}
                                 {edu.startDate && edu.endDate ? " – " : ""}
                                 {edu.endDate ? moment(edu.endDate).format("MMM YYYY") : ""}
@@ -458,7 +460,7 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.projects.map((proj, index) => (
                         <div key={index}>
-                          <div className="flex justify-between items-start">
+                          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                             <div>
                               <h3 className="font-medium text-gray-900 text-base">
                                 {proj.name}
@@ -475,7 +477,7 @@ const ApplicantProfile = () => {
                               )}
                             </div>
                             {proj.startDate && (
-                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                              <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4 sm:text-right">
                                 {moment(proj.startDate).format("MMM YYYY")} -{" "}
                                 {proj.endDate
                                   ? moment(proj.endDate).format("MMM YYYY")
@@ -517,7 +519,7 @@ const ApplicantProfile = () => {
                     <div className="space-y-4">
                       {applicant.applicant.awards?.map((award, index) => (
                         <div key={`award-${index}`}>
-                          <div className="flex justify-between items-start">
+                          <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                             <div>
                               <h3 className="font-medium text-gray-900">
                                 {award.title}
@@ -527,7 +529,7 @@ const ApplicantProfile = () => {
                               </p>
                             </div>
                             {true && (
-                              <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                              <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4 sm:text-right">
                                 {moment(award.date || undefined).format("MMM YYYY")}
                               </p>
                             )}
@@ -537,7 +539,7 @@ const ApplicantProfile = () => {
                       {applicant.applicant.certifications?.map(
                         (cert, index) => (
                           <div key={`cert-${index}`}>
-                            <div className="flex justify-between items-start">
+                            <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-start gap-1">
                               <div>
                                 <h3 className="font-medium text-gray-900">
                                   {cert.name}
@@ -557,7 +559,7 @@ const ApplicantProfile = () => {
                                 )}
                               </div>
                               {true && (
-                                <p className="text-gray-400 text-xs whitespace-nowrap ml-4 text-right">
+                                <p className="text-gray-400 text-xs sm:whitespace-nowrap sm:ml-4 sm:text-right">
                                   {moment(cert.issueDate || cert.date || undefined).format("MMM YYYY")}
                                 </p>
                               )}

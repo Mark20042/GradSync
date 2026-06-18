@@ -322,7 +322,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
       {/* Main Content */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 
       ${isMobile ? "ml-0" : sidebarCollapsed ? "ml-16" : "ml-64"}`}
       >
         {/* Top Navbar */}
@@ -369,7 +369,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Notification Bell */}
             {!user?.isAdmin && (
               <div className="relative">
@@ -389,10 +389,12 @@ const DashboardLayout = ({ activeMenu, children }) => {
                   )}
                 </button>
                 {notificationOpen && (
-                  <div onClick={(e) => e.stopPropagation()} className="absolute right-0 mt-3 z-50">
-                    <NotificationDropdown
-                      onClose={() => setNotificationOpen(false)}
-                    />
+                  <div onClick={(e) => e.stopPropagation()} className="fixed left-2 right-2 top-20 sm:absolute sm:left-auto sm:right-[-10px] sm:top-auto sm:mt-3 z-50 flex justify-center sm:block">
+                    <div className="w-full sm:w-auto flex justify-center max-w-[calc(100vw-16px)]">
+                      <NotificationDropdown
+                        onClose={() => setNotificationOpen(false)}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
