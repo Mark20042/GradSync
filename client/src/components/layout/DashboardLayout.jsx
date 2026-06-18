@@ -64,7 +64,9 @@ const DashboardLayout = ({ activeMenu, children }) => {
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return localStorage.getItem("sidebarCollapsed") === "true"; } catch { return false; }
+  });
   const [activeNavItem, setActiveNavItem] = useState(activeMenu || "dashboard");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -161,7 +163,9 @@ const DashboardLayout = ({ activeMenu, children }) => {
   };
 
   const toggleDesktopSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    const newValue = !sidebarCollapsed;
+    setSidebarCollapsed(newValue);
+    try { localStorage.setItem("sidebarCollapsed", String(newValue)); } catch {}
   };
 
   return (
