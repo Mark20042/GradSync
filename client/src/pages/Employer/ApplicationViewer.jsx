@@ -127,8 +127,8 @@ const ApplicationViewer = () => {
                     className="p-4 bg-white rounded-xl shadow-md overflow-hidden"
                   >
                     {/* Job Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 rounded-lg">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 sm:px-6 py-4 rounded-lg">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         {/* Left side: Job title + details */}
                         <div>
                           <h2 className="text-lg font-semibold text-white">
@@ -160,7 +160,7 @@ const ApplicationViewer = () => {
                     </div>
 
                     {/* Status Counters */}
-                    <div className="px-6 py-3 bg-gray-50/80 border-b border-gray-100">
+                    <div className="px-3 sm:px-6 py-3 bg-gray-50/80 border-b border-gray-100">
                       <div className="flex flex-wrap gap-2">
                         {[
                           { label: "Applied", color: "bg-blue-100 text-blue-700", icon: Send },
@@ -181,8 +181,8 @@ const ApplicationViewer = () => {
                     </div>
 
                     {/* Tabs */}
-                    <div className="px-6 pt-4 border-b border-gray-200 bg-white">
-                      <div className="flex space-x-8">
+                    <div className="px-3 sm:px-6 pt-4 border-b border-gray-200 bg-white">
+                      <div className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide whitespace-nowrap">
                         <button
                           onClick={() => setActiveTab("all")}
                           className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === "all" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
@@ -207,7 +207,7 @@ const ApplicationViewer = () => {
                     </div>
 
                     {/* Applications List */}
-                    <div className="p-6 bg-gray-50/50">
+                    <div className="p-3 sm:p-6 bg-gray-50/50">
                       {activeTab === "ranked" ? (
                         <RankedCandidates
                           applications={applications}
@@ -263,7 +263,7 @@ const ApplicationViewer = () => {
                               </div>
 
                               {/* Actions */}
-                              <div className="flex items-center gap-3 mt-4 md:m-0">
+                              <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3 mt-4 md:m-0">
                                 <StatusBadge status={application.status} />
                                 <button
                                   className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors "

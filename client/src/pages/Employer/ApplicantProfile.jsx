@@ -191,7 +191,7 @@ const ApplicantProfile = () => {
         ) : (
           <>
             {/* Header */}
-            <div className="flex items-center gap-6 mb-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 mb-8 text-center sm:text-left">
               {applicant.applicant.avatar ? (
                 <img
                   src={applicant.applicant.avatar}
@@ -222,7 +222,7 @@ const ApplicantProfile = () => {
                     {applicant.applicant.universityAddress}
                   </p>
                 )}
-                <div className="mt-3 flex gap-3">
+                <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-3">
                   {applicant.applicant.resume && (
                     <a
                       href={applicant.applicant.resume}
@@ -287,7 +287,7 @@ const ApplicantProfile = () => {
             )}
 
             {/* AI Analysis Banner */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm mb-6">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-center sm:items-center gap-4 sm:gap-0 justify-between shadow-sm mb-6 text-center sm:text-left">
               <div>
                 <h5 className="text-lg font-bold text-indigo-900 flex items-center gap-2 mb-1">
                   <Sparkles className="w-5 h-5 text-indigo-600" />
@@ -319,7 +319,7 @@ const ApplicantProfile = () => {
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">
                     Application Details
                   </h2>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-gray-500">Position Applied For</p>
                       <p className="font-medium text-gray-900">

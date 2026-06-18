@@ -131,8 +131,8 @@ const AvailabilityScheduler = () => {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">Auto-Reply Message</h3>
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Auto-Reply Message</h3>
 
                 <textarea
                     className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -143,12 +143,12 @@ const AvailabilityScheduler = () => {
                 />
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">Weekly Availability</h3>
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-base sm:text-lg font-semibold mb-4">Weekly Availability</h3>
                 <p className="text-sm text-gray-500 mb-4">
                     Drag to select your online hours. Unselected hours are considered "Offline".
                 </p>
-                <div className="overflow-auto">
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                     <ScheduleSelector
                         selection={schedule}
                         numDays={7}

@@ -121,10 +121,10 @@ const EmployerProfilePage = () => {
 
   return (
     <DashboardLayout activeMenu="company-profile">
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Company Profile</h1>
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6 sm:mb-8">Company Profile</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {/* Left Column - Logo */}
           <div className="md:col-span-1">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
@@ -156,9 +156,9 @@ const EmployerProfilePage = () => {
           </div>
 
           <div className="md:col-span-2 space-y-8">
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
+            <form onSubmit={handleSubmit} className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 space-y-5 sm:space-y-6">
               <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                   <input

@@ -134,7 +134,7 @@ const EmployerMessages = () => {
       <div className="h-[calc(100vh-100px)] flex flex-col">
         {/* Header */}
         <div className="mb-6 flex-none">
-          <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Inbox</h1>
           <p className="text-gray-500 text-sm">Manage your job applications and messages</p>
         </div>
 
@@ -178,8 +178,8 @@ const EmployerMessages = () => {
                 animate="animate"
                 exit="exit"
               >
-                {/* Panel 2: Applicant List (30% width) */}
-                <div className="w-[350px] border-r border-gray-100 bg-white flex flex-col">
+                {/* Panel 2: Applicant List */}
+                <div className={`${selectedConvo ? "hidden md:flex" : "flex"} w-full md:w-[350px] border-r border-gray-100 bg-white flex-col`}>
                   <div className="flex-none p-4 border-b border-gray-100 flex items-center gap-3">
                     <button
                       onClick={handleBackToJobs}
@@ -204,19 +204,20 @@ const EmployerMessages = () => {
                   </div>
                 </div>
 
-                {/* Panel 3: Chat Window (70% width) */}
-                <div className="flex-1 flex flex-col bg-gray-50/50 min-w-0">
+                {/* Panel 3: Chat Window */}
+                <div className={`${selectedConvo ? "flex" : "hidden md:flex"} flex-1 flex-col bg-gray-50/50 min-w-0`}>
                   {selectedConvo ? (
                     <EmployerChatWindow
                       key={selectedConvo._id}
                       conversation={selectedConvo}
+                      onBack={() => setSelectedConvo(null)}
                     />
                   ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-500">
                       <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100 mb-6">
                         <MessageSquare className="w-10 h-10 text-gray-300" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Select an Applicant</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Select an Applicant</h3>
                       <p className="text-gray-500 max-w-xs mx-auto">
                         Choose an applicant from the list to start messaging or view their application details.
                       </p>

@@ -137,9 +137,9 @@ const ApplicantProfilePreview = ({
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ring-1 ring-black/5">
+      <div className="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-screen sm:max-h-[90vh] overflow-y-auto ring-1 ring-black/5">
         {/*Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">
             Applicant Profile
           </h3>
@@ -151,7 +151,7 @@ const ApplicantProfilePreview = ({
           </button>
         </div>
         {/*Modal Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Header Row */}
           <div className="flex items-center gap-5 mb-6">
             {selectedApplicant.applicant.avatar ? (
@@ -221,7 +221,7 @@ const ApplicantProfilePreview = ({
             </div>
 
             {/* AI Analysis Banner */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-3 sm:p-4 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
               <div>
                 <h5 className="font-bold text-indigo-900 flex items-center gap-2 mb-0.5">
                   <Sparkles className="w-4 h-4 text-indigo-600" />

@@ -171,8 +171,8 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
             </section>
 
             {/* Description */}
-            <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <section className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
                 <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
                   <Briefcase className="w-5 h-5" />
                 </div>
@@ -182,8 +182,8 @@ const JobPostingPreview = ({ formData, setIsPreview }) => {
             </section>
 
             {/* Requirements */}
-            <section className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <section className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
                 <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
                   <CheckCircle className="w-5 h-5" />
                 </div>

@@ -153,10 +153,10 @@ const EmployerDashboard = () => {
               </div>
 
               {/* Applications & Trends Section */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-6">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-md p-4 sm:p-6">
                 {/* Section Header */}
                 <div className="mb-6">
-                  <h2 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 flex items-center gap-2">
                     📊 Monitoring
                   </h2>
                 </div>

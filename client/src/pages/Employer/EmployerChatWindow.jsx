@@ -4,7 +4,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH, BASE_URL } from "../../utils/apiPath";
 import { fixLegacyUrls } from "../../utils/axiosInstance";
 import io from "socket.io-client";
-import { Send, User, MessageCircleDashed } from "lucide-react";
+import { Send, User, MessageCircleDashed, ArrowLeft } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -45,7 +45,7 @@ const TypingIndicator = () => {
   );
 };
 
-const EmployerChatWindow = ({ conversation }) => {
+const EmployerChatWindow = ({ conversation, onBack }) => {
   const { user } = useAuth();
   const { _id: conversationId, recipient: graduate } = conversation;
 
@@ -147,8 +147,13 @@ const EmployerChatWindow = ({ conversation }) => {
   return (
     <div className="flex-1 flex flex-col h-full bg-white overflow-hidden relative">
       {/* Chat Header */}
-      <div className="flex-none p-4 border-b border-gray-100 bg-white/80 backdrop-blur-md z-10 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex-none p-3 sm:p-4 border-b border-gray-100 bg-white/80 backdrop-blur-md z-10 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {onBack && (
+            <button onClick={onBack} className="md:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all flex-shrink-0">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
           <div className="relative">
             {graduate.avatar ? (
               <img src={graduate.avatar} alt={graduate.fullName} className="w-10 h-10 rounded-xl object-cover shadow-sm border border-gray-100" />
@@ -169,7 +174,7 @@ const EmployerChatWindow = ({ conversation }) => {
       </div>
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-gray-50/50 to-white">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6 bg-gradient-to-b from-gray-50/50 to-white">
         <AnimatePresence initial={false}>
           {loading ? (
             <div className="flex justify-center pt-20"><TypingIndicator /></div>
@@ -195,7 +200,7 @@ const EmployerChatWindow = ({ conversation }) => {
 
               return (
                 <motion.div key={item._id} variants={messageVariants} initial="hidden" animate="visible" layout className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex items-end gap-3 max-w-[85%] ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+                  <div className={`flex items-end gap-2 sm:gap-3 max-w-[90%] sm:max-w-[85%] ${isMe ? "flex-row-reverse" : "flex-row"}`}>
                     <div className="flex-shrink-0">
                       <img src={item.sender.avatar || `https://placehold.co/150/${isMe ? '4338ca' : 'b0b0b0'}/ffffff?text=${isMe ? 'E' : 'U'}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm" />
                     </div>
@@ -216,7 +221,7 @@ const EmployerChatWindow = ({ conversation }) => {
       </div>
 
       {/* Message Input Form */}
-      <div className="flex-none p-4 bg-white border-t border-gray-100">
+      <div className="flex-none p-3 sm:p-4 bg-white border-t border-gray-100">
         <form onSubmit={handleSendMessage} className="relative flex items-end gap-3 max-w-4xl mx-auto">
           <div className="flex-1 relative">
             <input

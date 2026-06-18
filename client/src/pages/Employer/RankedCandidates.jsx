@@ -39,10 +39,10 @@ const RankedCandidates = ({ applications, handleDownloadResume, setSelectedAppli
                 <img
                   src={application.applicant.avatar}
                   alt={application.applicant.fullName}
-                  className="h-16 w-16 rounded-full object-cover ring-2 ring-white shadow-md"
+                  className="h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover ring-2 ring-white shadow-md"
                 />
               ) : (
-                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-md ring-2 ring-white">
+                <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center shadow-md ring-2 ring-white">
                   <span className="text-blue-700 font-bold text-xl tracking-wide">
                     {getInitials(application.applicant.fullName)}
                   </span>
@@ -57,7 +57,7 @@ const RankedCandidates = ({ applications, handleDownloadResume, setSelectedAppli
 
             {/* Applicant Info */}
             <div className="min-w-0">
-              <h3 className="font-bold text-gray-900 text-lg truncate group-hover:text-blue-600 transition-colors">
+              <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate group-hover:text-blue-600 transition-colors">
                 {application.applicant.fullName}
               </h3>
               <p className="text-gray-500 text-sm truncate mt-0.5">
@@ -88,7 +88,7 @@ const RankedCandidates = ({ applications, handleDownloadResume, setSelectedAppli
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-3 mt-5 md:m-0 pl-16 md:pl-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 md:mt-0 pl-0 sm:pl-16 md:pl-0">
             <StatusBadge status={application.status} />
 
             <button
@@ -100,7 +100,7 @@ const RankedCandidates = ({ applications, handleDownloadResume, setSelectedAppli
             </button>
 
             <button
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all shadow-md shadow-gray-200 active:scale-[0.98] cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-gray-900 text-white text-sm sm:text-base font-semibold rounded-xl hover:bg-gray-800 transition-all shadow-md shadow-gray-200 active:scale-[0.98] cursor-pointer"
               onClick={() => setSelectedApplicant(application)}
             >
               <Eye className="w-4 h-4" />

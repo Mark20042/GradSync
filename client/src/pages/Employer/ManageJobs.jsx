@@ -258,7 +258,7 @@ const ManageJobs = () => {
                   </p>
                 </div>
               ) : (
-                <div className="w-[75vw] md:w-full overflow-x-auto- scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                <div className="w-[75vw] md:w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100/50">
                       <tr>
