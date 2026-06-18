@@ -22,6 +22,7 @@ import moment from "moment";
 import StatusBadge from "./../../components/StatusBadge";
 import ApplicantProfilePreview from "./components/ApplicantProfilePreview";
 import RankedCandidates from "./RankedCandidates";
+import Breadcrumbs from "../../components/Breadcrumbs";
 
 const ApplicationViewer = () => {
   const location = useLocation();
@@ -75,6 +76,8 @@ const ApplicationViewer = () => {
     window.open(resumeUrl, "_blank");
   };
 
+  const currentJobTitle = applications.length > 0 && applications[0].job ? applications[0].job.title : "Applications Overview";
+
   return (
     <DashboardLayout activeMenu="manage-jobs">
       {loading && (
@@ -90,17 +93,25 @@ const ApplicationViewer = () => {
         {/* Header */}
         <div className=" mb-8 px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-7xl mx-auto">
-            <button
-              className="group inline-flex items-center space-x-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-4"
-              onClick={() => navigate("/manage-jobs")}
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span>Back to Jobs</span>
-            </button>
+            <Breadcrumbs 
+              items={[
+                { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
+                { label: currentJobTitle }
+              ]} 
+            />
 
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Applications Overview
-            </h1>
+            <div className="flex justify-between items-center mt-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                {currentJobTitle}
+              </h1>
+              <button
+                className="group inline-flex items-center space-x-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
+                onClick={() => navigate("/manage-jobs")}
+              >
+                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+                <span>Back to Jobs</span>
+              </button>
+            </div>
           </div>
         </div>
 

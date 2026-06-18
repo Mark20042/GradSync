@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import EmployerSuitabilityModal from "./EmployerSuitabilityModal";
 import { FileCode } from "lucide-react";
 
+import Breadcrumbs from "../../../components/Breadcrumbs";
 import StatusBadge from "../../../components/StatusBadge";
 const statusOptions = ["Applied", "In Review", "Rejected", "Accepted"];
 

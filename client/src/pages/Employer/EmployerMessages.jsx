@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion"; // Import motion
 import { JobListPanel, ApplicantListPanel } from "./EmployerChatPanels";
 import EmployerChatWindow from "./EmployerChatWindow";
+import Breadcrumbs from "../../components/Breadcrumbs";
 
 const EmployerMessages = () => {
   const { user } = useAuth();
@@ -129,12 +130,29 @@ const EmployerMessages = () => {
     );
   }
 
+  const breadcrumbsItems = [
+    { label: 'Inbox', onClick: handleBackToJobs }
+  ];
+
+  if (selectedJobId) {
+    const jobTitle = conversationsByJob.get(selectedJobId)?.jobDetails?.title || 'Job';
+    breadcrumbsItems.push({ 
+      label: jobTitle, 
+      onClick: () => setSelectedConvo(null) 
+    });
+    
+    if (selectedConvo) {
+      breadcrumbsItems.push({ label: selectedConvo.recipient.fullName });
+    }
+  }
+
   return (
     <DashboardLayout activeMenu="employer-messages">
       <div className="h-[calc(100vh-100px)] flex flex-col">
         {/* Header */}
         <div className="mb-6 flex-none">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Inbox</h1>
+          <Breadcrumbs items={breadcrumbsItems} />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mt-2">Inbox</h1>
           <p className="text-gray-500 text-sm">Manage your job applications and messages</p>
         </div>
 

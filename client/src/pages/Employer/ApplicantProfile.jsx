@@ -22,6 +22,7 @@ import { getBadgeComponent } from "../../components/Badges/SkillBadges";
 import EmployerSuitabilityModal from "./components/EmployerSuitabilityModal";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
+import Breadcrumbs from "../../components/Breadcrumbs";
 
 const ApplicantProfile = () => {
   const location = useLocation();
@@ -171,14 +172,23 @@ const ApplicantProfile = () => {
   return (
     <DashboardLayout activeMenu="messages">
       <div className="max-w-4xl mx-auto p-6">
-        {/* Back Button */}
-        <button
-          className="group flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-white bg-white/50 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 border border-gray-200 hover:border-transparent rounded-xl transition-all duration-300 shadow-md hover:shadow-lg mb-6"
-          onClick={() => navigate("/applicants")}
-        >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Back</span>
-        </button>
+        {/* Header Breadcrumbs & Back */}
+        <div className="flex justify-between items-center mb-6">
+          <Breadcrumbs 
+            items={[
+              { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
+              { label: applicant?.job?.title || 'Job', onClick: () => navigate('/manage-jobs') },
+              { label: applicant?.applicant?.fullName || 'Applicant Profile' }
+            ]}
+          />
+          <button
+            className="group flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors mt-[-10px]"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Back</span>
+          </button>
+        </div>
 
         {loading ? (
           <div className="flex items-center justify-center min-h-[60vh]">
@@ -211,10 +221,15 @@ const ApplicantProfile = () => {
                   {applicant.applicant.fullName}
                 </h1>
                 <p className="text-gray-600 flex items-center gap-2 mt-1">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                    {applicant.applicant.degree}
-                  </span>
-                  • {applicant.applicant.email}
+                  {applicant.applicant.degree && (
+                    <>
+                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                        {applicant.applicant.degree}
+                      </span>
+                      • 
+                    </>
+                  )}
+                  {applicant.applicant.email}
                 </p>
                 {applicant.applicant.universityAddress && (
                   <p className="text-gray-500 text-sm mt-1">
