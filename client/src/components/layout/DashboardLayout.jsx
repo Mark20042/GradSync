@@ -448,7 +448,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
       {/* New Tokens Received Modal */}
       {newTokensData && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden relative animate-in fade-in zoom-in duration-300">
             <button 
               onClick={() => setNewTokensData(null)}
