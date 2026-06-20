@@ -65,6 +65,7 @@ const updateProfile = async (
     user.latitude = body.latitude !== undefined ? body.latitude : user.latitude;
     user.longitude = body.longitude !== undefined ? body.longitude : user.longitude;
     user.resume = body.resume !== undefined ? body.resume : user.resume;
+    let newlyEndedExperiences: any[] = [];
 
     if (user.role === "graduate" || user.role === "jobseeker") {
       user.degree = body.degree || user.degree;
@@ -87,7 +88,6 @@ const updateProfile = async (
         body.linkedin !== undefined ? body.linkedin : user.linkedin;
       user.github = body.github !== undefined ? body.github : user.github;
       
-      let newlyEndedExperiences: any[] = [];
       if (body.experiences !== undefined) {
         const oldExperiences = user.experiences || [];
         const newExperiences = body.experiences;
