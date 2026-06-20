@@ -48,9 +48,7 @@ export const errorHandler = (
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
     error: "Internal Server Error",
-    message:
-      process.env.NODE_ENV === "development"
-        ? err.message
-        : "Something went wrong",
+    message: err.message,
+    stack: err.stack,
   });
 };
