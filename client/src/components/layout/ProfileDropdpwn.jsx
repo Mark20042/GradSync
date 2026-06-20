@@ -48,7 +48,7 @@ const ProfileDropdown = ({
       {/* Profile button */}
       <button
         onClick={onToggle}
-        className={`flex items-center space-x-3 p-1 pr-4 rounded-full transition-all duration-300 border h-12 ${
+        className={`flex items-center space-x-1 sm:space-x-3 p-1 pr-2 sm:pr-4 rounded-full transition-all duration-300 border h-10 sm:h-12 ${
           isOpen ? 'bg-white border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.06)]' : 'bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm'
         }`}
       >
@@ -56,11 +56,11 @@ const ProfileDropdown = ({
           <img
             src={avatar}
             alt="Avatar"
-            className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
+            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
           />
         ) : (
-          <div className="h-10 w-10 bg-gradient-to-tr from-gray-900 to-gray-700 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
-            <span className="font-bold text-white text-sm tracking-wider">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 bg-gradient-to-tr from-gray-900 to-gray-700 rounded-full flex items-center justify-center ring-2 ring-white shadow-sm">
+            <span className="font-bold text-white text-xs sm:text-sm tracking-wider">
               {(isGradOrSeeker ? fullName : companyName)
                 ?.charAt(0)
                 .toUpperCase()}

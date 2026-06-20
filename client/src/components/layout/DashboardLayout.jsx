@@ -326,11 +326,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
       ${isMobile ? "ml-0" : sidebarCollapsed ? "ml-16" : "ml-64"}`}
       >
         {/* Top Navbar */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 sticky top-0 z-30">
-          <div className="flex items-center space-x-4">
+        <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 h-16 flex items-center justify-between px-3 sm:px-6 lg:px-8 sticky top-0 z-30">
+          <div className="flex items-center space-x-2 sm:space-x-4 overflow-hidden">
             {isMobile && (
               <button
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                className="p-1.5 sm:p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
                 onClick={toggleSidebar}
               >
                 {sidebarOpen ? (
@@ -343,7 +343,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
             {!isMobile && (
               <button
-                className="p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                className="p-2 rounded-xl hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
                 onClick={toggleDesktopSidebar}
                 title={sidebarCollapsed ? "Open sidebar" : "Close sidebar"}
               >
@@ -355,11 +355,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
               </button>
             )}
 
-            <div>
-              <h1 className="text-base font-semibold text-gray-900">
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
                 {user?.isAdmin ? "Administrator Overview" : "Welcome back!"}
               </h1>
-              <p className="text-sm text-gray-500 hidden sm:block">
+              <p className="text-sm text-gray-500 hidden sm:block truncate">
                 {user?.isAdmin
                   ? "Here's the platform activity for today."
                   : user?.role === "employer"
@@ -369,7 +369,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-1.5 sm:space-x-4 flex-shrink-0">
             {/* Notification Bell */}
             {!user?.isAdmin && (
               <div className="relative">
@@ -379,11 +379,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
                     setNotificationOpen(!notificationOpen);
                     setProfileDropdownOpen(false);
                   }}
-                  className={`relative flex items-center justify-center h-12 w-12 rounded-full transition-all duration-300 ${
+                  className={`relative flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full transition-all duration-300 ${
                     notificationOpen ? "bg-blue-600 text-white shadow-lg shadow-blue-200/50" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                   }`}
                 >
-                  <Bell className="w-5 h-5" strokeWidth={notificationOpen ? 2.5 : 2} />
+                  <Bell className="w-5 h-5 sm:w-5 sm:h-5" strokeWidth={notificationOpen ? 2.5 : 2} />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-transparent"></span>
                   )}
@@ -404,16 +404,16 @@ const DashboardLayout = ({ activeMenu, children }) => {
             {!user?.isAdmin && (
               <button 
                 onClick={() => setTokenModalOpen(true)}
-                className="group flex items-center gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 p-1 pr-5 rounded-full shadow-md shadow-blue-200/50 ring-1 ring-blue-500/30 relative overflow-hidden mx-2 h-12"
+                className="group flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 p-1 pr-3 sm:pr-5 rounded-full shadow-md shadow-blue-200/50 ring-1 ring-blue-500/30 relative overflow-hidden mx-1 sm:mx-2 h-10 sm:h-12"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -skew-x-12"></div>
                 
-                <div className="h-10 w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner ring-1 ring-white/30 z-10 shrink-0">
-                  <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] group-hover:rotate-12 group-hover:scale-110 transition-transform duration-500" />
+                <div className="h-8 w-8 sm:h-10 sm:w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner ring-1 ring-white/30 z-10 shrink-0">
+                  <img src="/gradcoin.svg" alt="GradCoin" className="w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] group-hover:rotate-12 group-hover:scale-110 transition-transform duration-500" />
                 </div>
                 
                 <div className="flex items-center gap-1.5 z-10 text-white pr-1">
-                  <span className="font-black text-[16px] tracking-tight">{user?.aiTokens || 0}</span>
+                  <span className="font-black text-[14px] sm:text-[16px] tracking-tight">{user?.aiTokens || 0}</span>
                   <span className="text-[12px] font-bold text-blue-100 hidden sm:inline tracking-wide">GradCoins</span>
                 </div>
               </button>
