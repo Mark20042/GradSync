@@ -47,9 +47,14 @@ const updateProfile = async (
       if (body.firstName !== undefined) user.firstName = body.firstName;
       if (body.middleName !== undefined) user.middleName = body.middleName;
       if (body.lastName !== undefined) user.lastName = body.lastName;
-      user.fullName = [user.firstName, user.middleName, user.lastName].filter(Boolean).join(" ");
+      const newFullName = [user.firstName, user.middleName, user.lastName].filter(Boolean).join(" ");
+      if (newFullName.trim() !== "") {
+        user.fullName = newFullName;
+      }
     } else if (body.fullName !== undefined) {
-      user.fullName = body.fullName;
+      if (body.fullName.trim() !== "") {
+        user.fullName = body.fullName;
+      }
     }
     user.email = body.email || user.email;
     user.avatar = body.avatar || user.avatar;
@@ -157,7 +162,7 @@ const updateProfile = async (
     if ((user.role === "graduate" || user.role === "jobseeker") && body.skills !== undefined) {
       try {
         const existingAssessments = await Assessment.find({ candidateId: user._id });
-        const generatedSkills = existingAssessments.map((a: any) => a.skill.toLowerCase());
+        const generatedSkills = existingAssessments.map((a: any) => a.skill?.toLowerCase()).filter(Boolean);
         
         const rawSkills = [...(user.verifiedSkills || []), ...(user.skills || [])];
         const allSkills = Array.from(new Set(
@@ -165,7 +170,7 @@ const updateProfile = async (
             .filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
         )) as string[];
 
-        const missingSkills = allSkills.filter(s => !generatedSkills.includes(s.toLowerCase()));
+        const missingSkills = allSkills.filter(s => s && !generatedSkills.includes(s.toLowerCase()));
 
         if (missingSkills.length > 0) {
           import('@/services/generation.service.js').then(({ autoGenerateMissingForUser }) => {

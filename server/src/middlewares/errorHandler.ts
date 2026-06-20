@@ -20,6 +20,31 @@ export const errorHandler = (
     return;
   }
 
+  if (err.name === "ValidationError") {
+    const messages = Object.values((err as any).errors).map((val: any) => val.message);
+    res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: messages.join(", "),
+    });
+    return;
+  }
+
+  if (err.name === "CastError") {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: `No item found with id : ${(err as any).value}`,
+    });
+    return;
+  }
+
+  if ((err as any).code && (err as any).code === 11000) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: `Duplicate value entered for ${Object.keys((err as any).keyValue)} field, please choose another value`,
+    });
+    return;
+  }
+
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
     error: "Internal Server Error",

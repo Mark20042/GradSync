@@ -12,6 +12,17 @@ const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, ha
         handleGenerateSummary();
     };
 
+    const renderBio = (text) => {
+        if (!text) return "No bio provided yet. Click 'Edit Profile' to add your story!";
+        const parts = text.split(/(\*\*.*?\*\*)/g);
+        return parts.map((part, index) => {
+            if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+                return <span key={index} className="font-bold text-gray-900">{part.slice(2, -2)}</span>;
+            }
+            return part;
+        });
+    };
+
     return (
         <div>
             <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -55,7 +66,7 @@ const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, ha
             ) : (
                 <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-100">
                     <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
-                        {user.bio || "No bio provided yet. Click 'Edit Profile' to add your story!"}
+                        {renderBio(user.bio)}
                     </p>
                 </div>
             )}
