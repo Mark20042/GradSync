@@ -212,8 +212,26 @@ const UserProfile = () => {
           editData.jobPreferences?.salaryExpectation || undefined,
       };
 
+      const cleanEmptyDates = (arr, dateFields) => {
+        if (!Array.isArray(arr)) return arr;
+        return arr.map(item => {
+          const newItem = { ...item };
+          dateFields.forEach(field => {
+            if (newItem[field] === "") newItem[field] = null;
+          });
+          return newItem;
+        });
+      };
+
       const formattedData = {
         ...editData,
+        birthdate: editData.birthdate === "" ? null : editData.birthdate,
+        education: cleanEmptyDates(editData.education, ["startDate", "endDate"]),
+        experiences: cleanEmptyDates(editData.experiences, ["startDate", "endDate"]),
+        internships: cleanEmptyDates(editData.internships, ["startDate", "endDate"]),
+        projects: cleanEmptyDates(editData.projects, ["startDate", "endDate"]),
+        awards: cleanEmptyDates(editData.awards, ["date"]),
+        certifications: cleanEmptyDates(editData.certifications, ["issueDate", "expirationDate"]),
         skills: processedSkills,
         jobPreferences: processedJobPreferences,
       };
@@ -233,7 +251,8 @@ const UserProfile = () => {
       toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error("Error updating profile. Please check all fields.");
+      const errorMessage = error.response?.data?.message || "Error updating profile. Please check all fields.";
+      toast.error(errorMessage);
     }
   };
 

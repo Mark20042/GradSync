@@ -32,7 +32,7 @@ export const errorHandler = (
   if (err.name === "CastError") {
     res.status(StatusCodes.BAD_REQUEST).json({
       success: false,
-      message: `No item found with id : ${(err as any).value}`,
+      message: `Invalid format for field: ${(err as any).path}`,
     });
     return;
   }
