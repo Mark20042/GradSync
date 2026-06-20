@@ -35,6 +35,10 @@ const jobSchema = new Schema<IJob>(
       type: Boolean,
       default: false,
     },
+    // Rating aggregates (updated when a TerminationReview is saved)
+    ratingCount: { type: Number, default: 0 },
+    ratingSum: { type: Number, default: 0 },
+    averageRating: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

@@ -23,6 +23,7 @@ import EmployerSuitabilityModal from "./components/EmployerSuitabilityModal";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import Breadcrumbs from "../../components/Breadcrumbs";
+import StarRating from "../../components/ratings/StarRating";
 
 const ApplicantProfile = () => {
   const location = useLocation();
@@ -653,6 +654,35 @@ const ApplicantProfile = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Employee Conduct Score (score only — feedback is private) */}
+                {applicant?.applicant?.employeeAverageRating > 0 && (
+                  <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 shadow rounded-xl p-6">
+                    <h2 className="text-sm font-bold text-indigo-900 mb-3 uppercase tracking-wider flex items-center gap-2">
+                      <Award className="w-4 h-4 text-indigo-500" />
+                      Conduct Score
+                    </h2>
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col items-center justify-center bg-white rounded-xl w-16 h-16 shadow-sm border border-indigo-100 shrink-0">
+                        <span className="text-2xl font-extrabold text-indigo-700 leading-none">
+                          {applicant.applicant.employeeAverageRating.toFixed(1)}
+                        </span>
+                        <span className="text-[10px] text-indigo-400 font-semibold mt-0.5">/5.0</span>
+                      </div>
+                      <div>
+                        <StarRating
+                          value={Math.round(applicant.applicant.employeeAverageRating)}
+                          size="sm"
+                          readOnly
+                        />
+                        <p className="text-xs text-indigo-600 mt-1.5 font-medium">
+                          Based on {applicant.applicant.employeeRatingCount} employer{applicant.applicant.employeeRatingCount === 1 ? '' : 's'}
+                        </p>
+                        <p className="text-[11px] text-indigo-400 mt-0.5">Aggregate score from past employers</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Skills */}
                 {applicant.applicant.skills?.length > 0 && (

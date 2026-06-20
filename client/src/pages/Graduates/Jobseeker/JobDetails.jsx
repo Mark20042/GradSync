@@ -30,6 +30,7 @@ import toast from "react-hot-toast";
 import JobDetailsSkeleton from "./components/skeletons/JobDetailsSkeleton";
 import FormattedText from "../../../components/FormattedText";
 import LocationMap from "../../../components/Map/LocationMap";
+import ReviewsSection from "../../../components/ratings/ReviewsSection";
 
 const JobDetails = () => {
   const { jobId } = useParams();
@@ -411,6 +412,16 @@ const JobDetails = () => {
                 <FormattedText text={jobDetails.benefits} className="text-base" />
               </section>
             )}
+
+            {/* Employee Reviews (from terminated workers) */}
+            <ReviewsSection
+              mode="job"
+              entityId={jobId}
+              summary={{
+                averageRating: jobDetails?.averageRating || 0,
+                ratingCount: jobDetails?.ratingCount || 0,
+              }}
+            />
           </div>
 
           {/* Right Column - Sidebar */}

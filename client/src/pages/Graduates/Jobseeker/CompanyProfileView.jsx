@@ -11,6 +11,7 @@ import {
     Briefcase,
     ExternalLink,
     CheckCircle,
+    Star,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CompanyProfileSkeleton from "./components/skeletons/CompanyProfileSkeleton";
@@ -21,6 +22,8 @@ import JobCard from "../../../components/Cards/JobCard";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
 import LocationMap from "../../../components/Map/LocationMap";
+import StarRating from "../../../components/ratings/StarRating";
+import ReviewsSection from "../../../components/ratings/ReviewsSection";
 
 const CompanyProfileView = () => {
     const { id } = useParams();
@@ -168,7 +171,6 @@ const CompanyProfileView = () => {
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                         {company.companyName || company.fullName}
                                     </h1>
-
                                 </div>
                                 <div className="flex flex-wrap items-center gap-6 text-gray-600">
                                     {company.address && (
@@ -188,6 +190,19 @@ const CompanyProfileView = () => {
                                             Visit Website
                                             <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </a>
+                                    )}
+                                    {/* Company Rating Summary */}
+                                    {company.companyAverageRating > 0 && (
+                                        <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-full">
+                                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                            <span className="text-sm font-bold text-amber-700">
+                                                {company.companyAverageRating.toFixed(1)}
+                                            </span>
+                                            <span className="text-xs text-amber-600">
+                                                ({company.companyRatingCount} {company.companyRatingCount === 1 ? 'review' : 'reviews'})
+                                            </span>
+                                            <StarRating value={Math.round(company.companyAverageRating)} size="sm" readOnly />
+                                        </div>
                                     )}
                                 </div>
                             </motion.div>
@@ -246,6 +261,16 @@ const CompanyProfileView = () => {
                                         </div>
                                     )}
                                 </section>
+
+                                {/* Company Reviews Section */}
+                                <ReviewsSection
+                                    mode="company"
+                                    entityId={id}
+                                    summary={{
+                                        averageRating: company?.companyAverageRating || 0,
+                                        ratingCount: company?.companyRatingCount || 0,
+                                    }}
+                                />
                             </div>
 
                             {/* Sidebar */}

@@ -12,7 +12,9 @@ import {
     Loader,
     Search,
     Filter,
-    ArrowLeft
+    ArrowLeft,
+    UserX,
+    Star,
 } from "lucide-react";
 import axiosInstance from "../../../utils/axiosInstance";
 import { API_PATH } from "../../../utils/apiPath";
@@ -20,11 +22,14 @@ import Navbar from "./components/Navbar";
 import LoadingSpinner from "../../../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import MyApplicationsSkeleton from "./components/skeletons/MyApplicationsSkeleton";
+import JobseekerRatingModal from "../../../components/ratings/JobseekerRatingModal";
 
 const MyApplications = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [ratingReview, setRatingReview] = useState(null); // review to rate
+    const [ratedIds, setRatedIds] = useState(new Set()); // track which reviews were rated this session
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -44,12 +49,13 @@ const MyApplications = () => {
         }
     };
 
-    // Group applications by status
+    // Group applications by status (including Terminated)
     const columns = {
         Applied: applications.filter((app) => app.status === "Applied"),
         "In Review": applications.filter((app) => app.status === "In Review"),
         Accepted: applications.filter((app) => app.status === "Accepted"),
         Rejected: applications.filter((app) => app.status === "Rejected"),
+        Terminated: applications.filter((app) => app.status === "Terminated"),
     };
 
     const getStatusColor = (status) => {
@@ -62,8 +68,21 @@ const MyApplications = () => {
                 return "bg-green-100 text-green-700 border-green-200";
             case "Rejected":
                 return "bg-red-100 text-red-700 border-red-200";
+            case "Terminated":
+                return "bg-slate-100 text-slate-600 border-slate-200";
             default:
                 return "bg-gray-100 text-gray-700 border-gray-200";
+        }
+    };
+
+    const getStatusBorderColor = (status) => {
+        switch (status) {
+            case "Applied": return "border-blue-500";
+            case "In Review": return "border-yellow-500";
+            case "Accepted": return "border-green-500";
+            case "Rejected": return "border-red-500";
+            case "Terminated": return "border-slate-500";
+            default: return "border-gray-400";
         }
     };
 
@@ -77,9 +96,16 @@ const MyApplications = () => {
                 return <CheckCircle className="w-4 h-4" />;
             case "Rejected":
                 return <XCircle className="w-4 h-4" />;
+            case "Terminated":
+                return <UserX className="w-4 h-4" />;
             default:
                 return <Briefcase className="w-4 h-4" />;
         }
+    };
+
+    const handleRated = (reviewId) => {
+        setRatedIds((prev) => new Set([...prev, reviewId]));
+        setRatingReview(null);
     };
 
 
@@ -119,11 +145,7 @@ const MyApplications = () => {
                             {Object.entries(columns).map(([status, apps]) => (
                                 <div key={status} className="flex flex-col h-auto lg:h-full lg:max-h-full">
                                     {/* Column Header */}
-                                    <div className={`flex items-center justify-between p-4 rounded-t-xl border-b-2 bg-white shadow-sm flex-shrink-0 ${status === "Applied" ? "border-blue-500" :
-                                        status === "In Review" ? "border-yellow-500" :
-                                            status === "Accepted" ? "border-green-500" :
-                                                "border-red-500"
-                                        }`}>
+                                    <div className={`flex items-center justify-between p-4 rounded-t-xl border-b-2 bg-white shadow-sm flex-shrink-0 ${getStatusBorderColor(status)}`}>
                                         <div className="flex items-center gap-2">
                                             <div className={`p-1.5 rounded-lg ${getStatusColor(status)} bg-opacity-20`}>
                                                 {getStatusIcon(status)}
@@ -177,6 +199,30 @@ const MyApplications = () => {
                                                                 {app.job.type}
                                                             </span>
                                                         )}
+                                                        {/* Rate Experience button for Terminated apps */}
+                                                        {status === "Terminated" && app.terminationReview && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (ratedIds.has(app.terminationReview._id || app.terminationReview)) return;
+                                                                    setRatingReview({
+                                                                        _id: app.terminationReview._id || app.terminationReview,
+                                                                        job: app.job,
+                                                                        company: app.job?.company,
+                                                                    });
+                                                                }}
+                                                                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
+                                                                    app.terminationReview?.isJobseekerRated || ratedIds.has(app.terminationReview?._id || app.terminationReview)
+                                                                        ? "bg-gray-100 text-gray-400 cursor-default"
+                                                                        : "bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 shadow-sm"
+                                                                }`}
+                                                            >
+                                                                <Star className="w-3 h-3" />
+                                                                {app.terminationReview?.isJobseekerRated || ratedIds.has(app.terminationReview?._id || app.terminationReview)
+                                                                    ? "✓ Rated"
+                                                                    : "Rate Experience"}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             ))
@@ -188,6 +234,13 @@ const MyApplications = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Jobseeker Rating Modal */}
+            <JobseekerRatingModal
+                isOpen={!!ratingReview}
+                onClose={(wasRated) => wasRated ? handleRated(ratingReview?._id) : setRatingReview(null)}
+                review={ratingReview}
+            />
         </div>
     );
 };

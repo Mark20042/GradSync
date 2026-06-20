@@ -106,6 +106,11 @@ export const EMPLOYER_MENU = [
     icon: LayoutDashboard,
   },
   {
+    id: "employer-analytics",
+    name: "Analytics",
+    icon: BarChart3,
+  },
+  {
     id: "post-job",
     name: "Post Job",
     icon: Plus,

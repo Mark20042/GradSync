@@ -7,6 +7,9 @@ export interface IApplication extends Document {
   resume?: string;
   status: 'Applied' | 'In Review' | 'Rejected' | 'Accepted' | 'Terminated';
   experienceRef?: Types.ObjectId;
+  terminationReview?: Types.ObjectId;
+  terminatedAt?: Date;
+  terminationReason?: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -18,6 +21,9 @@ const applicationSchema = new Schema<IApplication>(
     resume: String,
     status: { type: String, enum: ['Applied', 'In Review', 'Rejected', 'Accepted', 'Terminated'], default: 'Applied' },
     experienceRef: { type: Schema.Types.ObjectId, default: null },
+    terminationReview: { type: Schema.Types.ObjectId, ref: 'TerminationReview', default: null },
+    terminatedAt: { type: Date, default: null },
+    terminationReason: { type: Schema.Types.ObjectId, ref: 'TerminationReason', default: null },
   },
   { timestamps: true }
 );

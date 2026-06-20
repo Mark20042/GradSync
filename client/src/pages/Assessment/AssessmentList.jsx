@@ -11,6 +11,7 @@ import {
   Award,
   X,
   Eye,
+  RefreshCw,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
@@ -226,10 +227,6 @@ const AssessmentList = () => {
 
                 <button
                   onClick={() => {
-                    if (completedInterview) {
-                      toast.error("You have already completed this interview.");
-                      return;
-                    }
                     if (userTokens < aiCosts.interview) {
                       window.dispatchEvent(new CustomEvent("openTokenModal"));
                       return;
@@ -237,15 +234,15 @@ const AssessmentList = () => {
                     navigate("/interview-room", { state: { jobRole: role.roleName } });
                   }}
                   className={`w-full py-3 mt-4 rounded-lg font-bold flex items-center justify-center gap-2 ${
-                    completedInterview
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : userTokens < aiCosts.interview
+                    userTokens < aiCosts.interview
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                       : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
                   {completedInterview ? (
-                    "✓ Completed"
+                    <>
+                      <RefreshCw size={16} /> Retake Interview <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.interview}</span>
+                    </>
                   ) : (
                     <>
                       <Play size={16} /> Take Interview <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.interview}</span>
@@ -306,29 +303,26 @@ const AssessmentList = () => {
                     Pass: {assessment.passingScore || 80}%
                   </p>
                   <button
-                    
                     onClick={() => {
-                      if (verified) {
-                        const submission = mySubmissions.find(s => s.assessment?._id === assessment._id);
-                        if (submission) {
-                          setSelectedSubmission(submission);
-                        }
-                      } else {
-                        navigate("/assessment-taking", {
-                          state: {
-                            assessmentId: assessment._id,
-                            skill: assessment.skill,
-                          },
-                        });
+                      if (userTokens < aiCosts.skillVerification) {
+                        window.dispatchEvent(new CustomEvent("openTokenModal"));
+                        return;
                       }
+                      navigate("/assessment-taking", {
+                        state: {
+                          assessmentId: assessment._id,
+                          skill: assessment.skill,
+                        },
+                      });
                     }}
-                    className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${verified
-                      ? "bg-green-100 text-green-700 hover:bg-green-200"
-                      : userTokens < aiCosts.skillVerification ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
-                      }`}
+                    className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 ${
+                      userTokens < aiCosts.skillVerification ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
                   >
                     {verified ? (
-                      "✓ Verified"
+                      <>
+                        <RefreshCw size={16} /> Retake Assessment <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.skillVerification}</span>
+                      </>
                     ) : (
                       <>
                         <Play size={16} /> Take Assessment <span className="flex items-center gap-1 ml-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-4 h-4 object-contain" /> {aiCosts.skillVerification}</span>

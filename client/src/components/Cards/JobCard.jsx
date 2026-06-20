@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import StatusBadge from "../StatusBadge";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import JobRatingBadge from "../ratings/JobRatingBadge";
 
 const getCategoryColor = (category) => {
   // Professional, subtle color palette
@@ -116,6 +117,17 @@ const JobCard = ({ job, onClick, onToggleSave, onApply, saved, hideApply, public
           )}
         </div>
       </div>
+
+      {/* Rating Badge (if any reviews exist) */}
+      {job?.averageRating > 0 && (
+        <div className="mb-3 -mt-2">
+          <JobRatingBadge
+            averageRating={job.averageRating}
+            ratingCount={job.ratingCount}
+            size="sm"
+          />
+        </div>
+      )}
 
       {/* Bottom section */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">

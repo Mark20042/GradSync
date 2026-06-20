@@ -10,9 +10,11 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import EmployerSuitabilityModal from "./EmployerSuitabilityModal";
 import { FileCode } from "lucide-react";
-
 import Breadcrumbs from "../../../components/Breadcrumbs";
 import StatusBadge from "../../../components/StatusBadge";
+import TerminateModal from "../../../components/ratings/TerminateModal";
+import EmployerRatingModal from "../../../components/ratings/EmployerRatingModal";
+
 const statusOptions = ["Applied", "In Review", "Rejected", "Accepted"];
 
 const ApplicantProfilePreview = ({
@@ -31,7 +33,8 @@ const ApplicantProfilePreview = ({
   const [customReason, setCustomReason] = useState("");
   const [hasPromptedFeedback, setHasPromptedFeedback] = useState(false);
   const [showTerminateModal, setShowTerminateModal] = useState(false);
-  const [terminating, setTerminating] = useState(false);
+  const [pendingReviewId, setPendingReviewId] = useState(null);
+  const [showEmployerRatingModal, setShowEmployerRatingModal] = useState(false);
   const { user } = useAuth();
 
   const navigate = useNavigate();
@@ -116,24 +119,12 @@ const ApplicantProfilePreview = ({
     setCustomReason("");
   };
 
-  const handleTerminate = async () => {
-    setTerminating(true);
-    try {
-      const response = await axiosInstance.put(
-        API_PATH.APPLICATIONS.TERMINATE(selectedApplicant._id)
-      );
-      if (response.status === 200) {
-        setCurrentStatus("Terminated");
-        setSelectedApplicant({ ...selectedApplicant, status: "Terminated" });
-        toast.success("Employment terminated. Experience end date updated.");
-      }
-    } catch (err) {
-      console.error("Error terminating:", err);
-      toast.error("Failed to terminate employment");
-    } finally {
-      setTerminating(false);
-      setShowTerminateModal(false);
-    }
+  // Called after TerminateModal succeeds — open the employer rating modal next
+  const handleTerminated = (reviewId) => {
+    setCurrentStatus("Terminated");
+    setSelectedApplicant({ ...selectedApplicant, status: "Terminated" });
+    setPendingReviewId(reviewId);
+    setShowEmployerRatingModal(true);
   };
 
   return (
@@ -365,41 +356,21 @@ const ApplicantProfilePreview = ({
           </div>
         </div>
       )}
-      {/* Terminate Confirmation Modal */}
-      {showTerminateModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold text-gray-900">End Employment</h3>
-              <button onClick={() => setShowTerminateModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex items-center gap-3 bg-red-50 border border-red-100 p-4 rounded-xl mb-6">
-              <UserX className="w-8 h-8 text-red-500 shrink-0" />
-              <div>
-                <p className="text-sm text-red-800 font-medium">Are you sure you want to end employment for <strong>{selectedApplicant.applicant.fullName}</strong>?</p>
-                <p className="text-xs text-red-600 mt-1">This will set an end date on their experience and mark the application as terminated.</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowTerminateModal(false)}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleTerminate}
-                disabled={terminating}
-                className="flex-1 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
-              >
-                {terminating ? "Processing..." : "Confirm Termination"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Terminate Modal (new rich version with reason dropdown) */}
+      <TerminateModal
+        isOpen={showTerminateModal}
+        onClose={() => setShowTerminateModal(false)}
+        applicant={selectedApplicant}
+        onTerminated={handleTerminated}
+      />
+
+      {/* Employer Rating Modal (shown right after termination) */}
+      <EmployerRatingModal
+        isOpen={showEmployerRatingModal}
+        onClose={() => setShowEmployerRatingModal(false)}
+        reviewId={pendingReviewId}
+        employeeName={selectedApplicant?.applicant?.fullName}
+      />
     </div>
   );
 };

@@ -424,6 +424,125 @@ class GeminiService {
     }
   }
 
+  // ─── Employer Analytics Generation ──────────────────────────────────────
+
+  async analyzeSkillGaps(
+    terminationReasons: string[],
+    skillGaps: Array<{ skill: string; count: number }>
+  ): Promise<{ skillGaps: string[]; recommendations: string[] }> {
+    const template = `
+    You are an expert HR Data Analyst. 
+    Analyze the following data about a company's workforce.
+    
+    Top Termination Reasons:
+    {terminationReasons}
+    
+    Most common skills missing from applicants or prevalent in rejected/terminated candidates:
+    {skillGaps}
+
+    TASK:
+    Given these termination reasons and these common skill gaps, summarize what this employer's workforce most commonly lacks and provide 3 actionable recommendations.
+
+    Return ONLY a valid JSON object matching this structure exactly, with NO markdown formatting:
+    {{
+      "skillGaps": ["Summary of gap 1", "Summary of gap 2"],
+      "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"]
+    }}
+    `;
+
+    const prompt = new PromptTemplate({
+      template,
+      inputVariables: ['terminationReasons', 'skillGaps'],
+    });
+
+    try {
+      const input = await prompt.format({
+        terminationReasons: terminationReasons.length > 0 ? terminationReasons.join(', ') : 'No termination data available',
+        skillGaps: skillGaps.length > 0 ? skillGaps.map(g => `${g.skill} (${g.count} candidates)`).join(', ') : 'No skill gap data available',
+      });
+
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(input);
+        const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+        const jsonStr = this.extractJSON(content);
+        if (jsonStr) {
+          return JSON.parse(jsonStr) as { skillGaps: string[]; recommendations: string[] };
+        }
+        throw new Error('Invalid JSON from AI');
+      } finally {
+        limitService.releaseSlot();
+      }
+    } catch (error) {
+      console.error('Skill gap analysis error:', error);
+      throw new Error('Failed to analyze skill gaps.');
+    }
+  }
+
+  async generateEmployerAISummary(analyticsData: any): Promise<{ insights: string[] }> {
+    const template = `
+    You are a Strategic Recruitment Advisor.
+    Analyze the following aggregated data for an employer.
+    
+    Data:
+    - Total Applications: {totalApps}
+    - Total Hired: {totalHired} (Conversion Rate: {conversionRate}%)
+    - Total Terminated: {totalTerminated} (Estimated Retention: {retentionRate}%)
+    - Average Tenure of Terminated Employees: {avgTenureDays} days
+    - Most Applied Job: {topJob}
+    - Company Average Rating: {companyRating}
+
+    TASK:
+    Write a 4-5 point human-readable narrative report summarizing this recruitment health. Each point should be 1-2 sentences. Use HTML bolding (e.g., <b>bold text</b>) for key metrics. Do NOT use markdown asterisks for bolding. DO NOT output a preamble.
+
+    Return ONLY a valid JSON object matching this structure exactly, with NO markdown formatting:
+    {{
+      "insights": [
+        "Insight 1 text...",
+        "Insight 2 text..."
+      ]
+    }}
+    `;
+
+    const prompt = new PromptTemplate({
+      template,
+      inputVariables: ['totalApps', 'totalHired', 'conversionRate', 'totalTerminated', 'retentionRate', 'avgTenureDays', 'topJob', 'companyRating'],
+    });
+
+    try {
+      const input = await prompt.format({
+        totalApps: analyticsData.totalApps,
+        totalHired: analyticsData.totalHired,
+        conversionRate: analyticsData.conversionRate,
+        totalTerminated: analyticsData.totalTerminated,
+        retentionRate: analyticsData.retentionRate,
+        avgTenureDays: analyticsData.avgTenureDays || 'N/A',
+        topJob: analyticsData.topJob || 'N/A',
+        companyRating: analyticsData.companyRating || 'N/A',
+      });
+
+      const limitService = getAILimitService();
+      await limitService.acquireSlot();
+      try {
+        await limitService.recordGeminiRequest();
+        const response = await this.model.invoke(input);
+        const content = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+        const jsonStr = this.extractJSON(content);
+        if (jsonStr) {
+          return JSON.parse(jsonStr) as { insights: string[] };
+        }
+        throw new Error('Invalid JSON from AI');
+      } finally {
+        limitService.releaseSlot();
+      }
+    } catch (error) {
+      console.error('Employer summary generation error:', error);
+      throw new Error('Failed to generate employer summary.');
+    }
+  }
+
 }
 
 export const getGeminiService = () => GeminiService.getInstance();

@@ -137,6 +137,16 @@ export interface IUser extends Document {
   isProfileComplete?: boolean;
   experienceType?: "work" | "internship";
 
+  // Company rating aggregates (employer side — from jobseeker reviews)
+  companyRatingCount?: number;
+  companyRatingSum?: number;
+  companyAverageRating?: number;
+
+  // Employee conduct rating aggregates (score only shown publicly)
+  employeeRatingCount?: number;
+  employeeRatingSum?: number;
+  employeeAverageRating?: number;
+
   // Timestamps
   lastScanDate?: Date;
   createdAt?: Date;
@@ -166,6 +176,9 @@ export interface IJob extends Document {
   salaryMax?: number;
   autoReplyMessage?: string;
   isClosed?: boolean;
+  ratingCount?: number;
+  ratingSum?: number;
+  averageRating?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -124,4 +124,39 @@ export const API_PATH = {
     GET_INTERVIEW_BY_ID: (id) => `/api/interviews/${id}`,
     DELETE_INTERVIEW: (id) => `/api/interviews/${id}`,
   },
+
+  TERMINATION_REVIEWS: {
+    // Termination reasons (admin-configurable)
+    GET_REASONS: "/api/termination-reviews/reasons",
+    CREATE_REASON: "/api/termination-reviews/reasons",
+    UPDATE_REASON: (id) => `/api/termination-reviews/reasons/${id}`,
+    DELETE_REASON: (id) => `/api/termination-reviews/reasons/${id}`,
+
+    // Terminate an applicant (employer)
+    TERMINATE: "/api/termination-reviews/terminate",
+
+    // Ratings
+    EMPLOYER_RATE: (id) => `/api/termination-reviews/${id}/employer-rate`,
+    JOBSEEKER_RATE: (id) => `/api/termination-reviews/${id}/jobseeker-rate`,
+    DISMISS_PROMPT: (id) => `/api/termination-reviews/${id}/dismiss`,
+
+    // Jobseeker: get pending (unrated) reviews
+    MY_PENDING: "/api/termination-reviews/my-pending",
+
+    // Public reads (anonymous)
+    JOB_REVIEWS: (jobId) => `/api/termination-reviews/job/${jobId}`,
+    COMPANY_REVIEWS: (companyId) => `/api/termination-reviews/company/${companyId}`,
+    EMPLOYEE_SCORE: (userId) => `/api/termination-reviews/employee/${userId}/score`,
+  },
+
+  EMPLOYER_ANALYTICS: {
+    // Option B GradCoin prices: 5 / 5 / 10 / 10 / 15 / 20
+    APPLICATIONS_OVER_TIME: "/api/analytics/employer/applications-over-time",   // 5 🪙
+    TOP_JOBS: "/api/analytics/employer/top-jobs",                               // 5 🪙
+    RETENTION: "/api/analytics/employer/retention",                             // 10 🪙
+    TERMINATION_REASONS: "/api/analytics/employer/termination-reasons",         // 10 🪙
+    SKILL_GAPS: "/api/analytics/employer/skill-gaps",                           // 15 🪙
+    AI_SUMMARY: "/api/analytics/employer/ai-summary",                           // 20 🪙
+  },
 };
+

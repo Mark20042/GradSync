@@ -24,6 +24,7 @@ import employerRoutes from "@/routes/employer.route.js";
 import aiRoutes from "@/routes/ai.route.js";
 import adminRoutes from "@/routes/admin.route.js";
 import generationRoutes from "@/routes/generation.route.js";
+import terminationReviewRoutes from "@/routes/termination-review.route.js";
 
 // middlewares import
 import { errorHandler } from "@/middlewares/errorHandler.js";
@@ -121,6 +122,7 @@ apiRouter.use("/employer", employerRoutes);
 apiRouter.use("/ai", aiRoutes);
 apiRouter.use("/admin", adminRoutes);
 apiRouter.use("/generation", generationRoutes);
+apiRouter.use("/termination-reviews", terminationReviewRoutes);
 
 // mount api routes
 app.use("/api", apiRouter);

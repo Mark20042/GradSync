@@ -40,5 +40,14 @@ router.delete("/ai-feedback/:id", adminController.deleteAIFeedback);
 router.get("/system-settings", adminController.getSystemSettings);
 router.put("/system-settings", adminController.updateSystemSettings);
 router.get("/system-metrics", adminController.getSystemMetrics);
+router.get("/terminations", adminController.getAllTerminations);
+
+// Platform Analytics
+router.get("/platform-analytics/applications-over-time", adminController.getPlatformApplicationsOverTime);
+router.get("/platform-analytics/top-jobs", adminController.getPlatformTopJobs);
+router.get("/platform-analytics/retention", adminController.getPlatformRetentionStats);
+router.get("/platform-analytics/termination-reasons", adminController.getPlatformTerminationReasons);
+router.get("/platform-analytics/skill-gaps", adminController.getPlatformSkillGaps);
+router.get("/platform-analytics/ai-summary", adminController.getPlatformAISummary);
 
 export default router;

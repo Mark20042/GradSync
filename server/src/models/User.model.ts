@@ -165,10 +165,18 @@ const userSchema = new Schema<IUser>(
     companyDescription: String,
     companyLogo: String,
     businessPermit: { type: String, default: "" },
+    // Company rating aggregates (from jobseeker reviews, updated on each review)
+    companyRatingCount: { type: Number, default: 0 },
+    companyRatingSum: { type: Number, default: 0 },
+    companyAverageRating: { type: Number, default: 0 },
 
     // Admin
     isAdmin: { type: Boolean, default: false },
     aiTokens: { type: Number, default: 0 },
+    // Employee conduct rating aggregates (score only — text stays private)
+    employeeRatingCount: { type: Number, default: 0 },
+    employeeRatingSum: { type: Number, default: 0 },
+    employeeAverageRating: { type: Number, default: 0 },
 
     // Verification
     verified: { type: Boolean, default: false },

@@ -18,6 +18,9 @@ import Assessment from "@/models/Assessment.model.js";
 import InterviewDraft from "@/models/InterviewDraft.model.js";
 import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
 import FeatureFeedback from "@/models/FeatureFeedback.model.js";
+import TerminationReview from "@/models/TerminationReview.model.js";
+import TerminationReason from "@/models/TerminationReason.model.js";
+import { createNotification } from "@/utils/notification.helper.js";
 import {
   deleteFromCloudinary,
   getPublicIdFromUrl,
@@ -78,7 +81,30 @@ const updateProfile = async (
       user.linkedin =
         body.linkedin !== undefined ? body.linkedin : user.linkedin;
       user.github = body.github !== undefined ? body.github : user.github;
-      if (body.experiences !== undefined) user.experiences = body.experiences;
+      
+      let newlyEndedExperiences: any[] = [];
+      if (body.experiences !== undefined) {
+        const oldExperiences = user.experiences || [];
+        const newExperiences = body.experiences;
+        
+        newExperiences.forEach((newExp: any) => {
+           // Try to match by _id or company + title
+           const oldExp = oldExperiences.find((e: any) => 
+             (e._id && newExp._id && e._id.toString() === newExp._id.toString()) || 
+             (e.company === newExp.company && e.title === newExp.title)
+           );
+           
+           if (oldExp) {
+             const wasCurrent = oldExp.isCurrent || !oldExp.endDate;
+             const isEndedNow = newExp.endDate && !newExp.isCurrent;
+             if (wasCurrent && isEndedNow) {
+               newlyEndedExperiences.push(newExp);
+             }
+           }
+        });
+        
+        user.experiences = body.experiences;
+      }
       if (body.internships !== undefined) user.internships = body.internships;
       if (body.education !== undefined) user.education = body.education;
       if (body.skills !== undefined) user.skills = body.skills;
@@ -148,6 +174,73 @@ const updateProfile = async (
         }
       } catch (err) {
         console.error("Error detecting missing skills on profile update:", err);
+      }
+      
+      // Handle auto-terminations for newly ended experiences
+      if (newlyEndedExperiences.length > 0) {
+        try {
+          let defaultReason = await TerminationReason.findOne({ label: { $regex: /Resign/i } });
+          if (!defaultReason) {
+            defaultReason = await TerminationReason.create({
+              label: "Resigned (Profile Updated)",
+              category: "Other",
+              description: "Auto-generated when jobseeker adds an end date to their experience profile.",
+              createdBy: "system"
+            });
+          }
+
+          for (const exp of newlyEndedExperiences) {
+            // Find active applications for this user
+            const activeApps = await Application.find({
+               applicant: user._id,
+               status: { $in: ["Accepted", "Hired"] }
+            }).populate("job");
+
+            // Look for employer matching the experience company name
+            const employers = await User.find({ 
+              role: "employer", 
+              companyName: { $regex: new RegExp(exp.company, "i") } 
+            }).select("_id");
+            const employerIds = employers.map(e => e._id.toString());
+
+            if (employerIds.length > 0) {
+              for (const app of activeApps) {
+                 if (app.job && employerIds.includes((app.job as any).company.toString())) {
+                    // Match found! Auto terminate.
+                    app.status = "Terminated";
+                    app.terminatedAt = exp.endDate ? new Date(exp.endDate) : new Date();
+                    app.terminationReason = defaultReason._id;
+                    await app.save();
+
+                    // Create Review stub
+                    await TerminationReview.create({
+                       employee: user._id,
+                       company: (app.job as any).company,
+                       job: (app.job as any)._id,
+                       reasonId: defaultReason._id,
+                       terminatedAt: app.terminatedAt
+                    });
+
+                    // Send notifications
+                    await createNotification(
+                      (app.job as any).company,
+                      "SYSTEM_ALERT",
+                      "Employee Resignation Update",
+                      `${user.fullName} has updated their profile to indicate they no longer work at your company. Please submit a review in your Applicant tracking system.`
+                    );
+                    await createNotification(
+                      user._id,
+                      "SYSTEM_ALERT",
+                      "Review Your Past Employer",
+                      `We noticed you added an end date for your role at ${exp.company}. Would you like to leave a review in your Applications page?`
+                    );
+                 }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error processing auto-termination:", err);
+        }
       }
     }
 

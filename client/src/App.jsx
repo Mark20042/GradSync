@@ -24,6 +24,7 @@ import EmployerDashboard from "./pages/Employer/EmployerDashboard";
 import ApplicationViewer from "./pages/Employer/ApplicationViewer";
 import EmployerProfilePage from "./pages/Employer/EmployerProfilePage";
 import ApplicantProfile from "./pages/Employer/ApplicantProfile";
+import EmployerAnalytics from "./pages/Employer/EmployerAnalytics";
 
 import EmployerAutoPilot from "./pages/Employer/EmployerAutoPilot";
 import ConversationList from "./pages/Graduates/Jobseeker/ConversationList";
@@ -55,6 +56,8 @@ import AdminInterviewQuestions from "./pages/Admin/AdminInterviewQuestions";
 import AdminInterviewScores from "./pages/Admin/AdminInterviewScores";
 import AdminFeatureFeedbacks from "./pages/Admin/AdminFeatureFeedbacks";
 import AdminAIResourceCenter from "./pages/Admin/AdminAIResourceCenter";
+import AdminTerminations from "./pages/Admin/AdminTerminations";
+import AdminEmployerAnalytics from "./pages/Admin/AdminEmployerAnalytics";
 import FeatureFeedbackModal from "./components/FeatureFeedbackModal";
 
 const App = () => {
@@ -113,6 +116,7 @@ const App = () => {
                 path="/employer-dashboard"
                 element={<EmployerDashboard />}
               />
+              <Route path="/employer-analytics" element={<EmployerAnalytics />} />
               <Route path="/post-job" element={<JobPostingForm />} />
               <Route path="/manage-jobs" element={<ManageJobs />} />
               <Route path="/applicants" element={<ApplicationViewer />} />
@@ -154,6 +158,14 @@ const App = () => {
               <Route
                 path="/admin-assessment-review"
                 element={<AdminAssessmentReview />}
+              />
+              <Route
+                path="/admin-terminations"
+                element={<AdminTerminations />}
+              />
+              <Route
+                path="/admin-employer-analytics"
+                element={<AdminEmployerAnalytics />}
               />
               <Route
                 path="/admin-interview-questions"
