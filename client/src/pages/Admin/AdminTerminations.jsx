@@ -125,7 +125,7 @@ const AdminTerminations = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(term.terminatedAt).toLocaleDateString()}
+                          {term.terminationDate ? new Date(term.terminationDate).toLocaleDateString() : "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <button

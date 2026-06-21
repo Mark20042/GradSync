@@ -762,7 +762,7 @@ export const getAllTerminations = async (_req: any, res: Response, next: NextFun
       .populate("employee", "fullName avatar email")
       .populate("job", "title")
       .populate("terminationReason", "label")
-      .sort({ terminatedAt: -1 })
+      .sort({ terminationDate: -1 })
       .lean();
     res.json(reviews);
   } catch (error) { next(error); }
