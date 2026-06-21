@@ -263,31 +263,7 @@ const AdminEmployerAnalytics = () => {
             </div>
           )}
 
-          {/* Top Jobs by Applications */}
-          {data.topJobs && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 mb-6">
-                <Target className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Most Attractive Jobs (Platform-wide)</h3>
-              </div>
-              <div className="space-y-4">
-                {data.topJobs.map((job, idx) => (
-                  <div key={job._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-indigo-100 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                        #{idx + 1}
-                      </div>
-                      <p className="font-semibold text-gray-900">{job.title}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-gray-600 bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">
-                      <Users className="w-4 h-4 text-gray-400" />
-                      {job.applicants}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
 
           {/* Skill Gaps */}
           {selectedEmployer !== "all" && !data.skillGaps ? (
