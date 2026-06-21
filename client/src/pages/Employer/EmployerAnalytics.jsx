@@ -214,7 +214,7 @@ const EmployerAnalytics = () => {
             icon={BrainCircuit}
             cost={20}
             isUnlocked={unlockedState.aiSummary}
-            onUnlock={() => unlockFeature("aiSummary", API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY, 20)}
+            onUnlock={() => unlockFeature("aiSummary", API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY + "?refresh=true", 20)}
           >
             {data.aiSummary && (
               <div className="bg-gradient-to-br from-indigo-900 to-violet-900 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
@@ -389,7 +389,7 @@ const EmployerAnalytics = () => {
             icon={Target}
             cost={15}
             isUnlocked={unlockedState.skillGaps}
-            onUnlock={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS, 15)}
+            onUnlock={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS + "?refresh=true", 15)}
           >
             {data.skillGaps && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
