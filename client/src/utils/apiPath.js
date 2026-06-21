@@ -137,6 +137,7 @@ export const API_PATH = {
 
     // Ratings
     EMPLOYER_RATE: (id) => `/api/termination-reviews/${id}/employer-rate`,
+    EMPLOYEE_REVIEWS: (userId) => `/api/termination-reviews/employee/${userId}/reviews`,
     JOBSEEKER_RATE: (id) => `/api/termination-reviews/${id}/jobseeker-rate`,
     DISMISS_PROMPT: (id) => `/api/termination-reviews/${id}/dismiss`,
 
