@@ -189,7 +189,7 @@ const Messages = () => {
       <Navbar />
 
       {/* Main Chat Container */}
-      <div className="flex-1 flex flex-col pt-20 px-2 md:px-4 pb-[90px] md:pb-6 max-w-5xl mx-auto w-full min-h-0">
+      <div className="flex-1 flex flex-col pt-20 px-4 sm:px-6 lg:px-8 pb-[90px] md:pb-6 w-full min-h-0">
         <div className="flex-1 flex flex-col bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
 
           {/* Header */}

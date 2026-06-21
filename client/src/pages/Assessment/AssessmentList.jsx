@@ -146,7 +146,7 @@ const AssessmentList = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
-      <div className="px-4 md:px-6 py-4 mt-20 max-w-6xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 mt-20 w-full">
         <button
           onClick={() => navigate("/find-jobs")}
           className="flex items-center gap-2 text-blue-500 font-semibold py-2 rounded-lg transition-all hover:text-blue-700 w-fit"
@@ -156,7 +156,7 @@ const AssessmentList = () => {
         </button>
       </div>
 
-      <div className="px-4 md:px-6 pb-8 max-w-6xl mx-auto">
+      <div className="px-4 sm:px-6 lg:px-8 pb-8 w-full">
         <div className="bg-gradient-to-br from-blue-900 to-blue-500 p-6 md:p-10 rounded-2xl text-white mb-8 shadow-[0_10px_25px_-5px_rgba(59,130,246,0.5)]">
           <div className="flex items-start md:items-center gap-3 mb-3 md:mb-2 flex-col md:flex-row">
             <Trophy size={28} className="text-yellow-300 hidden md:block" />

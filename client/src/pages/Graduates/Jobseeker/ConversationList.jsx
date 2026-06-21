@@ -95,7 +95,7 @@ const ConversationList = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Navbar />
-      <div className="container mx-auto pt-20 md:pt-24 px-4 pb-28 md:pb-12 max-w-4xl">
+      <div className="w-full pt-20 md:pt-24 px-4 sm:px-6 lg:px-8 pb-28 md:pb-12">
 
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 md:mb-8">

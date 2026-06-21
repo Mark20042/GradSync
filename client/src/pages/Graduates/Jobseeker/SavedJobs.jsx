@@ -61,7 +61,7 @@ const SavedJobs = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-6 md:py-8 pb-28 md:pb-8 px-4 sm:px-6 lg:px-8 mt-16">
+      <div className="w-full py-6 md:py-8 pb-28 md:pb-8 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="flex items-center mb-8">
           <button
             onClick={() => navigate(-1)}
