@@ -143,9 +143,9 @@ const MyApplications = () => {
 
                 {/* Kanban Board Container */}
                 <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar px-4 pb-8">
-                    <div className="flex gap-6 h-full items-start min-w-max pb-4">
+                    <div className="flex gap-6 h-full items-start min-w-max pb-4 px-2">
                         {Object.entries(columns).map(([status, apps]) => (
-                            <div key={status} className="flex flex-col w-[320px] max-w-[85vw] h-full max-h-full shrink-0">
+                            <div key={status} className="flex flex-col w-[320px] max-w-[85vw] max-h-full shrink-0">
                                 {/* Column Header */}
                                 <div className={`flex items-center justify-between p-4 rounded-t-2xl border-b-[3px] bg-white shadow-sm shrink-0 z-10 relative ${getStatusBorderColor(status)}`}>
                                     <div className="flex items-center gap-2.5">
@@ -160,7 +160,7 @@ const MyApplications = () => {
                                 </div>
 
                                 {/* Column Content */}
-                                <div className="flex-1 bg-gray-100/60 p-3.5 rounded-b-2xl overflow-y-auto custom-scrollbar space-y-3.5 border border-t-0 border-gray-200/80 shadow-inner">
+                                <div className="bg-gray-100/60 p-3.5 rounded-b-2xl overflow-y-auto custom-scrollbar space-y-3.5 border border-t-0 border-gray-200/80 shadow-inner min-h-[100px]">
                                     {apps.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-32 text-center px-4">
                                             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3">
