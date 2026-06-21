@@ -36,6 +36,25 @@ import ReviewsSection from "../../components/ratings/ReviewsSection";
 
 const COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6"];
 
+const formatTenure = (days) => {
+  if (days === null || days === undefined || isNaN(days)) return "N/A";
+  if (days === 0) return "0 days";
+
+  let remainingDays = days;
+  let years = Math.floor(remainingDays / 365);
+  remainingDays -= years * 365;
+
+  let months = Math.floor(remainingDays / 30);
+  remainingDays -= months * 30;
+
+  const parts = [];
+  if (years > 0) parts.push(`${years}y`);
+  if (months > 0) parts.push(`${months}m`);
+  if (remainingDays > 0) parts.push(`${remainingDays}d`);
+
+  return parts.join(' ') || "0 days";
+};
+
 const EmployerAnalytics = () => {
   const { user, updateUser } = useAuth();
 
@@ -246,7 +265,7 @@ const EmployerAnalytics = () => {
                   </div>
                   <div className="bg-white/10 rounded-xl p-4 border border-white/20">
                     <p className="text-indigo-200 text-xs font-medium uppercase tracking-wider mb-1">Avg Tenure</p>
-                    <p className="text-3xl font-bold">{data.aiSummary.summary.avgTenureDays ? `${data.aiSummary.summary.avgTenureDays}d` : 'N/A'}</p>
+                    <p className="text-3xl font-bold">{formatTenure(data.aiSummary.summary?.avgTenureDays)}</p>
                   </div>
                   <div className="bg-white/10 rounded-xl p-4 border border-white/20">
                     <p className="text-indigo-200 text-xs font-medium uppercase tracking-wider mb-1">Company Rating</p>
@@ -323,7 +342,7 @@ const EmployerAnalytics = () => {
                   </div>
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                     <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Avg Tenure</p>
-                    <p className="text-2xl font-bold text-gray-900">{data.retention.avgTenureDays !== null ? `${data.retention.avgTenureDays} days` : 'N/A'}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatTenure(data.retention.avgTenureDays)}</p>
                   </div>
                 </div>
 

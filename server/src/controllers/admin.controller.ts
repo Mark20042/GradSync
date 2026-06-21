@@ -1016,7 +1016,7 @@ export const getPlatformAISummary = async (req: any, res: Response, next: NextFu
 
     const avgTenureAgg = await Application.aggregate([
       { $match: { ...appsQuery, status: "Terminated", terminatedAt: { $exists: true } } },
-      { $group: { _id: null, avg: { $avg: { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } } } } }
+      { $group: { _id: null, avg: { $avg: { $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] } } } }
     ]);
     const avgTenureDays = avgTenureAgg[0] ? Math.round(avgTenureAgg[0].avg) : null;
 

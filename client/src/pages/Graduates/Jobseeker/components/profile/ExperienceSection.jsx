@@ -46,12 +46,48 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
 
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
-        if (typeof dateStr === 'string' && dateStr.includes('-')) {
-            const [year, month] = dateStr.split('-');
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${months[parseInt(month) - 1]} ${year}`;
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) {
+            // Fallback for YYYY-MM
+            if (typeof dateStr === 'string' && dateStr.includes('-')) {
+                const [year, month] = dateStr.split('-');
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return `${months[parseInt(month) - 1]} ${year}`;
+            }
+            return dateStr;
         }
-        return dateStr;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    };
+
+    const calculateDuration = (start, end, isCurrent) => {
+        if (!start) return '';
+        const startDate = new Date(start);
+        const endDate = (isCurrent || !end) ? new Date() : new Date(end);
+        
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return '';
+
+        let years = endDate.getFullYear() - startDate.getFullYear();
+        let months = endDate.getMonth() - startDate.getMonth();
+        let days = endDate.getDate() - startDate.getDate();
+
+        if (days < 0) {
+            months -= 1;
+            const previousMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0);
+            days += previousMonth.getDate();
+        }
+        
+        if (months < 0) {
+            years -= 1;
+            months += 12;
+        }
+
+        const parts = [];
+        if (years > 0) parts.push(`${years} yr${years !== 1 ? 's' : ''}`);
+        if (months > 0) parts.push(`${months} mo${months !== 1 ? 's' : ''}`);
+        if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+
+        return parts.length > 0 ? `(${parts.join(', ')})` : '(0 days)';
     };
 
     const renderExperienceCard = (exp, index, section, borderColor, bgColor) => (
@@ -91,20 +127,48 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                         className="w-full bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none text-sm"
                     />
                     <div className="grid grid-cols-2 gap-4">
-                        <input
-                            type="month"
-                            value={exp.startDate || ""}
-                            onChange={(e) => handleArrayChange(e, index, "startDate", section)}
-                            placeholder="Start Date"
-                            className="bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none py-2"
+                        <div>
+                            <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                value={exp.startDate ? exp.startDate.split('T')[0] : ""}
+                                onChange={(e) => handleArrayChange(e, index, "startDate", section)}
+                                className="w-full bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none py-2 text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-gray-500 mb-1">End Date</label>
+                            <input
+                                type="date"
+                                value={exp.endDate ? exp.endDate.split('T')[0] : ""}
+                                onChange={(e) => {
+                                    handleArrayChange(e, index, "endDate", section);
+                                    if (e.target.value) {
+                                        // If an end date is added, uncheck 'current' automatically
+                                        handleArrayChange({ target: { value: false } }, index, "current", section);
+                                    }
+                                }}
+                                disabled={exp.current}
+                                className={`w-full bg-transparent border-b py-2 text-sm focus:outline-none ${exp.current ? 'border-gray-200 text-gray-400' : 'border-gray-300 focus:border-blue-500'}`}
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id={`current-${section}-${index}`}
+                            checked={exp.current || false}
+                            onChange={(e) => {
+                                handleArrayChange({ target: { value: e.target.checked } }, index, "current", section);
+                                if (e.target.checked) {
+                                    handleArrayChange({ target: { value: "" } }, index, "endDate", section);
+                                }
+                            }}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <input
-                            type="month"
-                            value={exp.endDate || ""}
-                            onChange={(e) => handleArrayChange(e, index, "endDate", section)}
-                            placeholder="End Date"
-                            className="bg-transparent border-b border-gray-300 focus:border-blue-500 focus:outline-none py-2"
-                        />
+                        <label htmlFor={`current-${section}-${index}`} className="text-sm text-gray-600 cursor-pointer">
+                            I currently work here
+                        </label>
                     </div>
                     <textarea
                         value={exp.description || ""}
@@ -120,8 +184,11 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                     <p className={`font-medium ${section === 'experiences' ? 'text-green-600' : 'text-blue-600'}`}>
                         {exp.company}
                     </p>
-                    <p className="text-sm text-gray-500 mb-2">
-                        {formatDate(exp.startDate)} - {exp.current ? "Present" : formatDate(exp.endDate)}
+                    <p className="text-sm text-gray-500 mb-2 font-medium">
+                        {formatDate(exp.startDate)} - {exp.current || !exp.endDate ? "Present" : formatDate(exp.endDate)}
+                        <span className="ml-2 text-gray-400 font-normal">
+                            {calculateDuration(exp.startDate, exp.endDate, exp.current)}
+                        </span>
                         {exp.location && ` • ${exp.location}`}
                     </p>
                     {exp.description && (

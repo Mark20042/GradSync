@@ -94,6 +94,19 @@ export const terminateApplicant = async (req: AuthenticatedRequest, res: Respons
     (application as any).terminationReview = review._id;
     await application.save();
 
+    // Update the jobseeker's resume experience
+    if (application.experienceRef) {
+      await User.updateOne(
+        { _id: application.applicant, "experiences._id": application.experienceRef },
+        { 
+          $set: { 
+            "experiences.$.endDate": terminationDate,
+            "experiences.$.current": false 
+          } 
+        }
+      );
+    }
+
     // Notify the jobseeker
     const notification = await createNotification(
       application.applicant,
