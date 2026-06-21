@@ -328,7 +328,7 @@ export const updateAssessmentQuestionController = async (req: Request, res: Resp
 
     // Merge existing with new data
     assessment.questions[questionIndex] = {
-      ...assessment.questions[questionIndex].toObject(),
+      ...(assessment.questions[questionIndex] as any).toObject(),
       ...questionData
     };
 

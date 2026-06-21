@@ -285,7 +285,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     generateTokens(user, res);
 
-    let isProfileComplete = user.isProfileComplete || true;
+    let isProfileComplete: boolean = user.isProfileComplete || true;
     if (user.role === "graduate") {
       isProfileComplete = !!(user.university && user.university.trim() !== "");
     } else if (user.role === "jobseeker") {
@@ -616,7 +616,7 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-const changePassword = async (req: Request, res: Response, next: NextFunction) => {
+const changePassword = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { oldPassword, newPassword } = req.body;
 

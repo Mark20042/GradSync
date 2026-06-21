@@ -245,7 +245,7 @@ const updateApplicationStatus = async (req: AuthRequest, res: Response, next: Ne
 
           // Store reference to the newly added experience sub-document
           const addedExp = user.experiences[user.experiences.length - 1];
-          app.experienceRef = addedExp._id;
+          app.experienceRef = (addedExp as any)._id;
         }
       }
     }

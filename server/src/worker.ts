@@ -37,7 +37,7 @@ const startWorker = async () => {
       }
       
       return { success: true };
-    }, { connection });
+    }, { connection: connection as any });
 
     worker.on('completed', (job) => {
       console.log(`Job ${job.id} completed successfully`);

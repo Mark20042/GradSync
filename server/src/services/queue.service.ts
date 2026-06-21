@@ -13,7 +13,7 @@ const connection = redisUrl ?
   { host: '127.0.0.1', port: 6379 };
 
 // Create our main task queue
-export const taskQueue = new Queue('heavy-tasks', { connection });
+export const taskQueue = new Queue('heavy-tasks', { connection: connection as any });
 
 // Helper to add jobs
 export const enqueueAIJob = async (jobName: string, data: any) => {

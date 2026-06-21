@@ -100,7 +100,7 @@ const updateProfile = async (
            );
            
            if (oldExp) {
-             const wasCurrent = oldExp.isCurrent || !oldExp.endDate;
+             const wasCurrent = oldExp.current || !oldExp.endDate;
              const isEndedNow = newExp.endDate && !newExp.isCurrent;
              if (wasCurrent && isEndedNow) {
                newlyEndedExperiences.push(newExp);

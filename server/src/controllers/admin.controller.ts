@@ -768,7 +768,7 @@ export const getAllTerminations = async (_req: any, res: Response, next: NextFun
   } catch (error) { next(error); }
 };
 
-export const getPlatformApplicationsOverTime = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformApplicationsOverTime = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = {};
@@ -803,7 +803,7 @@ export const getPlatformApplicationsOverTime = async (req: Request, res: Respons
   } catch (e) { next(e); }
 };
 
-export const getPlatformTopJobs = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformTopJobs = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = {};
@@ -834,7 +834,7 @@ export const getPlatformTopJobs = async (req: Request, res: Response, next: Next
   } catch (e) { next(e); }
 };
 
-export const getPlatformRetentionStats = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformRetentionStats = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = { status: { $in: ["Accepted", "Hired", "Terminated"] } };
@@ -881,7 +881,7 @@ export const getPlatformRetentionStats = async (req: Request, res: Response, nex
   } catch (e) { next(e); }
 };
 
-export const getPlatformTerminationReasons = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformTerminationReasons = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = { status: "Terminated", terminationReason: { $exists: true, $ne: null } };
@@ -903,7 +903,7 @@ export const getPlatformTerminationReasons = async (req: Request, res: Response,
   } catch (e) { next(e); }
 };
 
-export const getPlatformSkillGaps = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = { status: { $in: ["Rejected", "Terminated"] } };
@@ -932,7 +932,7 @@ export const getPlatformSkillGaps = async (req: Request, res: Response, next: Ne
   } catch (e) { next(e); }
 };
 
-export const getPlatformAISummary = async (req: Request, res: Response, next: NextFunction) => {
+export const getPlatformAISummary = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
     let matchQuery: any = {};

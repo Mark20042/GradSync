@@ -1,5 +1,5 @@
 import { connectDB } from '@/config/db.js';
-import Notification from '@/models/Notification.model.js';
+import Notification from '@/utils/notification.helper.js';
 import * as dotenv from 'dotenv';
 import { subDays } from 'date-fns';
 
