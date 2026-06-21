@@ -13,7 +13,7 @@ import {
     CheckCircle,
     Star,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import CompanyProfileSkeleton from "./components/skeletons/CompanyProfileSkeleton";
 import axiosInstance from "../../../utils/axiosInstance";
 import { API_PATH } from "../../../utils/apiPath";
@@ -32,8 +32,18 @@ const CompanyProfileView = () => {
     const [company, setCompany] = useState(null);
     const [jobs, setJobs] = useState([]);
     const [reviews, setReviews] = useState([]);
+    const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (reviews && reviews.length > 0) {
+            const interval = setInterval(() => {
+                setCurrentReviewIndex((prev) => (prev + 1) % reviews.length);
+            }, 5000);
+            return () => clearInterval(interval);
+        }
+    }, [reviews]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -137,21 +147,6 @@ const CompanyProfileView = () => {
                     <span className="font-medium">Back</span>
                 </button>
 
-                <style>
-                {`
-                @keyframes marquee {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .animate-marquee {
-                    animation: marquee 35s linear infinite;
-                }
-                .animate-marquee:hover {
-                    animation-play-state: paused;
-                }
-                `}
-                </style>
-
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     {/* Hero / Cover */}
                     <div className="h-48 md:h-72 bg-gradient-to-br from-indigo-900 via-purple-900 to-violet-800 relative overflow-hidden">
@@ -160,12 +155,12 @@ const CompanyProfileView = () => {
                     </div>
 
                     <div className="px-6 md:px-10 pb-12">
-                        <div className="relative flex flex-col md:flex-row items-start md:items-end -mt-20 md:-mt-24 mb-10 gap-6 md:gap-8">
+                        <div className="relative flex flex-col md:flex-row items-start gap-6 md:gap-8">
                             {/* Logo */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="relative shrink-0"
+                                className="relative shrink-0 -mt-16 md:-mt-24"
                             >
                                 {company.companyLogo ? (
                                     <img
@@ -189,7 +184,7 @@ const CompanyProfileView = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className="flex-1 pt-2 md:pt-0 w-full"
+                                className="flex-1 pt-4 md:pt-6 w-full"
                             >
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                                     <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
@@ -215,82 +210,9 @@ const CompanyProfileView = () => {
                                             <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
                                         </a>
                                     )}
-                                    {/* Company Rating Summary */}
-                                    {company.companyAverageRating > 0 && (
-                                        <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-lg shadow-sm">
-                                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                                            <span className="text-sm font-extrabold text-amber-900">
-                                                {company.companyAverageRating.toFixed(1)}
-                                            </span>
-                                            <span className="text-xs font-semibold text-amber-700/70">
-                                                ({company.companyRatingCount} {company.companyRatingCount === 1 ? 'review' : 'reviews'})
-                                            </span>
-                                            <div className="hidden sm:block ml-1">
-                                                <StarRating value={Math.round(company.companyAverageRating)} size="sm" readOnly />
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
                             </motion.div>
                         </div>
-
-                        {/* Reviews Marquee */}
-                        {reviews && reviews.length > 0 && (
-                            <div className="mt-12 overflow-hidden relative w-full pt-6 border-t border-gray-100">
-                                <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
-                                <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
-                                
-                                <div className="flex w-max animate-marquee gap-6 items-stretch">
-                                    {[...reviews, ...reviews].map((review, idx) => (
-                                        <div key={`${review._id}-${idx}`} className="w-80 md:w-96 shrink-0 bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow rounded-2xl p-5 flex flex-col justify-between">
-                                            <div>
-                                                <div className="flex items-start justify-between mb-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-50 text-indigo-700 flex items-center justify-center font-bold shadow-sm shrink-0">
-                                                            {review.reviewerRole === 'graduate' ? 'G' : review.reviewerRole === 'jobseeker' ? 'J' : 'A'}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <h4 className="font-bold text-gray-900 text-sm truncate">
-                                                                Anonymous {review.reviewerRole === 'graduate' ? 'Graduate' : review.reviewerRole === 'jobseeker' ? 'Jobseeker' : 'Employee'}
-                                                            </h4>
-                                                            <p className="text-xs text-indigo-600 font-semibold truncate flex items-center gap-1 mt-0.5">
-                                                                <Briefcase className="w-3 h-3" />
-                                                                {review.jobTitle || "Previous Employee"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap shrink-0 pt-1">
-                                                        {new Date(review.ratedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                                                    </span>
-                                                </div>
-                                                
-                                                <div className="flex items-center mb-3">
-                                                    <StarRating value={review.rating} size="sm" readOnly />
-                                                </div>
-
-                                                {review.tags && review.tags.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1.5 mb-3">
-                                                        {review.tags.map(tag => (
-                                                            <span key={tag} className="px-2.5 py-0.5 bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-[11px] font-semibold">
-                                                                {tag}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {review.feedback && (
-                                                    <p className="text-sm text-gray-700 leading-relaxed italic line-clamp-3 relative">
-                                                        <span className="text-gray-300 font-serif text-2xl absolute -top-1.5 -left-1">"</span>
-                                                        <span className="pl-3">{review.feedback}</span>
-                                                        <span className="text-gray-300 font-serif text-2xl leading-none">"</span>
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 md:px-10 pb-10">
@@ -355,6 +277,88 @@ const CompanyProfileView = () => {
 
                             {/* Sidebar */}
                             <div className="space-y-6">
+                                {/* Overall Ratings Card */}
+                                {company.companyAverageRating > 0 && (
+                                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm text-center">
+                                        <h3 className="font-bold text-gray-900 mb-2">Overall Rating</h3>
+                                        <div className="text-5xl font-extrabold text-amber-500 mb-2">
+                                            {company.companyAverageRating.toFixed(1)}
+                                        </div>
+                                        <div className="flex justify-center mb-2">
+                                            <StarRating value={Math.round(company.companyAverageRating)} size="md" readOnly />
+                                        </div>
+                                        <p className="text-sm text-gray-500">Based on {company.companyRatingCount} reviews</p>
+                                    </div>
+                                )}
+
+                                {/* Location Map */}
+                                {company.latitude && company.longitude && (
+                                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                                        <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
+                                            <MapPin className="w-5 h-5 text-red-500" />
+                                            Company Location
+                                        </h3>
+                                        <LocationMap lat={company.latitude} lng={company.longitude} />
+                                    </div>
+                                )}
+
+                                {/* Flashing Reviews Card */}
+                                {reviews && reviews.length > 0 && (
+                                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[260px] flex flex-col relative">
+                                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 border-b border-gray-100">
+                                            <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                                                <Star className="w-4 h-4 text-indigo-500 fill-indigo-500" />
+                                                Recent Employee Feedback
+                                            </h3>
+                                        </div>
+                                        <div className="p-5 flex-1 relative flex items-center justify-center">
+                                            <AnimatePresence mode="wait">
+                                                <motion.div
+                                                    key={currentReviewIndex}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="w-full absolute inset-0 p-5 flex flex-col justify-center"
+                                                >
+                                                    {(() => {
+                                                        const review = reviews[currentReviewIndex];
+                                                        return (
+                                                            <div className="flex flex-col h-full w-full">
+                                                                <div className="flex items-start gap-3 mb-3">
+                                                                    <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
+                                                                        {review.reviewerRole === 'graduate' ? 'G' : review.reviewerRole === 'jobseeker' ? 'J' : 'A'}
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <h4 className="font-bold text-gray-900 text-sm truncate">
+                                                                            Anonymous {review.reviewerRole === 'graduate' ? 'Graduate' : review.reviewerRole === 'jobseeker' ? 'Jobseeker' : 'Employee'}
+                                                                        </h4>
+                                                                        <div className="flex items-center gap-1 mt-0.5">
+                                                                            <StarRating value={review.rating} size="sm" readOnly />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {review.feedback && (
+                                                                    <p className="text-sm text-gray-700 leading-relaxed italic line-clamp-4 relative flex-1">
+                                                                        <span className="text-gray-300 font-serif text-2xl absolute -top-1.5 -left-1">"</span>
+                                                                        <span className="pl-3">{review.feedback}</span>
+                                                                        <span className="text-gray-300 font-serif text-2xl leading-none">"</span>
+                                                                    </p>
+                                                                )}
+                                                                <p className="text-[11px] text-indigo-600 font-semibold truncate flex items-center gap-1 mt-4">
+                                                                    <Briefcase className="w-3 h-3" />
+                                                                    {review.jobTitle || "Previous Employee"}
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </motion.div>
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Contact Information */}
                                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm sticky top-24">
                                     <h3 className="font-bold text-gray-900 mb-6 text-lg">Contact Information</h3>
                                     <div className="space-y-5">
@@ -400,17 +404,6 @@ const CompanyProfileView = () => {
                                         )}
                                     </div>
                                 </div>
-                                
-                                {/* Location Map */}
-                                {company.latitude && company.longitude && (
-                                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm sticky top-[380px]">
-                                        <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
-                                            <MapPin className="w-5 h-5 text-red-500" />
-                                            Company Location
-                                        </h3>
-                                        <LocationMap lat={company.latitude} lng={company.longitude} />
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
