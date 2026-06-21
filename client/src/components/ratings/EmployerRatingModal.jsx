@@ -44,6 +44,18 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
     }
   };
 
+  const handleDismiss = async () => {
+    try {
+      await axiosInstance.patch(
+        API_PATH.TERMINATION_REVIEWS.DISMISS_PROMPT(reviewId)
+      );
+    } catch {
+      // silently fail
+    } finally {
+      onClose(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -70,7 +82,7 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
               <p className="text-indigo-200 text-sm mt-1">Your feedback is anonymous and kept private.</p>
             </div>
             <button
-              onClick={() => onClose(false)}
+              onClick={handleDismiss}
               className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             >
               <X className="w-4 h-4" />
@@ -138,7 +150,7 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
         {/* Footer */}
         <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 sm:pt-0 shrink-0 bg-white border-t sm:border-t-0 border-gray-100">
           <button
-            onClick={() => onClose(false)}
+            onClick={handleDismiss}
             disabled={isSubmitting}
             className="flex-1 w-full sm:w-auto py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-sm"
           >

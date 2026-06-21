@@ -207,16 +207,28 @@ export const submitJobseekerRating = async (req: AuthenticatedRequest, res: Resp
 export const getMyPendingRatings = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user;
-    const pending = await TerminationReview.find({
-      employee: user._id,
-      isJobseekerRated: false,
-    })
-      .populate('job', 'title')
-      .populate('company', 'companyName companyLogo')
-      .populate('terminationReason', 'label')
-      .sort({ terminationDate: -1 });
-
-    return res.status(200).json(pending);
+    
+    if (user.role === 'employer') {
+      const pending = await TerminationReview.find({
+        company: user._id,
+        isEmployerRated: false,
+      })
+        .populate('job', 'title')
+        .populate('employee', 'fullName avatar')
+        .populate('terminationReason', 'label')
+        .sort({ terminationDate: -1 });
+      return res.status(200).json(pending);
+    } else {
+      const pending = await TerminationReview.find({
+        employee: user._id,
+        isJobseekerRated: false,
+      })
+        .populate('job', 'title')
+        .populate('company', 'companyName companyLogo')
+        .populate('terminationReason', 'label')
+        .sort({ terminationDate: -1 });
+      return res.status(200).json(pending);
+    }
   } catch (error) {
     console.error('getMyPendingRatings error:', error);
     return res.status(500).json({ message: 'Internal server error.' });
@@ -232,11 +244,19 @@ export const dismissRatingPrompt = async (req: AuthenticatedRequest, res: Respon
 
     const review = await TerminationReview.findById(id);
     if (!review) return res.status(404).json({ message: 'Review not found.' });
-    if (String(review.employee) !== String(user._id)) {
-      return res.status(403).json({ message: 'Unauthorized.' });
+
+    if (user.role === 'employer') {
+      if (String(review.company) !== String(user._id)) {
+        return res.status(403).json({ message: 'Unauthorized.' });
+      }
+      review.employerRatingPromptDismissed = true;
+    } else {
+      if (String(review.employee) !== String(user._id)) {
+        return res.status(403).json({ message: 'Unauthorized.' });
+      }
+      review.jobseekerRatingPromptDismissed = true;
     }
 
-    review.jobseekerRatingPromptDismissed = true;
     await review.save();
 
     return res.status(200).json({ message: 'Prompt dismissed.' });

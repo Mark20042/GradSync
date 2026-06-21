@@ -218,13 +218,23 @@ const updateProfile = async (
                     await app.save();
 
                     // Create Review stub
-                    await TerminationReview.create({
+                    const tenureDays = Math.floor(
+                      (app.terminatedAt.getTime() - new Date(app.createdAt!).getTime()) / (1000 * 60 * 60 * 24)
+                    );
+                    
+                    const review = await TerminationReview.create({
+                       application: app._id,
                        employee: user._id,
                        company: (app.job as any).company,
                        job: (app.job as any)._id,
-                       reasonId: defaultReason._id,
-                       terminatedAt: app.terminatedAt
+                       terminationReason: defaultReason._id,
+                       terminationDate: app.terminatedAt,
+                       tenureDays: tenureDays > 0 ? tenureDays : 0,
                     });
+                    
+                    // Link the review to the application
+                    (app as any).terminationReview = review._id;
+                    await app.save();
 
                     // Send notifications
                     await createNotification(

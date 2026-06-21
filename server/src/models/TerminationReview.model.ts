@@ -20,6 +20,7 @@ export interface ITerminationReview extends Document {
   employerTags?: string[];   // PRIVATE — never returned in public API
   employerRatedAt?: Date;
   isEmployerRated: boolean;
+  employerRatingPromptDismissed: boolean;
 
   // Termination metadata
   terminationReason?: Types.ObjectId; // ref: TerminationReason (admin-configured)
@@ -51,6 +52,7 @@ const terminationReviewSchema = new Schema<ITerminationReview>(
     employerTags: { type: [String], default: [] },
     employerRatedAt: { type: Date, default: null },
     isEmployerRated: { type: Boolean, default: false },
+    employerRatingPromptDismissed: { type: Boolean, default: false },
 
     // Termination metadata
     terminationReason: { type: Schema.Types.ObjectId, ref: 'TerminationReason', default: null },

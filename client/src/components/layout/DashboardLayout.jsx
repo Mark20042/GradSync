@@ -31,6 +31,7 @@ import { EMPLOYER_MENU, JOB_SEEKER_MENU } from "../../utils/data";
 import ProfileDropdpwn from "./ProfileDropdpwn";
 import io from "socket.io-client";
 import toast from "react-hot-toast";
+import EmployerRatingModal from "../ratings/EmployerRatingModal";
 
 const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   const Icon = item.icon;
@@ -132,6 +133,25 @@ const DashboardLayout = ({ activeMenu, children }) => {
       
       return () => socket.disconnect();
     }
+  }, [user]);
+
+  const [pendingEmployerReview, setPendingEmployerReview] = useState(null);
+
+  // Auto-popup: check if employer has unrated termination reviews
+  useEffect(() => {
+    const isEmployer = user && !user.isAdmin && user.role === 'employer';
+    if (!isEmployer) return;
+    axiosInstance
+      .get(API_PATH.TERMINATION_REVIEWS.MY_PENDING)
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          const unprompted = res.data.find(r => !r.employerRatingPromptDismissed);
+          if (unprompted) {
+             setPendingEmployerReview(unprompted);
+          }
+        }
+      })
+      .catch(() => {}); // silently fail
   }, [user]);
 
   // Listen for instant mark-as-read events
@@ -506,6 +526,13 @@ const DashboardLayout = ({ activeMenu, children }) => {
           </div>
         </div>
       )}
+      {/* Auto-popup: Pending Employer Rating Review */}
+      <EmployerRatingModal
+        isOpen={!!pendingEmployerReview}
+        onClose={() => setPendingEmployerReview(null)}
+        reviewId={pendingEmployerReview?._id}
+        employeeName={pendingEmployerReview?.employee?.fullName || "the employee"}
+      />
     </div>
   );
 };
