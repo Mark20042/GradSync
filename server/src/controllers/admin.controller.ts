@@ -899,7 +899,11 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
       {
         $group: {
           _id: null,
-          avg: { $avg: { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } } }
+          avg: { 
+            $avg: { 
+              $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] 
+            } 
+          }
         }
       }
     ]);
