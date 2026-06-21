@@ -145,7 +145,7 @@ const MyApplications = () => {
                 <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar px-4 pb-8">
                     <div className="flex gap-6 h-full items-start min-w-max pb-4 px-2">
                         {Object.entries(columns).map(([status, apps]) => (
-                            <div key={status} className="flex flex-col w-[320px] max-w-[85vw] max-h-full shrink-0">
+                            <div key={status} className="flex flex-col w-[320px] max-w-[85vw] max-h-full h-fit shrink-0">
                                 {/* Column Header */}
                                 <div className={`flex items-center justify-between p-4 rounded-t-2xl border-b-[3px] bg-white shadow-sm shrink-0 z-10 relative ${getStatusBorderColor(status)}`}>
                                     <div className="flex items-center gap-2.5">
