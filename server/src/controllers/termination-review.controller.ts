@@ -290,8 +290,12 @@ export const getCompanyReviews = async (req: AuthenticatedRequest, res: Response
     const { companyId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = 10;
+    const jobId = req.query.jobId as string;
 
-    const reviews = await TerminationReview.find({ company: companyId, isJobseekerRated: true })
+    const query: any = { company: companyId, isJobseekerRated: true };
+    if (jobId) query.job = jobId;
+
+    const reviews = await TerminationReview.find(query)
       .select('jobseekerRating jobseekerFeedback jobseekerTags jobseekerRatedAt tenureDays')
       .populate('employee', 'role major degree')
       .populate('job', 'title')
@@ -299,7 +303,7 @@ export const getCompanyReviews = async (req: AuthenticatedRequest, res: Response
       .skip((page - 1) * limit)
       .limit(limit);
 
-    const total = await TerminationReview.countDocuments({ company: companyId, isJobseekerRated: true });
+    const total = await TerminationReview.countDocuments(query);
 
     const anonymized = reviews.map((r: any) => ({
       _id: r._id,
@@ -333,6 +337,41 @@ export const getEmployeeConductScore = async (req: AuthenticatedRequest, res: Re
     });
   } catch (error) {
     console.error('getEmployeeConductScore error:', error);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
+export const getEmployeeReviews = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 10;
+
+    const reviews = await TerminationReview.find({ employee: userId, isEmployerRated: true })
+      .select('employerRating employerFeedback employerTags employerRatedAt tenureDays company job')
+      .populate('company', 'companyName companyLogo')
+      .populate('job', 'title')
+      .sort({ employerRatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await TerminationReview.countDocuments({ employee: userId, isEmployerRated: true });
+
+    const formatted = reviews.map((r: any) => ({
+      _id: r._id,
+      rating: r.employerRating,
+      feedback: r.employerFeedback,
+      tags: r.employerTags,
+      ratedAt: r.employerRatedAt,
+      tenureDays: r.tenureDays,
+      companyName: r.company?.companyName || 'Unknown Company',
+      companyLogo: r.company?.companyLogo || '',
+      jobTitle: r.job?.title || 'Unknown Position',
+    }));
+
+    return res.status(200).json({ reviews: formatted, total, page, pages: Math.ceil(total / limit) });
+  } catch (error) {
+    console.error('getEmployeeReviews error:', error);
     return res.status(500).json({ message: 'Internal server error.' });
   }
 };

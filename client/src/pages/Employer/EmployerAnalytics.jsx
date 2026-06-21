@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../utils/axiosInstance";
@@ -13,7 +13,8 @@ import {
   BrainCircuit,
   TrendingUp,
   AlertTriangle,
-  Award
+  Award,
+  Sparkles
 } from "lucide-react";
 import {
   AreaChart,
@@ -31,6 +32,7 @@ import {
   Legend
 } from "recharts";
 import AnalyticsGate from "../../components/AnalyticsGate";
+import ReviewsSection from "../../components/ratings/ReviewsSection";
 
 const COLORS = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e", "#8b5cf6"];
 
@@ -55,6 +57,21 @@ const EmployerAnalytics = () => {
     skillGaps: null,
     aiSummary: null,
   });
+
+  const [jobs, setJobs] = useState([]);
+  const [filterJobId, setFilterJobId] = useState("");
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await axiosInstance.get(API_PATH.JOBS.GET_JOBS_EMPLOYER);
+        setJobs(res.data.jobs || res.data || []);
+      } catch (err) {
+        console.error("Failed to load jobs for filter:", err);
+      }
+    };
+    fetchJobs();
+  }, []);
 
   // Generic unlock handler
   const unlockFeature = async (featureKey, endpoint, cost) => {
@@ -93,6 +110,46 @@ const EmployerAnalytics = () => {
             <img src="/gradcoin.svg" alt="GradCoin" className="w-5 h-5 object-contain" />
             <span className="font-bold text-indigo-700">{user?.aiTokens || 0}</span>
             <span className="text-sm text-indigo-600/80 font-medium ml-1">Coins Available</span>
+          </div>
+        </div>
+
+        {/* --- Public Ratings & Reviews --- */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50/50">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-amber-500" />
+                  Public Company Reviews
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">See what former employees are saying about your company.</p>
+              </div>
+              <div className="w-full sm:w-auto">
+                <select
+                  value={filterJobId}
+                  onChange={(e) => setFilterJobId(e.target.value)}
+                  className="w-full px-4 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm cursor-pointer"
+                >
+                  <option value="">All Jobs</option>
+                  {jobs.map((job) => (
+                    <option key={job._id} value={job._id}>
+                      {job.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="p-1 border-t border-gray-100">
+              <ReviewsSection
+                mode="company"
+                entityId={user?._id}
+                summary={{
+                  averageRating: user?.companyAverageRating,
+                  ratingCount: user?.companyRatingCount,
+                }}
+                filterJobId={filterJobId}
+              />
+            </div>
           </div>
         </div>
 

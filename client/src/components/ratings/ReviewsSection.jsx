@@ -10,7 +10,7 @@ import StarRating from "./StarRating";
  * entityId: jobId or companyId
  * summary: { averageRating, ratingCount, ratingSum } — pre-fetched from job/company object
  */
-const ReviewsSection = ({ mode, entityId, summary = {} }) => {
+const ReviewsSection = ({ mode, entityId, summary = {}, filterJobId = null }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -27,7 +27,12 @@ const ReviewsSection = ({ mode, entityId, summary = {} }) => {
         mode === "job"
           ? API_PATH.TERMINATION_REVIEWS.JOB_REVIEWS(entityId)
           : API_PATH.TERMINATION_REVIEWS.COMPANY_REVIEWS(entityId);
-      const res = await axiosInstance.get(endpoint, { params: { page: p } });
+      const res = await axiosInstance.get(endpoint, { 
+        params: { 
+          page: p,
+          ...(filterJobId ? { jobId: filterJobId } : {})
+        } 
+      });
       setReviews(p === 1 ? res.data.reviews : (prev) => [...prev, ...res.data.reviews]);
       setTotalPages(res.data.pages);
       setPage(p);
@@ -39,10 +44,10 @@ const ReviewsSection = ({ mode, entityId, summary = {} }) => {
   };
 
   useEffect(() => {
-    if (expanded && reviews.length === 0) {
+    if (expanded) {
       fetchReviews(1);
     }
-  }, [expanded]);
+  }, [expanded, filterJobId]);
 
   const ratingDistribution = () => {
     const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };

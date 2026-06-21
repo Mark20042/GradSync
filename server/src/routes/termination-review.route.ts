@@ -9,6 +9,7 @@ import {
   getJobReviews,
   getCompanyReviews,
   getEmployeeConductScore,
+  getEmployeeReviews,
   getTerminationReasons,
   createTerminationReason,
   updateTerminationReason,
@@ -22,6 +23,7 @@ router.get('/reasons', authenticationMiddleware, getTerminationReasons as any);
 router.get('/job/:jobId', authenticationMiddleware, getJobReviews as any);
 router.get('/company/:companyId', authenticationMiddleware, getCompanyReviews as any);
 router.get('/employee/:userId/score', authenticationMiddleware, getEmployeeConductScore as any);
+router.get('/employee/:userId/reviews', authenticationMiddleware, getEmployeeReviews as any);
 
 // Jobseeker routes
 router.get('/my-pending', authenticationMiddleware, getMyPendingRatings as any);

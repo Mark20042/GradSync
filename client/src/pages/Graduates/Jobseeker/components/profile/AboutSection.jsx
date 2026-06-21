@@ -53,7 +53,7 @@ const AboutSection = ({ user, editing, editData, setEditData, summaryLoading, ha
                             <p className="text-xs text-indigo-600 mt-1.5 font-medium">
                                 Based on {user.employeeRatingCount} employer{user.employeeRatingCount === 1 ? '' : 's'}
                             </p>
-                            <p className="text-[11px] text-indigo-400 mt-0.5">Aggregate score from past employers</p>
+                            <p className="text-[11px] text-indigo-400 mt-0.5">Performance rating based on previous jobs</p>
                         </div>
                     </div>
                 </div>

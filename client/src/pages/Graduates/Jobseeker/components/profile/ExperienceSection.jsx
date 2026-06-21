@@ -1,8 +1,30 @@
-import React, { useState } from 'react';
-import { Briefcase, Trash2, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Briefcase, Trash2, Plus, Star, Award, Clock } from 'lucide-react';
+import axiosInstance from '../../../../../utils/axiosInstance';
+import { API_PATH } from '../../../../../utils/apiPath';
+import StarRating from "../../../../../components/ratings/StarRating";
 
 const ExperienceSection = ({ user, editing, editData, setEditData }) => {
     const [activeTab, setActiveTab] = useState('experiences');
+    const [reviews, setReviews] = useState([]);
+    const [loadingReviews, setLoadingReviews] = useState(false);
+
+    useEffect(() => {
+        if (!editing && user?._id && activeTab === 'reviews') {
+            const fetchReviews = async () => {
+                setLoadingReviews(true);
+                try {
+                    const res = await axiosInstance.get(API_PATH.TERMINATION_REVIEWS.EMPLOYEE_REVIEWS(user._id));
+                    setReviews(res.data.reviews || []);
+                } catch (e) {
+                    console.error("Failed to load reviews");
+                } finally {
+                    setLoadingReviews(false);
+                }
+            };
+            fetchReviews();
+        }
+    }, [activeTab, editing, user?._id]);
 
     const handleArrayChange = (e, index, field, section) => {
         const newArray = [...(editData[section] || [])];
@@ -140,6 +162,17 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                 >
                     Internships ({internshipData?.length || 0})
                 </button>
+                {!editing && (
+                    <button
+                        onClick={() => setActiveTab('reviews')}
+                        className={`w-full sm:w-auto justify-center px-4 py-2 rounded-lg font-medium transition-all ${activeTab === 'reviews'
+                                ? 'bg-amber-500 text-white shadow-sm'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                    >
+                        Employer Reviews ({user?.employeeRatingCount || 0})
+                    </button>
+                )}
             </div>
 
             {/* Work Experience */}
@@ -192,6 +225,102 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                     )}
                     {!editing && (!internshipData || internshipData.length === 0) && (
                         <p className="text-gray-500 text-sm">No internships added yet</p>
+                    )}
+                </div>
+            )}
+
+            {/* Reviews */}
+            {activeTab === 'reviews' && !editing && (
+                <div className="space-y-6">
+                    {/* Overall Rating Summary */}
+                    {user?.employeeAverageRating > 0 && (
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 shadow-sm rounded-xl p-5 flex flex-col sm:flex-row items-center gap-5">
+                            <div className="flex flex-col items-center justify-center bg-white rounded-xl w-20 h-20 shadow-sm border border-amber-100 shrink-0">
+                                <span className="text-3xl font-extrabold text-amber-600 leading-none">
+                                    {user.employeeAverageRating.toFixed(1)}
+                                </span>
+                                <span className="text-xs text-amber-500 font-bold mt-1">/ 5.0</span>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-amber-900 mb-1 flex items-center gap-2">
+                                    <Award className="w-5 h-5 text-amber-500" />
+                                    Overall Performance
+                                </h4>
+                                <StarRating value={Math.round(user.employeeAverageRating)} size="md" readOnly />
+                                <p className="text-sm text-amber-700 mt-1.5 font-medium">
+                                    Based on {user.employeeRatingCount} rating{user.employeeRatingCount === 1 ? '' : 's'} from past employers.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {loadingReviews ? (
+                        <div className="space-y-4">
+                            {[1, 2].map(i => (
+                                <div key={i} className="animate-pulse flex gap-4 bg-gray-50 rounded-xl p-4">
+                                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                                    <div className="flex-1">
+                                        <div className="w-1/3 h-4 bg-gray-200 rounded mb-2" />
+                                        <div className="w-1/4 h-3 bg-gray-200 rounded mb-4" />
+                                        <div className="w-full h-12 bg-gray-200 rounded" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : reviews.length > 0 ? (
+                        <div className="space-y-4">
+                            {reviews.map((review) => (
+                                <div key={review._id} className="bg-white border border-gray-100 shadow-sm rounded-xl p-5">
+                                    <div className="flex items-start justify-between gap-4 mb-3">
+                                        <div className="flex items-center gap-3">
+                                            {review.companyLogo ? (
+                                                <img src={review.companyLogo} alt={review.companyName} className="w-12 h-12 rounded-xl object-contain border border-gray-100 bg-gray-50" />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl border border-amber-200">
+                                                    {review.companyName.charAt(0)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h5 className="font-bold text-gray-900 leading-tight">{review.companyName}</h5>
+                                                <p className="text-sm text-gray-500">{review.jobTitle}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <StarRating value={review.rating} size="sm" readOnly />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right shrink-0 text-xs text-gray-400 font-medium">
+                                            {new Date(review.ratedAt).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' })}
+                                            {review.tenureDays > 0 && (
+                                                <div className="flex items-center justify-end gap-1 mt-1 text-gray-500">
+                                                    <Clock className="w-3 h-3" />
+                                                    {review.tenureDays < 30 ? `${review.tenureDays}d` : review.tenureDays < 365 ? `${Math.round(review.tenureDays/30)}mo` : `${(review.tenureDays/365).toFixed(1)}yr`} tenure
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {review.tags && review.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-3 mb-2">
+                                            {review.tags.map(tag => (
+                                                <span key={tag} className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded-full text-xs font-semibold">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {review.feedback && (
+                                        <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed">
+                                            "{review.feedback}"
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-gray-500 text-sm text-center py-6 bg-gray-50 rounded-xl border border-gray-100 border-dashed">
+                            No employer reviews received yet.
+                        </p>
                     )}
                 </div>
             )}
