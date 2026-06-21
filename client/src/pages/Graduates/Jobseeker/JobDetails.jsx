@@ -44,6 +44,10 @@ const JobDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [jobId]);
+
+  useEffect(() => {
     if (!showSuitabilityModal && suitabilityResult && !hasPromptedFeedback) {
       setHasPromptedFeedback(true);
       setTimeout(() => {
@@ -233,6 +237,21 @@ const JobDetails = () => {
                       <Clock className="w-4 h-4 text-orange-500" />
                       Posted {moment(jobDetails.createdAt).fromNow()}
                     </span>
+                    
+                    {/* Job Rating */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 border border-amber-100 shadow-sm">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      {jobDetails.ratingCount > 0 ? (
+                        <>
+                           <span className="font-bold text-amber-900 text-sm">{jobDetails.averageRating?.toFixed(1) || "0.0"}</span>
+                           <span className="text-amber-700 text-xs font-semibold">({jobDetails.ratingCount} {jobDetails.ratingCount === 1 ? 'review' : 'reviews'})</span>
+                        </>
+                      ) : (
+                        <span className="text-amber-700 font-semibold text-xs italic">
+                           Be the first to shape this role's legacy!
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

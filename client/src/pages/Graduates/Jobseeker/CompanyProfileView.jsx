@@ -31,6 +31,7 @@ const CompanyProfileView = () => {
     const { user } = useAuth();
     const [company, setCompany] = useState(null);
     const [jobs, setJobs] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -50,6 +51,14 @@ const CompanyProfileView = () => {
 
                 const jobsRes = await axiosInstance.get(API_PATH.JOBS.GET_ALL_JOBS, { params });
                 setJobs(jobsRes.data);
+
+                // Fetch company reviews for the marquee
+                try {
+                    const reviewsRes = await axiosInstance.get(API_PATH.TERMINATION_REVIEWS.COMPANY_REVIEWS(id), { params: { limit: 15 } });
+                    setReviews(reviewsRes.data.reviews || []);
+                } catch (e) {
+                    console.error("Failed to fetch company reviews", e);
+                }
             } catch (err) {
                 console.error("Error fetching data:", err);
                 setError("Failed to load company profile.");
@@ -128,35 +137,50 @@ const CompanyProfileView = () => {
                     <span className="font-medium">Back</span>
                 </button>
 
+                <style>
+                {`
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-marquee {
+                    animation: marquee 35s linear infinite;
+                }
+                .animate-marquee:hover {
+                    animation-play-state: paused;
+                }
+                `}
+                </style>
+
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                     {/* Hero / Cover */}
-                    <div className="h-48 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    <div className="h-48 md:h-72 bg-gradient-to-br from-indigo-900 via-purple-900 to-violet-800 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                     </div>
 
-                    <div className="px-8 pb-12">
-                        <div className="relative flex flex-col md:flex-row items-start md:items-end -mt-16 mb-8 gap-6">
+                    <div className="px-6 md:px-10 pb-12">
+                        <div className="relative flex flex-col md:flex-row items-start md:items-end -mt-20 md:-mt-24 mb-10 gap-6 md:gap-8">
                             {/* Logo */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="relative"
+                                className="relative shrink-0"
                             >
                                 {company.companyLogo ? (
                                     <img
                                         src={company.companyLogo}
                                         alt={company.companyName}
-                                        className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
+                                        className="w-36 h-36 md:w-44 md:h-44 rounded-3xl border-4 md:border-[6px] border-white shadow-xl object-cover bg-white"
                                     />
                                 ) : (
-                                    <div className="w-32 h-32 rounded-2xl border-4 border-white shadow-lg bg-white flex items-center justify-center text-gray-400">
-                                        <Building2 className="w-12 h-12" />
+                                    <div className="w-36 h-36 md:w-44 md:h-44 rounded-3xl border-4 md:border-[6px] border-white shadow-xl bg-gray-50 flex items-center justify-center text-gray-400">
+                                        <Building2 className="w-16 h-16 md:w-20 md:h-20" />
                                     </div>
                                 )}
-                                {/* Verified Badge (Optional - if you have verification logic) */}
-                                <div className="absolute -bottom-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full border-2 border-white shadow-sm" title="Verified Company">
-                                    <CheckCircle className="w-4 h-4" />
+                                {/* Verified Badge */}
+                                <div className="absolute -bottom-2 -right-2 md:-bottom-3 md:-right-3 bg-blue-500 text-white p-2 rounded-full border-4 border-white shadow-sm" title="Verified Company">
+                                    <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                             </motion.div>
 
@@ -165,17 +189,17 @@ const CompanyProfileView = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className="flex-1 pt-2 md:pt-0"
+                                className="flex-1 pt-2 md:pt-0 w-full"
                             >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                                    <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
                                         {company.companyName || company.fullName}
                                     </h1>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-6 text-gray-600">
+                                <div className="flex flex-wrap items-center gap-4 md:gap-8 text-gray-600 font-medium">
                                     {company.address && (
-                                        <div className="flex items-center gap-2">
-                                            <MapPin className="w-4 h-4 text-gray-400" />
+                                        <div className="flex items-center gap-2.5 text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                            <MapPin className="w-4 h-4 text-blue-500" />
                                             {company.address}
                                         </div>
                                     )}
@@ -184,36 +208,92 @@ const CompanyProfileView = () => {
                                             href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-2 hover:text-blue-600 transition-colors group"
+                                            className="flex items-center gap-2.5 bg-blue-50 text-blue-700 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors group"
                                         >
-                                            <Globe className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                            <Globe className="w-4 h-4" />
                                             Visit Website
-                                            <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-opacity" />
                                         </a>
                                     )}
                                     {/* Company Rating Summary */}
                                     {company.companyAverageRating > 0 && (
-                                        <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-full">
-                                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                            <span className="text-sm font-bold text-amber-700">
+                                        <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 px-4 py-1.5 rounded-lg shadow-sm">
+                                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                                            <span className="text-sm font-extrabold text-amber-900">
                                                 {company.companyAverageRating.toFixed(1)}
                                             </span>
-                                            <span className="text-xs text-amber-600">
+                                            <span className="text-xs font-semibold text-amber-700/70">
                                                 ({company.companyRatingCount} {company.companyRatingCount === 1 ? 'review' : 'reviews'})
                                             </span>
-                                            <StarRating value={Math.round(company.companyAverageRating)} size="sm" readOnly />
+                                            <div className="hidden sm:block ml-1">
+                                                <StarRating value={Math.round(company.companyAverageRating)} size="sm" readOnly />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </motion.div>
-
-                            {/* Action Buttons (Optional) */}
-                            <div className="flex gap-3 mt-4 md:mt-0">
-                                {/* Add Follow or Message buttons here if needed */}
-                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        {/* Reviews Marquee */}
+                        {reviews && reviews.length > 0 && (
+                            <div className="mt-12 overflow-hidden relative w-full pt-6 border-t border-gray-100">
+                                <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-r from-white to-transparent z-10"></div>
+                                <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 bg-gradient-to-l from-white to-transparent z-10"></div>
+                                
+                                <div className="flex w-max animate-marquee gap-6 items-stretch">
+                                    {[...reviews, ...reviews].map((review, idx) => (
+                                        <div key={`${review._id}-${idx}`} className="w-80 md:w-96 shrink-0 bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow rounded-2xl p-5 flex flex-col justify-between">
+                                            <div>
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-50 text-indigo-700 flex items-center justify-center font-bold shadow-sm shrink-0">
+                                                            {review.reviewerRole === 'graduate' ? 'G' : review.reviewerRole === 'jobseeker' ? 'J' : 'A'}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <h4 className="font-bold text-gray-900 text-sm truncate">
+                                                                Anonymous {review.reviewerRole === 'graduate' ? 'Graduate' : review.reviewerRole === 'jobseeker' ? 'Jobseeker' : 'Employee'}
+                                                            </h4>
+                                                            <p className="text-xs text-indigo-600 font-semibold truncate flex items-center gap-1 mt-0.5">
+                                                                <Briefcase className="w-3 h-3" />
+                                                                {review.jobTitle || "Previous Employee"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap shrink-0 pt-1">
+                                                        {new Date(review.ratedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="flex items-center mb-3">
+                                                    <StarRating value={review.rating} size="sm" readOnly />
+                                                </div>
+
+                                                {review.tags && review.tags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 mb-3">
+                                                        {review.tags.map(tag => (
+                                                            <span key={tag} className="px-2.5 py-0.5 bg-gray-50 border border-gray-200 text-gray-700 rounded-full text-[11px] font-semibold">
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {review.feedback && (
+                                                    <p className="text-sm text-gray-700 leading-relaxed italic line-clamp-3 relative">
+                                                        <span className="text-gray-300 font-serif text-2xl absolute -top-1.5 -left-1">"</span>
+                                                        <span className="pl-3">{review.feedback}</span>
+                                                        <span className="text-gray-300 font-serif text-2xl leading-none">"</span>
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 px-6 md:px-10 pb-10">
                             {/* Main Content */}
                             <div className="lg:col-span-2 space-y-10">
                                 {/* About */}
@@ -336,7 +416,6 @@ const CompanyProfileView = () => {
                     </div>
                 </div>
             </div>
-        </div>
     );
 };
 
