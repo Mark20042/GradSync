@@ -169,6 +169,7 @@ const userSchema = new Schema<IUser>(
     companyRatingCount: { type: Number, default: 0 },
     companyRatingSum: { type: Number, default: 0 },
     companyAverageRating: { type: Number, default: 0 },
+    employerAISummary: { type: Schema.Types.Mixed, default: null },
 
     // Admin
     isAdmin: { type: Boolean, default: false },

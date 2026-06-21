@@ -22,7 +22,7 @@ const requireEmployerAndCoins = async (req: AuthRequest, coins: number) => {
  */
 export const getApplicationsOverTime = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 5);
+    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
@@ -61,7 +61,7 @@ export const getApplicationsOverTime = async (req: AuthRequest, res: Response, n
  */
 export const getTopJobs = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 5);
+    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
@@ -102,7 +102,7 @@ export const getTopJobs = async (req: AuthRequest, res: Response, next: NextFunc
  */
 export const getRetentionStats = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 10);
+    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
@@ -116,7 +116,7 @@ export const getRetentionStats = async (req: AuthRequest, res: Response, next: N
           count: { $sum: 1 },
           avgTenureDays: {
             $avg: {
-              $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" }
+              $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }]
             }
           },
         }
@@ -147,7 +147,7 @@ export const getRetentionStats = async (req: AuthRequest, res: Response, next: N
       {
         $group: {
           _id: null,
-          avg: { $avg: { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } } }
+          avg: { $avg: { $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] } }
         }
       }
     ]);
@@ -167,7 +167,7 @@ export const getRetentionStats = async (req: AuthRequest, res: Response, next: N
  */
 export const getTerminationReasons = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 10);
+    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
@@ -190,7 +190,7 @@ export const getTerminationReasons = async (req: AuthRequest, res: Response, nex
  */
 export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 15);
+    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
@@ -257,8 +257,19 @@ export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFu
  */
 export const getAISummary = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 20);
     const companyId = req.user._id;
+    const isRefresh = req.query.refresh === 'true';
+
+    // If not a refresh, try to return saved summary
+    if (!isRefresh) {
+      const employer = await User.findById(companyId).select("employerAISummary").lean();
+      if (employer?.employerAISummary) {
+        return res.status(StatusCodes.OK).json(employer.employerAISummary);
+      }
+      return res.status(StatusCodes.NOT_FOUND).json({ message: "No cached insights found. Please unlock." });
+    }
+
+    await requireEmployerAndCoins(req, 20);
     const jobs = await Job.find({ company: companyId }).select("_id title").lean();
     const jobIds = jobs.map(j => j._id);
 
@@ -274,7 +285,7 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
 
     const avgTenureAgg = await Application.aggregate([
       { $match: { job: { $in: jobIds }, status: "Terminated", terminatedAt: { $exists: true } } },
-      { $group: { _id: null, avg: { $avg: { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } } } } }
+      { $group: { _id: null, avg: { $avg: { $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] } } } }
     ]);
     const avgTenureDays = avgTenureAgg[0] ? Math.round(avgTenureAgg[0].avg) : null;
 
@@ -311,9 +322,14 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
       insights = ["Failed to generate AI insights due to an error."];
     }
 
-    res.status(StatusCodes.OK).json({
+    const finalResult = {
       summary: analyticsData,
       insights,
-    });
+    };
+
+    // Save back to user
+    await User.findByIdAndUpdate(companyId, { employerAISummary: finalResult });
+
+    res.status(StatusCodes.OK).json(finalResult);
   } catch (e) { next(e); }
 };

@@ -70,7 +70,48 @@ const EmployerAnalytics = () => {
         console.error("Failed to load jobs for filter:", err);
       }
     };
+    
+    const fetchFreeAnalytics = async () => {
+      try {
+        const [apps, ret, terms, skills] = await Promise.all([
+          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.APPLICATIONS_OVER_TIME),
+          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.RETENTION),
+          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.TERMINATION_REASONS),
+          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS)
+        ]);
+        
+        setData(prev => ({
+          ...prev,
+          appsOverTime: apps.data,
+          retention: ret.data,
+          terminationReasons: terms.data,
+          skillGaps: skills.data
+        }));
+        setUnlockedState(prev => ({
+          ...prev,
+          appsOverTime: true,
+          retention: true,
+          terminationReasons: true,
+          skillGaps: true
+        }));
+      } catch (err) {
+        console.error("Failed to fetch free analytics:", err);
+      }
+    };
+
+    const fetchCachedAI = async () => {
+      try {
+        const res = await axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY);
+        setData(prev => ({ ...prev, aiSummary: res.data }));
+        setUnlockedState(prev => ({ ...prev, aiSummary: true }));
+      } catch (err) {
+        // Expected if no cached version exists (404)
+      }
+    };
+
     fetchJobs();
+    fetchFreeAnalytics();
+    fetchCachedAI();
   }, []);
 
   // Generic unlock handler
@@ -174,11 +215,11 @@ const EmployerAnalytics = () => {
                     Executive AI Insights
                   </h2>
                   <button 
-                    onClick={() => unlockFeature("aiSummary", API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY, 20)}
+                    onClick={() => unlockFeature("aiSummary", API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY + "?refresh=true", 20)}
                     className="relative z-10 flex items-center gap-1.5 bg-indigo-800/80 hover:bg-indigo-700 text-indigo-100 text-xs px-3 py-1.5 rounded-lg transition-colors border border-indigo-700"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (20 🪙)
+                    Re-run (20 <img src="/gradcoin.svg" alt="coin" className="w-4 h-4 ml-0.5 object-contain" />)
                   </button>
                 </div>
 
@@ -232,13 +273,6 @@ const EmployerAnalytics = () => {
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <TrendingUp className="w-5 h-5 text-indigo-600" /> Applications & Hires (Last 12 Months)
                   </h3>
-                  <button 
-                    onClick={() => unlockFeature("appsOverTime", API_PATH.EMPLOYER_ANALYTICS.APPLICATIONS_OVER_TIME, 5)}
-                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (5 🪙)
-                  </button>
                 </div>
                 <div className="flex-1 min-h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -285,13 +319,6 @@ const EmployerAnalytics = () => {
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <Award className="w-5 h-5 text-indigo-600" /> Employee Retention
                   </h3>
-                  <button 
-                    onClick={() => unlockFeature("retention", API_PATH.EMPLOYER_ANALYTICS.RETENTION, 10)}
-                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (10 🪙)
-                  </button>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-6">
@@ -335,13 +362,6 @@ const EmployerAnalytics = () => {
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-amber-500" /> Top Termination Reasons
                   </h3>
-                  <button 
-                    onClick={() => unlockFeature("terminationReasons", API_PATH.EMPLOYER_ANALYTICS.TERMINATION_REASONS, 10)}
-                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (10 🪙)
-                  </button>
                 </div>
                 <p className="text-xs text-gray-500 mb-4">Based on admin-configurable termination categories.</p>
                 
@@ -392,13 +412,6 @@ const EmployerAnalytics = () => {
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <Target className="w-5 h-5 text-indigo-600" /> Skill Mismatch
                   </h3>
-                  <button 
-                    onClick={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS, 15)}
-                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (15 🪙)
-                  </button>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-6 mb-4">
