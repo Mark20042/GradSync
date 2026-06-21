@@ -108,6 +108,21 @@ const DashboardLayout = ({ activeMenu, children }) => {
         
         if (notification.type === "TOKENS_ADDED") {
           setNewTokensData(notification);
+        } else if (notification.type === "TERMINATION") {
+          // Immediately fetch pending reviews to show the auto-popup modal
+          axiosInstance
+            .get(API_PATH.TERMINATION_REVIEWS.MY_PENDING)
+            .then((res) => {
+              if (res.data && res.data.length > 0) {
+                setPendingRatingReview(res.data[0]);
+              }
+            })
+            .catch(() => {});
+            
+          toast(notification.title + ": " + notification.message, {
+            icon: '🔔',
+            duration: 5000,
+          });
         } else {
           // Show in-app toast
           toast(notification.title + ": " + notification.message, {

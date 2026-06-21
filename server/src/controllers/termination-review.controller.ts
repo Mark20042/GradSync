@@ -6,6 +6,7 @@ import Application from '@/models/Application.model.js';
 import Job from '@/models/Job.model.js';
 import User from '@/models/User.model.js';
 import { createNotification } from '@/utils/notification.helper.js';
+import { getIo } from '@/services/socket.service.js';
 
 // ─── Helper: Recalculate and persist rating aggregates ─────────────────────
 
@@ -94,12 +95,13 @@ export const terminateApplicant = async (req: AuthenticatedRequest, res: Respons
     await application.save();
 
     // Notify the jobseeker
-    await createNotification(
+    const notification = await createNotification(
       application.applicant,
       'TERMINATION',
       'Employment Terminated',
       `Your employment at ${employer.companyName || 'the company'} has been terminated. Please take a moment to rate your experience.`
     );
+    getIo().to(application.applicant.toString()).emit("receiveNotification", notification);
 
     return res.status(200).json({ message: 'Applicant terminated successfully.', review });
   } catch (error) {
