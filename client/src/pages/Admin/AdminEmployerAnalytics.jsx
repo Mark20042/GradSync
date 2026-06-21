@@ -194,31 +194,35 @@ const AdminEmployerAnalytics = () => {
           
           {/* Applications Over Time */}
           {data.appsOverTime && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 mb-6">
-                <LineChartIcon className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Application Volume & Conversion</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[350px]">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-indigo-600" /> Application Volume & Conversion
+                </h3>
               </div>
-              <div className="h-[300px] w-full">
+              <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.appsOverTime}>
+                  <AreaChart data={data.appsOverTime} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorHired" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dx={-10} />
-                    <Tooltip cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                    <Area type="monotone" dataKey="applications" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorApps)" name="Total Applications" />
-                    <Area type="monotone" dataKey="hired" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorHired)" name="Hired Candidates" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+                    <Area type="monotone" name="Applications" dataKey="applications" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorApps)" />
+                    <Area type="monotone" name="Hired" dataKey="hired" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorHired)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -227,46 +231,34 @@ const AdminEmployerAnalytics = () => {
 
           {/* Retention Stats */}
           {data.retention && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 mb-6">
-                <PieChartIcon className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Platform Retention Overview</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[350px]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-indigo-600" /> Platform Retention Overview
+                </h3>
               </div>
-              <div className="flex flex-col md:flex-row items-center justify-between">
-                <div className="h-[250px] w-full md:w-1/2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={data.retention.chartData}
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {data.retention.chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? "#10b981" : "#f43f5e"} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Retention Rate</p>
+                  <p className="text-2xl font-bold text-gray-900">{data.retention.retentionRate !== null ? `${data.retention.retentionRate}%` : 'N/A'}</p>
                 </div>
-                <div className="w-full md:w-1/2 flex flex-col gap-4 mt-6 md:mt-0">
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Retention Rate</p>
-                    <p className="text-2xl font-bold text-gray-900">{data.retention.retentionRate?.toFixed(1)}%</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Retained</p>
-                      <p className="text-xl font-bold text-emerald-600">{data.retention.chartData[0].value}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                      <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Terminated</p>
-                      <p className="text-xl font-bold text-rose-600">{data.retention.chartData[1].value}</p>
-                    </div>
-                  </div>
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wider mb-1">Avg Tenure</p>
+                  <p className="text-2xl font-bold text-gray-900">{data.retention.avgTenureDays !== null ? `${data.retention.avgTenureDays} days` : 'N/A'}</p>
                 </div>
+              </div>
+
+              <div className="flex-1 min-h-[150px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="terminated" name="Terminations" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           )}
@@ -365,22 +357,42 @@ const AdminEmployerAnalytics = () => {
 
           {/* Termination Reasons */}
           {data.terminationReasons && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-              <div className="flex items-center gap-2 mb-6">
-                <TrendingUp className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Primary Reasons for Turnover</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[350px]">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-500" /> Primary Reasons for Turnover
+                </h3>
               </div>
-              <div className="flex flex-wrap gap-4">
-                {data.terminationReasons.map((reason, idx) => (
-                  <div key={idx} className="flex-1 min-w-[200px] bg-gray-50 rounded-xl p-5 border border-gray-100 relative overflow-hidden group hover:border-rose-200 transition-colors">
-                    <div className="absolute right-0 top-0 w-24 h-24 bg-rose-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 z-0"></div>
-                    <div className="relative z-10">
-                      <p className="text-3xl font-black text-gray-900 mb-1">{reason.count}</p>
-                      <p className="text-sm font-semibold text-gray-600 line-clamp-2">{reason.label}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-xs text-gray-500 mb-4">Based on admin-configurable termination categories.</p>
+              
+              {data.terminationReasons.length > 0 ? (
+                <div className="flex-1 min-h-[250px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data.terminationReasons}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="count"
+                        nameKey="label"
+                      >
+                        {data.terminationReasons.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                      <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
+                  No termination data available yet.
+                </div>
+              )}
             </div>
           )}
 

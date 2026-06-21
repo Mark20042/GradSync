@@ -40,7 +40,7 @@ const AdminTerminations = () => {
       t.employee?.fullName?.toLowerCase().includes(s) ||
       t.company?.companyName?.toLowerCase().includes(s) ||
       t.job?.title?.toLowerCase().includes(s) ||
-      t.reasonId?.label?.toLowerCase().includes(s)
+      t.terminationReason?.label?.toLowerCase().includes(s)
     );
   });
 
@@ -121,7 +121,7 @@ const AdminTerminations = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                            {term.reasonId?.label || "Unspecified"}
+                            {term.terminationReason?.label || "Unspecified"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

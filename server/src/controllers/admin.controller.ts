@@ -761,7 +761,7 @@ export const getAllTerminations = async (_req: any, res: Response, next: NextFun
       .populate("company", "companyName companyLogo email")
       .populate("employee", "fullName avatar email")
       .populate("job", "title")
-      .populate("reasonId", "label")
+      .populate("terminationReason", "label")
       .sort({ terminatedAt: -1 })
       .lean();
     res.json(reviews);
@@ -777,29 +777,33 @@ export const getPlatformApplicationsOverTime = async (req: any, res: Response, n
       matchQuery.job = { $in: jobs.map((j) => j._id) };
     }
 
-    const data = await Application.aggregate([
-      { $match: matchQuery },
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+    const rawData = await Application.aggregate([
+      { $match: { ...matchQuery, createdAt: { $gte: startDate } } },
       {
         $group: {
           _id: {
             year: { $year: "$createdAt" },
             month: { $month: "$createdAt" }
           },
-          count: { $sum: 1 },
+          applications: { $sum: 1 },
           hired: { $sum: { $cond: [{ $in: ["$status", ["Accepted", "Hired"]] }, 1, 0] } }
         }
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } },
-      {
-        $project: {
-          _id: 0,
-          date: { $concat: [{ $toString: "$_id.year" }, "-", { $toString: "$_id.month" }] },
-          applications: "$count",
-          hired: "$hired"
-        }
-      }
     ]);
-    res.status(200).json({ data });
+
+    const result: { month: string; applications: number; hired: number }[] = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleString("default", { month: "short", year: "numeric" });
+      const match = rawData.find(r => r._id.year === d.getFullYear() && r._id.month === d.getMonth() + 1);
+      result.push({ month: label, applications: match?.applications ?? 0, hired: match?.hired ?? 0 });
+    }
+
+    res.status(200).json({ data: result });
   } catch (e) { next(e); }
 };
 
@@ -851,10 +855,37 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
     const totalHired = hiredApps.length;
     const totalTerminated = hiredApps.filter((a: any) => a.status === "Terminated").length;
     
-    let retentionRate = 0;
-    if (totalHired > 0) {
-      retentionRate = ((totalHired - totalTerminated) / totalHired) * 100;
+    // Monthly terminated counts
+    const monthlyTerminated = await Application.aggregate([
+      { $match: { ...appMatchQuery } },
+      {
+        $group: {
+          _id: { year: { $year: "$terminatedAt" }, month: { $month: "$terminatedAt" } },
+          count: { $sum: 1 },
+          avgTenureDays: {
+            $avg: {
+              $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }]
+            }
+          },
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+
+    const now = new Date();
+    const chartData = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleString("default", { month: "short", year: "numeric" });
+      const match = monthlyTerminated.find(r => r._id.year === d.getFullYear() && r._id.month === d.getMonth() + 1);
+      chartData.push({
+        month: label,
+        terminated: match?.count ?? 0,
+        avgTenureDays: match ? Math.round(match.avgTenureDays) : 0,
+      });
     }
+
+    const retentionRateVal = totalHired > 0 ? Math.round(((totalHired - totalTerminated) / totalHired) * 100) : null;
 
     const avgTenure = await Application.aggregate([
       { $match: appMatchQuery },
@@ -866,13 +897,8 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
       }
     ]);
 
-    const chartData = [
-      { name: "Retained", value: totalHired - totalTerminated },
-      { name: "Terminated", value: totalTerminated }
-    ];
-
     res.status(200).json({
-      retentionRate,
+      retentionRate: retentionRateVal,
       avgTenureDays: avgTenure[0] ? Math.round(avgTenure[0].avg) : null,
       totalHired,
       totalTerminated,
