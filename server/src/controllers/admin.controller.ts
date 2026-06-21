@@ -21,6 +21,7 @@ import SystemSettings from "@/models/SystemSettings.model.js";
 import SystemMetrics from "@/models/SystemMetrics.model.js";
 import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/services/cloudinary.service.js";
 import { createNotification } from "@/utils/notification.helper.js";
+import { recalcCompanyRating, recalcEmployeeRating } from "@/controllers/termination-review.controller.js";
 import { getIo } from "@/services/socket.service.js";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
@@ -232,6 +233,9 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
     await Promise.allSettled(cleanups);
 
     if (user.role === "graduate" || user.role === "jobseeker") {
+      const affectedReviews = await TerminationReview.find({ employee: userId, isJobseekerRated: true }).select("company");
+      const affectedCompanies = [...new Set(affectedReviews.map(r => r.company.toString()))];
+
       // Delete graduate's applications, saved jobs, assessments, and interview drafts
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
@@ -240,6 +244,10 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
       await InterviewDraft.deleteMany({ candidateId: userId });
       await AssessmentSubmission.deleteMany({ user: userId });
       await TerminationReview.deleteMany({ employee: userId });
+
+      for (const compId of affectedCompanies) {
+        await recalcCompanyRating(compId);
+      }
     }
 
     if (user.role === "employer") {
@@ -252,7 +260,6 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
       // Delete employer's FAQs, settings
       await JobFAQ.deleteMany({ employer: userId });
       await EmployerSettings.deleteMany({ user: userId });
-      await TerminationReview.deleteMany({ company: userId });
     }
 
     // Delete conversations and messages involving this user

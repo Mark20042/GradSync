@@ -23,7 +23,7 @@ async function recalcJobRating(jobId: any) {
   });
 }
 
-async function recalcCompanyRating(companyId: any) {
+export async function recalcCompanyRating(companyId: any) {
   const result = await TerminationReview.aggregate([
     { $match: { company: companyId, isJobseekerRated: true } },
     { $group: { _id: null, sum: { $sum: '$jobseekerRating' }, count: { $sum: 1 } } },
@@ -36,7 +36,7 @@ async function recalcCompanyRating(companyId: any) {
   });
 }
 
-async function recalcEmployeeRating(employeeId: any) {
+export async function recalcEmployeeRating(employeeId: any) {
   const result = await TerminationReview.aggregate([
     { $match: { employee: employeeId, isEmployerRated: true } },
     { $group: { _id: null, sum: { $sum: '$employerRating' }, count: { $sum: 1 } } },

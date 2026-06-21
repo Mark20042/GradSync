@@ -20,6 +20,7 @@ import AssessmentSubmission from "@/models/AssessmentSubmission.model.js";
 import FeatureFeedback from "@/models/FeatureFeedback.model.js";
 import TerminationReview from "@/models/TerminationReview.model.js";
 import TerminationReason from "@/models/TerminationReason.model.js";
+import { recalcCompanyRating, recalcEmployeeRating } from "@/controllers/termination-review.controller.js";
 import { createNotification } from "@/utils/notification.helper.js";
 import {
   deleteFromCloudinary,
@@ -301,12 +302,20 @@ const deleteProfile = async (
     await Promise.allSettled(cleanups);
 
     if (user.role === "graduate" || user.role === "jobseeker") {
+      const affectedReviews = await TerminationReview.find({ employee: userId, isJobseekerRated: true }).select("company");
+      const affectedCompanies = [...new Set(affectedReviews.map((r: any) => r.company.toString()))];
+
       await Application.deleteMany({ applicant: userId });
       await SavedJob.deleteMany({ graduate: userId });
       await Assessment.deleteMany({ user: userId });
       await Assessment.deleteMany({ candidateId: userId });
       await InterviewDraft.deleteMany({ candidateId: userId });
       await AssessmentSubmission.deleteMany({ user: userId });
+      await TerminationReview.deleteMany({ employee: userId });
+
+      for (const compId of affectedCompanies) {
+        await recalcCompanyRating(compId);
+      }
     }
     if (user.role === "employer") {
       const jobs = await Job.find({ company: userId }).select("_id");
