@@ -31,7 +31,6 @@ import { EMPLOYER_MENU, JOB_SEEKER_MENU } from "../../utils/data";
 import ProfileDropdpwn from "./ProfileDropdpwn";
 import io from "socket.io-client";
 import toast from "react-hot-toast";
-import JobseekerRatingModal from "../ratings/JobseekerRatingModal";
 
 const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
   const Icon = item.icon;
@@ -83,7 +82,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
   const [scanning, setScanning] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [pendingRatingReview, setPendingRatingReview] = useState(null); // auto popup for jobseekers
 
   // Fetch unread count initially and when dropdown closes
   useEffect(() => {
@@ -142,21 +140,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
     window.addEventListener("notificationReadAll", handleReadEvent);
     return () => window.removeEventListener("notificationReadAll", handleReadEvent);
   }, []);
-
-  // Auto-popup: check if jobseeker has unrated termination reviews
-  useEffect(() => {
-    const isJobseeker = user && !user.isAdmin && (user.role === 'graduate' || user.role === 'jobseeker');
-    if (!isJobseeker) return;
-    axiosInstance
-      .get(API_PATH.TERMINATION_REVIEWS.MY_PENDING)
-      .then((res) => {
-        if (res.data && res.data.length > 0) {
-          // Show the first pending review automatically
-          setPendingRatingReview(res.data[0]);
-        }
-      })
-      .catch(() => {}); // silently fail
-  }, [user]);
 
   //Handle responsive behavior
 
@@ -523,12 +506,6 @@ const DashboardLayout = ({ activeMenu, children }) => {
           </div>
         </div>
       )}
-      {/* Auto-popup: Pending Jobseeker Rating Review */}
-      <JobseekerRatingModal
-        isOpen={!!pendingRatingReview}
-        onClose={() => setPendingRatingReview(null)}
-        review={pendingRatingReview}
-      />
     </div>
   );
 };

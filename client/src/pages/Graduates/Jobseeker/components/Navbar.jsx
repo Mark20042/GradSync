@@ -11,6 +11,7 @@ import { API_PATH, BASE_URL } from "../../../../utils/apiPath";
 
 import io from "socket.io-client";
 import toast from "react-hot-toast";
+import JobseekerRatingModal from "../../../../components/ratings/JobseekerRatingModal";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -22,6 +23,24 @@ const Navbar = () => {
   const [newTokensData, setNewTokensData] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingRatingReview, setPendingRatingReview] = useState(null);
+
+  // Auto-popup: check if jobseeker has unrated termination reviews
+  useEffect(() => {
+    const isJobseeker = user && !user.isAdmin && (user.role === 'graduate' || user.role === 'jobseeker');
+    if (!isJobseeker) return;
+    axiosInstance
+      .get(API_PATH.TERMINATION_REVIEWS.MY_PENDING)
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          const unprompted = res.data.find(r => !r.jobseekerRatingPromptDismissed);
+          if (unprompted) {
+             setPendingRatingReview(unprompted);
+          }
+        }
+      })
+      .catch(() => {}); // silently fail
+  }, [user]);
 
   // Fetch unread count initially and when dropdown closes (to reflect newly read items)
   useEffect(() => {
@@ -382,6 +401,13 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Auto-popup: Pending Jobseeker Rating Review */}
+      <JobseekerRatingModal
+        isOpen={!!pendingRatingReview}
+        onClose={() => setPendingRatingReview(null)}
+        review={pendingRatingReview}
+      />
     </>
   );
 };
