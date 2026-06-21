@@ -210,7 +210,6 @@ export const getMyPendingRatings = async (req: AuthenticatedRequest, res: Respon
     const pending = await TerminationReview.find({
       employee: user._id,
       isJobseekerRated: false,
-      jobseekerRatingPromptDismissed: false,
     })
       .populate('job', 'title')
       .populate('company', 'companyName companyLogo')
