@@ -906,13 +906,15 @@ export const getPlatformTerminationReasons = async (req: any, res: Response, nex
 export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
-    let matchQuery: any = { status: { $in: ["Rejected", "Terminated"] } };
-
     if (companyId) {
-      const jobs = await Job.find({ company: companyId }).select("_id").lean();
-      matchQuery.job = { $in: jobs.map((j) => j._id) };
+      const employer = await User.findById(companyId).select("employerSkillGaps").lean();
+      if (employer?.employerSkillGaps) {
+        return res.status(200).json({ data: employer.employerSkillGaps });
+      }
+      return res.status(200).json({ data: null, message: "Employer has not generated this report yet." });
     }
 
+    let matchQuery: any = { status: { $in: ["Rejected", "Terminated"] } };
     const rejectedApps = await Application.find(matchQuery)
       .populate("applicant", "skills").lean();
 
@@ -928,22 +930,42 @@ export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFu
       .slice(0, 15)
       .map(([skill, count]) => ({ skill, rejectedCount: count }));
 
-    res.status(200).json({ data: topSkillGaps });
+    const jobSkillsData = await Job.find({}).select("title skills").lean();
+    const requiredSkills: Record<string, number> = {};
+    jobSkillsData.forEach((j: any) => {
+      (j.skills || []).forEach((sk: string) => {
+        requiredSkills[sk] = (requiredSkills[sk] || 0) + 1;
+      });
+    });
+
+    const topRequiredSkills = Object.entries(requiredSkills)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([skill, count]) => ({ skill, requiredInJobs: count }));
+
+    res.status(200).json({ 
+      data: {
+        topSkillGaps,
+        topRequiredSkills,
+        aiRecommendations: ["Select a specific employer to generate actionable AI recommendations based on their exact skill mismatches and termination history."]
+      }
+    });
   } catch (e) { next(e); }
 };
 
 export const getPlatformAISummary = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
+    if (companyId) {
+      const employer = await User.findById(companyId).select("employerAISummary").lean();
+      if (employer?.employerAISummary) {
+        return res.status(200).json(employer.employerAISummary);
+      }
+      return res.status(200).json({ summary: null, insights: [], message: "Employer has not generated this report yet." });
+    }
+
     let matchQuery: any = {};
     let appsQuery: any = {};
-
-    if (companyId) {
-      const jobs = await Job.find({ company: companyId }).select("_id title").lean();
-      const jobIds = jobs.map((j) => j._id);
-      matchQuery = { job: { $in: jobIds } };
-      appsQuery = { job: { $in: jobIds } };
-    }
 
     const [totalApps, totalHired, totalTerminated, totalRejected] = await Promise.all([
       Application.countDocuments(appsQuery),

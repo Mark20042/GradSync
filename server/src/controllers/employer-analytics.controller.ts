@@ -190,8 +190,19 @@ export const getTerminationReasons = async (req: AuthRequest, res: Response, nex
  */
 export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await requireEmployerAndCoins(req, 0);
     const companyId = req.user._id;
+    const isRefresh = req.query.refresh === 'true';
+
+    // If not a refresh, try to return saved summary
+    if (!isRefresh) {
+      const employer = await User.findById(companyId).select("employerSkillGaps").lean();
+      if (employer?.employerSkillGaps) {
+        return res.status(StatusCodes.OK).json(employer.employerSkillGaps);
+      }
+      return res.status(StatusCodes.OK).json({ isCached: false });
+    }
+
+    await requireEmployerAndCoins(req, 15);
     const jobs = await Job.find({ company: companyId }).select("_id").lean();
     const jobIds = jobs.map(j => j._id);
 
@@ -248,7 +259,12 @@ export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFu
       console.error("Gemini skill gaps analysis failed:", error);
     }
 
-    res.status(StatusCodes.OK).json({ topSkillGaps, topRequiredSkills, aiRecommendations });
+    const finalResult = { topSkillGaps, topRequiredSkills, aiRecommendations };
+    
+    // Save back to user
+    await User.findByIdAndUpdate(companyId, { employerSkillGaps: finalResult });
+
+    res.status(StatusCodes.OK).json(finalResult);
   } catch (e) { next(e); }
 };
 
@@ -266,7 +282,7 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
       if (employer?.employerAISummary) {
         return res.status(StatusCodes.OK).json(employer.employerAISummary);
       }
-      return res.status(StatusCodes.NOT_FOUND).json({ message: "No cached insights found. Please unlock." });
+      return res.status(StatusCodes.OK).json({ isCached: false });
     }
 
     await requireEmployerAndCoins(req, 20);

@@ -142,6 +142,7 @@ export interface IUser extends Document {
   companyRatingSum?: number;
   companyAverageRating?: number;
   employerAISummary?: any;
+  employerSkillGaps?: any;
 
   // Employee conduct rating aggregates (score only shown publicly)
   employeeRatingCount?: number;

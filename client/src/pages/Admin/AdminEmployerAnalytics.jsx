@@ -136,7 +136,13 @@ const AdminEmployerAnalytics = () => {
         </div>
 
         {/* --- Top Row: AI Summary --- */}
-        {data.aiSummary && (
+        {selectedEmployer !== "all" && (!data.aiSummary || !data.aiSummary.summary) ? (
+          <div className="mb-6 bg-gray-50 border border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+            <Sparkles className="w-8 h-8 text-gray-400 mb-3" />
+            <h3 className="text-lg font-bold text-gray-900">No Executive Insights</h3>
+            <p className="text-sm text-gray-500 max-w-md mt-2">This employer has not unlocked their Executive AI Summary yet. Once they generate it, it will appear here.</p>
+          </div>
+        ) : data.aiSummary && data.aiSummary.summary ? (
           <div className="mb-6">
             <div className="bg-gradient-to-br from-indigo-900 to-violet-900 rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
               <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
@@ -181,7 +187,7 @@ const AdminEmployerAnalytics = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* --- Two Columns --- */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -292,29 +298,70 @@ const AdminEmployerAnalytics = () => {
           )}
 
           {/* Skill Gaps */}
-          {data.skillGaps && (
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 mb-6">
-                <AlertTriangle className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Platform Skill Gaps</h3>
-              </div>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.skillGaps} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                    <YAxis type="category" dataKey="skill" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#475569', fontWeight: 500 }} />
-                    <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="rejectedCount" name="Frequency in Rejected/Terminated" radius={[0, 4, 4, 0]}>
-                      {data.skillGaps.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+          {selectedEmployer !== "all" && !data.skillGaps ? (
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[350px]">
+              <Target className="w-8 h-8 text-gray-400 mb-3" />
+              <h3 className="font-bold text-gray-900">Skill Mismatch Analysis Locked</h3>
+              <p className="text-sm text-gray-500 max-w-sm mt-2">This employer has not unlocked the Skill Gap AI analysis yet.</p>
             </div>
-          )}
+          ) : data.skillGaps ? (
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[350px]">
+              <div className="flex items-center gap-2 mb-6">
+                <Target className="w-5 h-5 text-indigo-500" />
+                <h3 className="font-bold text-gray-900">Platform Skill Mismatch</h3>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-6 mb-4">
+                <div className="flex-1 space-y-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Required Skills</p>
+                  {data.skillGaps.topRequiredSkills?.length > 0 ? (
+                    data.skillGaps.topRequiredSkills.slice(0, 5).map((sk, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">{sk.skill}</span>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{sk.requiredInJobs} jobs</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400">No skills specified.</p>
+                  )}
+                </div>
+                
+                <div className="w-full h-px sm:w-px sm:h-auto bg-gray-100 shrink-0" />
+
+                <div className="flex-1 space-y-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Common in Rejects</p>
+                  {data.skillGaps.topSkillGaps?.length > 0 ? (
+                    data.skillGaps.topSkillGaps.slice(0, 5).map((sk, idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">{sk.skill}</span>
+                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">{sk.rejectedCount} candidates</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-gray-400">No data yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* AI Recommendations */}
+              {data.skillGaps.aiRecommendations && data.skillGaps.aiRecommendations.length > 0 && (
+                <div className="mt-auto pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    AI Action Plan
+                  </p>
+                  <ul className="space-y-2">
+                    {data.skillGaps.aiRecommendations.map((rec, idx) => (
+                      <li key={idx} className="text-sm text-gray-600 flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
+                        <span dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.*?)\*\*/g, '<span class="font-semibold text-gray-900">$1</span>') }} />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {/* Termination Reasons */}
           {data.terminationReasons && (

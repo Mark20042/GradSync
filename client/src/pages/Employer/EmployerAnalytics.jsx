@@ -73,26 +73,23 @@ const EmployerAnalytics = () => {
     
     const fetchFreeAnalytics = async () => {
       try {
-        const [apps, ret, terms, skills] = await Promise.all([
+        const [apps, ret, terms] = await Promise.all([
           axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.APPLICATIONS_OVER_TIME),
           axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.RETENTION),
-          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.TERMINATION_REASONS),
-          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS)
+          axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.TERMINATION_REASONS)
         ]);
         
         setData(prev => ({
           ...prev,
           appsOverTime: apps.data,
           retention: ret.data,
-          terminationReasons: terms.data,
-          skillGaps: skills.data
+          terminationReasons: terms.data
         }));
         setUnlockedState(prev => ({
           ...prev,
           appsOverTime: true,
           retention: true,
-          terminationReasons: true,
-          skillGaps: true
+          terminationReasons: true
         }));
       } catch (err) {
         console.error("Failed to fetch free analytics:", err);
@@ -102,16 +99,31 @@ const EmployerAnalytics = () => {
     const fetchCachedAI = async () => {
       try {
         const res = await axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.AI_SUMMARY);
-        setData(prev => ({ ...prev, aiSummary: res.data }));
-        setUnlockedState(prev => ({ ...prev, aiSummary: true }));
+        if (res.data.isCached !== false) {
+          setData(prev => ({ ...prev, aiSummary: res.data }));
+          setUnlockedState(prev => ({ ...prev, aiSummary: true }));
+        }
       } catch (err) {
-        // Expected if no cached version exists (404)
+        console.error("Failed to fetch cached AI summary:", err);
+      }
+    };
+
+    const fetchCachedSkillGaps = async () => {
+      try {
+        const res = await axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS);
+        if (res.data.isCached !== false) {
+          setData(prev => ({ ...prev, skillGaps: res.data }));
+          setUnlockedState(prev => ({ ...prev, skillGaps: true }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch cached skill gaps:", err);
       }
     };
 
     fetchJobs();
     fetchFreeAnalytics();
     fetchCachedAI();
+    fetchCachedSkillGaps();
   }, []);
 
   // Generic unlock handler
@@ -259,15 +271,7 @@ const EmployerAnalytics = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Applications Over Time */}
-          <AnalyticsGate
-            title="Applications Trend"
-            description="Visualize the influx of applications and hires over the past 12 months to identify seasonal hiring trends."
-            icon={LineChartIcon}
-            cost={5}
-            isUnlocked={unlockedState.appsOverTime}
-            onUnlock={() => unlockFeature("appsOverTime", API_PATH.EMPLOYER_ANALYTICS.APPLICATIONS_OVER_TIME, 5)}
-          >
-            {data.appsOverTime && (
+          {data.appsOverTime && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -302,18 +306,9 @@ const EmployerAnalytics = () => {
                 </div>
               </div>
             )}
-          </AnalyticsGate>
 
           {/* Retention & Tenure */}
-          <AnalyticsGate
-            title="Retention Insights"
-            description="Understand employee lifecycle lengths and visualize monthly termination counts."
-            icon={Users}
-            cost={10}
-            isUnlocked={unlockedState.retention}
-            onUnlock={() => unlockFeature("retention", API_PATH.EMPLOYER_ANALYTICS.RETENTION, 10)}
-          >
-            {data.retention && (
+          {data.retention && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -345,18 +340,9 @@ const EmployerAnalytics = () => {
                 </div>
               </div>
             )}
-          </AnalyticsGate>
 
           {/* Termination Reasons */}
-          <AnalyticsGate
-            title="Termination Reasons"
-            description="Break down the most common reasons why employees leave or are terminated from your company."
-            icon={PieChartIcon}
-            cost={10}
-            isUnlocked={unlockedState.terminationReasons}
-            onUnlock={() => unlockFeature("terminationReasons", API_PATH.EMPLOYER_ANALYTICS.TERMINATION_REASONS, 10)}
-          >
-            {data.terminationReasons && (
+          {data.terminationReasons && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
@@ -395,7 +381,6 @@ const EmployerAnalytics = () => {
                 )}
               </div>
             )}
-          </AnalyticsGate>
 
           {/* Skill Gaps */}
           <AnalyticsGate
@@ -412,6 +397,13 @@ const EmployerAnalytics = () => {
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <Target className="w-5 h-5 text-indigo-600" /> Skill Mismatch
                   </h3>
+                  <button 
+                    onClick={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS + "?refresh=true", 15)}
+                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Re-run (15 <img src="/gradcoin.svg" alt="coin" className="w-3.5 h-3.5 ml-0.5 object-contain" />)
+                  </button>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-6 mb-4">
