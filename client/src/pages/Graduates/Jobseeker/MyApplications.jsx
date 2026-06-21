@@ -118,7 +118,7 @@ const MyApplications = () => {
             <Navbar />
 
             <div className="flex-1 flex flex-col mt-16 overflow-hidden bg-gray-50/50">
-                <div className="container mx-auto px-4 pt-6 md:pt-8 pb-4 flex-shrink-0">
+                <div className="w-full px-4 sm:px-6 lg:px-8 pt-6 md:pt-8 pb-4 flex-shrink-0">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Applications</h1>
@@ -142,8 +142,8 @@ const MyApplications = () => {
                 </div>
 
                 {/* Kanban Board Container */}
-                <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar px-4 pb-8">
-                    <div className="flex gap-6 h-full items-start min-w-max pb-4 px-2">
+                <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar px-4 sm:px-6 lg:px-8 pb-8">
+                    <div className="flex gap-6 h-full items-start min-w-max pb-4">
                         {Object.entries(columns).map(([status, apps]) => (
                             <div key={status} className="flex flex-col w-[320px] max-w-[85vw] max-h-full h-fit shrink-0">
                                 {/* Column Header */}
