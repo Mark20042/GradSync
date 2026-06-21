@@ -76,11 +76,11 @@ const JobseekerRatingModal = ({ isOpen, onClose, review }) => {
   return (
     <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[80]">
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-br from-violet-600 to-purple-700 p-6 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-br from-violet-600 to-purple-700 p-6 text-white relative shrink-0 overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute -top-8 -right-4 w-36 h-36 rounded-full bg-white" />
             <div className="absolute -bottom-4 -left-8 w-40 h-40 rounded-full bg-white" />
@@ -105,8 +105,8 @@ const JobseekerRatingModal = ({ isOpen, onClose, review }) => {
                     Rate Your Experience
                   </span>
                 </div>
-                <h3 className="text-lg font-bold leading-tight">{companyName}</h3>
-                <p className="text-purple-200 text-xs mt-0.5">Position: {jobTitle}</p>
+                <h3 className="text-lg font-bold leading-tight line-clamp-2">{companyName}</h3>
+                <p className="text-purple-200 text-xs mt-0.5 line-clamp-1">Position: {jobTitle}</p>
               </div>
             </div>
             <button
@@ -121,7 +121,7 @@ const JobseekerRatingModal = ({ isOpen, onClose, review }) => {
           </p>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto custom-scrollbar">
           {/* Star Rating */}
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-600 mb-3">
@@ -178,7 +178,7 @@ const JobseekerRatingModal = ({ isOpen, onClose, review }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row gap-3 px-6 pb-6">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 sm:pt-0 shrink-0 bg-white border-t sm:border-t-0 border-gray-100">
           <button
             onClick={handleDismiss}
             disabled={isSubmitting}

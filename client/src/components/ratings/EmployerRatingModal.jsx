@@ -49,11 +49,11 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
   return (
     <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 z-[80]">
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 text-white relative shrink-0 overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute -top-4 -right-4 w-32 h-32 rounded-full bg-white" />
             <div className="absolute -bottom-8 -left-4 w-40 h-40 rounded-full bg-white" />
@@ -66,7 +66,7 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
                   Rate Employee
                 </span>
               </div>
-              <h3 className="text-xl font-bold">How did {employeeName} perform?</h3>
+              <h3 className="text-xl font-bold line-clamp-2">How did {employeeName} perform?</h3>
               <p className="text-indigo-200 text-sm mt-1">Your feedback is anonymous and kept private.</p>
             </div>
             <button
@@ -78,7 +78,7 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
           </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto custom-scrollbar">
           {/* Star Rating */}
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-600 mb-3">Overall Rating</p>
@@ -136,7 +136,7 @@ const EmployerRatingModal = ({ isOpen, onClose, reviewId, employeeName }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row gap-3 px-6 pb-6">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 sm:pt-0 shrink-0 bg-white border-t sm:border-t-0 border-gray-100">
           <button
             onClick={() => onClose(false)}
             disabled={isSubmitting}
