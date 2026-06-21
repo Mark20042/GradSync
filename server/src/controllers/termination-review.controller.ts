@@ -296,9 +296,10 @@ export const getCompanyReviews = async (req: AuthenticatedRequest, res: Response
     if (jobId) query.job = jobId;
 
     const reviews = await TerminationReview.find(query)
-      .select('jobseekerRating jobseekerFeedback jobseekerTags jobseekerRatedAt tenureDays')
+      .select('jobseekerRating jobseekerFeedback jobseekerTags jobseekerRatedAt tenureDays terminationDate terminationReason')
       .populate('employee', 'role major degree')
       .populate('job', 'title')
+      .populate('terminationReason', 'label')
       .sort({ jobseekerRatedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -312,6 +313,8 @@ export const getCompanyReviews = async (req: AuthenticatedRequest, res: Response
       tags: r.jobseekerTags,
       ratedAt: r.jobseekerRatedAt,
       tenureDays: r.tenureDays,
+      terminationDate: r.terminationDate,
+      terminationReason: r.terminationReason?.label || 'N/A',
       jobTitle: (r.job as any)?.title || '',
       reviewerRole: r.employee?.role || 'Applicant',
     }));
@@ -348,9 +351,10 @@ export const getEmployeeReviews = async (req: AuthenticatedRequest, res: Respons
     const limit = 10;
 
     const reviews = await TerminationReview.find({ employee: userId, isEmployerRated: true })
-      .select('employerRating employerFeedback employerTags employerRatedAt tenureDays company job')
+      .select('employerRating employerFeedback employerTags employerRatedAt tenureDays terminationDate terminationReason company job')
       .populate('company', 'companyName companyLogo')
       .populate('job', 'title')
+      .populate('terminationReason', 'label')
       .sort({ employerRatedAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit);
@@ -364,6 +368,8 @@ export const getEmployeeReviews = async (req: AuthenticatedRequest, res: Respons
       tags: r.employerTags,
       ratedAt: r.employerRatedAt,
       tenureDays: r.tenureDays,
+      terminationDate: r.terminationDate,
+      terminationReason: r.terminationReason?.label || 'N/A',
       companyName: r.company?.companyName || 'Unknown Company',
       companyLogo: r.company?.companyLogo || '',
       jobTitle: r.job?.title || 'Unknown Position',

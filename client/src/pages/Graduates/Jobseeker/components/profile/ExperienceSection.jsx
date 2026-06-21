@@ -296,6 +296,11 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                                                     {review.tenureDays < 30 ? `${review.tenureDays}d` : review.tenureDays < 365 ? `${Math.round(review.tenureDays/30)}mo` : `${(review.tenureDays/365).toFixed(1)}yr`} tenure
                                                 </div>
                                             )}
+                                            {review.terminationReason && review.terminationReason !== 'N/A' && (
+                                                <div className="text-rose-400 font-medium mt-1">
+                                                    Left due to: {review.terminationReason}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

@@ -160,12 +160,17 @@ const ReviewsSection = ({ mode, entityId, summary = {}, filterJobId = null }) =>
                             </span>
                           )}
                         </p>
-                        <div className="flex items-center gap-1 mt-0.5">
+                        <div className="flex items-center flex-wrap gap-1 mt-0.5">
                           <StarRating value={review.rating} size="sm" readOnly />
                           {review.tenureDays > 0 && (
                             <span className="text-[11px] text-gray-400 flex items-center gap-0.5 ml-1">
                               <Clock className="w-3 h-3" />
                               {tenureLabel(review.tenureDays)} tenure
+                            </span>
+                          )}
+                          {review.terminationReason && review.terminationReason !== 'N/A' && (
+                            <span className="text-[11px] text-rose-400 font-medium ml-1">
+                              · {review.terminationReason}
                             </span>
                           )}
                         </div>
