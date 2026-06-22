@@ -11,7 +11,6 @@ export const connectDB = async (): Promise<void> => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI!);
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    await seedTerminationReasons();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`❌ MongoDB Connection Error: ${message}`);
