@@ -153,6 +153,23 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
         )}
       </div>
 
+      {/* University Start Date */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          University Start Date
+        </label>
+        <div className="relative">
+          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="month"
+            name="universityStartYear"
+            value={formData.universityStartYear || ""}
+            onChange={handleChange}
+            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
       {/* Degree */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
