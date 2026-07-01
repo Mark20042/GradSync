@@ -232,6 +232,12 @@ const ApplicantProfile = () => {
                       • 
                     </>
                   )}
+                  {applicant.applicant.universityStartYear && (
+                    <span className="text-gray-500 text-xs">
+                      Started {moment(applicant.applicant.universityStartYear + "-01").format("MMM YYYY")}
+                    </span>
+                  )}
+
                   {applicant.applicant.email}
                 </p>
                 {applicant.applicant.universityAddress && (

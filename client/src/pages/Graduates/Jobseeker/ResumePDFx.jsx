@@ -14,6 +14,17 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
 };
 
+// Helper to format "YYYY-MM" string to "Month YYYY"
+const formatMonthYear = (str) => {
+    if (!str) return "";
+    if (str.includes("-")) {
+        const [y, m] = str.split("-");
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        return `${months[parseInt(m)-1] || ""} ${y}`;
+    }
+    return str;
+};
+
 const ResumePDFx = ({ user }) => {
     if (!user) return null;
 
@@ -186,6 +197,32 @@ const ResumePDFx = ({ user }) => {
                                 )}
                             </View>
                         ))}
+                    </Section>
+                )}
+
+
+                {/* University Info (standalone fields) */}
+                {(user.university || user.universityStartYear || user.graduationYear) && (
+                    <Section spacing="lg">
+                        <Heading level={2} transform="uppercase">
+                            Primary Education
+                        </Heading>
+                        <Divider spacing="xs" thickness="thin" />
+                        <View style={itemContainerStyle}>
+                            {user.university && (
+                                <PDFText style={titleStyle}>{user.university}</PDFText>
+                            )}
+                            {user.degree && (
+                                <PDFText style={companyStyle}>{user.degree}{user.major ? ` in ${user.major}` : ""}</PDFText>
+                            )}
+                            {(user.universityStartYear || user.graduationYear) && (
+                                <PDFText style={dateStyle}>
+                                    {user.universityStartYear ? formatMonthYear(user.universityStartYear) : ""}
+                                    {user.universityStartYear && user.graduationYear ? " – " : ""}
+                                    {user.graduationYear ? `Class of ${user.graduationYear}` : ""}
+                                </PDFText>
+                            )}
+                        </View>
                     </Section>
                 )}
 

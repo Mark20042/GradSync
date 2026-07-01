@@ -673,7 +673,15 @@ const AdminUsers = () => {
                                         {viewingUser.universityStartYear && (
                                             <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
                                                 <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Started</h5>
-                                                <p className="text-gray-900 font-medium">{viewingUser.universityStartYear}</p>
+                                                <p className="text-gray-900 font-medium">
+                                                    {viewingUser.universityStartYear.includes("-")
+                                                        ? (() => {
+                                                            const [y, m] = viewingUser.universityStartYear.split("-");
+                                                            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                                                            return `${months[parseInt(m)-1] || ""} ${y}`;
+                                                        })()
+                                                        : viewingUser.universityStartYear}
+                                                </p>
                                             </div>
                                         )}
                                         {viewingUser.graduationYear && (

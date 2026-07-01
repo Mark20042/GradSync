@@ -92,9 +92,9 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">University Start Year</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">University Start Date</label>
                                         <input
-                                            type="number"
+                                            type="month"
                                             value={editingUser.universityStartYear || ""}
                                             onChange={(e) => setEditingUser({ ...editingUser, universityStartYear: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -180,8 +180,8 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                                         <input
-                                                            type="date"
-                                                            value={edu.startDate ? new Date(edu.startDate).toISOString().split('T')[0] : ""}
+                                                            type="month"
+                                                            value={edu.startDate ? (typeof edu.startDate === "string" && edu.startDate.includes("T") ? edu.startDate.substring(0, 7) : (edu.startDate.length > 7 ? edu.startDate.substring(0, 7) : edu.startDate)) : ""}
                                                             onChange={(e) => {
                                                                 const newEducation = [...editingUser.education];
                                                                 newEducation[index].startDate = e.target.value;
@@ -193,8 +193,8 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                                         <input
-                                                            type="date"
-                                                            value={edu.endDate ? new Date(edu.endDate).toISOString().split('T')[0] : ""}
+                                                            type="month"
+                                                            value={edu.endDate ? (typeof edu.endDate === "string" && edu.endDate.includes("T") ? edu.endDate.substring(0, 7) : (edu.endDate.length > 7 ? edu.endDate.substring(0, 7) : edu.endDate)) : ""}
                                                             onChange={(e) => {
                                                                 const newEducation = [...editingUser.education];
                                                                 newEducation[index].endDate = e.target.value;

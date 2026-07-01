@@ -99,7 +99,7 @@ const userSchema = new Schema<IUser>(
     university: { type: String, default: "" },
     universityAddress: { type: String, default: "" },
     graduationYear: { type: Number, default: null },
-    universityStartYear: { type: Number, default: null },
+    universityStartYear: { type: String, default: "" },
 
     major: String,
     birthdate: { type: Date, default: null },
