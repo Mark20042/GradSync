@@ -644,55 +644,6 @@ const AdminUsers = () => {
                         {(viewingUser.role === "graduate" || viewingUser.role === "jobseeker") && (
                             <>
 
-                                {/* University Info */}
-                                {(viewingUser.university || viewingUser.degree || viewingUser.major || viewingUser.universityStartYear || viewingUser.graduationYear) && (
-                                <div>
-                                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <span className="w-1 h-6 bg-blue-600 rounded-full"></span>
-                                        Academic Information
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {viewingUser.university && (
-                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">University</h5>
-                                                <p className="text-gray-900 font-medium">{viewingUser.university}</p>
-                                            </div>
-                                        )}
-                                        {viewingUser.degree && (
-                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Degree</h5>
-                                                <p className="text-gray-900 font-medium">{viewingUser.degree}</p>
-                                            </div>
-                                        )}
-                                        {viewingUser.major && (
-                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Major</h5>
-                                                <p className="text-gray-900 font-medium">{viewingUser.major}</p>
-                                            </div>
-                                        )}
-                                        {viewingUser.universityStartYear && (
-                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Started</h5>
-                                                <p className="text-gray-900 font-medium">
-                                                    {typeof viewingUser.universityStartYear === "string" && viewingUser.universityStartYear.includes("-")
-                                                        ? (() => {
-                                                            const [y, m] = viewingUser.universityStartYear.split("-");
-                                                            const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                                                            return `${months[parseInt(m)-1] || ""} ${y}`;
-                                                        })()
-                                                        : viewingUser.universityStartYear}
-                                                </p>
-                                            </div>
-                                        )}
-                                        {viewingUser.graduationYear && (
-                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
-                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Graduation Year</h5>
-                                                <p className="text-gray-900 font-medium">{viewingUser.graduationYear}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                )}
 
                                 {/* Skills */}
                                 <div>
