@@ -17,12 +17,12 @@ const formatDate = (dateString) => {
 // Helper to format "YYYY-MM" string to "Month YYYY"
 const formatMonthYear = (str) => {
     if (!str) return "";
-    if (str.includes("-")) {
+    if (typeof str === "string" && str.includes("-")) {
         const [y, m] = str.split("-");
         const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
         return `${months[parseInt(m)-1] || ""} ${y}`;
     }
-    return str;
+    return String(str);
 };
 
 const ResumePDFx = ({ user }) => {

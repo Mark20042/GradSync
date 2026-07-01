@@ -234,7 +234,9 @@ const ApplicantProfile = () => {
                   )}
                   {applicant.applicant.universityStartYear && (
                     <span className="text-gray-500 text-xs">
-                      Started {moment(applicant.applicant.universityStartYear + "-01").format("MMM YYYY")}
+                      Started {typeof applicant.applicant.universityStartYear === "string" && applicant.applicant.universityStartYear.includes("-")
+                        ? moment(applicant.applicant.universityStartYear + "-01").format("MMM YYYY")
+                        : applicant.applicant.universityStartYear}
                     </span>
                   )}
 
