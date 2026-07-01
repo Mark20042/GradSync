@@ -80,6 +80,10 @@ const updateProfile = async (
         body.graduationYear !== undefined
           ? body.graduationYear
           : user.graduationYear;
+      user.universityStartYear =
+        body.universityStartYear !== undefined
+          ? body.universityStartYear
+          : user.universityStartYear;
       user.major = body.major !== undefined ? body.major : user.major;
       user.birthdate =
         body.birthdate !== undefined ? body.birthdate : user.birthdate;

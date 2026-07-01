@@ -91,6 +91,16 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         />
                                     </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">University Start Year</label>
+                                        <input
+                                            type="number"
+                                            value={editingUser.universityStartYear || ""}
+                                            onChange={(e) => setEditingUser({ ...editingUser, universityStartYear: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+
                                     <div className="col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
                                         <input
@@ -776,6 +786,102 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                 </div>
                             </div>
                         )}
+
+                        {/* Job Preferences */}
+                        {(editingUser.role === "graduate" || editingUser.role === "jobseeker") && (
+                            <div className="border-t border-gray-100 pt-6 mt-6">
+                                <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Job Preferences</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Desired Job Title</label>
+                                        <input
+                                            type="text"
+                                            value={editingUser.jobPreferences?.desiredJobTitle || ""}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), desiredJobTitle: e.target.value }
+                                            })}
+                                            placeholder="e.g. Marketing Manager"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+                                        <input
+                                            type="text"
+                                            value={editingUser.jobPreferences?.industry || ""}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), industry: e.target.value }
+                                            })}
+                                            placeholder="e.g. Finance, Healthcare"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Location</label>
+                                        <input
+                                            type="text"
+                                            value={editingUser.jobPreferences?.preferredLocation || ""}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), preferredLocation: e.target.value }
+                                            })}
+                                            placeholder="e.g. Manila, Cebu"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+                                        <select
+                                            value={editingUser.jobPreferences?.jobType || ""}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), jobType: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        >
+                                            <option value="">Select job type</option>
+                                            <option value="Full-time">Full-time</option>
+                                            <option value="Part-time">Part-time</option>
+                                            <option value="Contract">Contract</option>
+                                            <option value="Internship">Internship</option>
+                                            <option value="Remote">Remote</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Salary Expectation (₱ per month)</label>
+                                        <input
+                                            type="number"
+                                            value={editingUser.jobPreferences?.salaryExpectation || ""}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), salaryExpectation: e.target.value ? Number(e.target.value) : undefined }
+                                            })}
+                                            placeholder="e.g. 75000"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+                                    <div className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id="relocation"
+                                            checked={editingUser.jobPreferences?.relocation || false}
+                                            onChange={(e) => setEditingUser({
+                                                ...editingUser,
+                                                jobPreferences: { ...(editingUser.jobPreferences || {}), relocation: e.target.checked }
+                                            })}
+                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <label htmlFor="relocation" className="ml-2 text-sm text-gray-700">
+                                            Willing to relocate
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
 
         </>
     );

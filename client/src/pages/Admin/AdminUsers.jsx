@@ -3,7 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle, BrainCircuit } from "lucide-react";
+import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle, BrainCircuit, Briefcase } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "./components/AdminModal";
 import UserBasicInfo from "./components/UserForm/UserBasicInfo";
@@ -116,6 +116,7 @@ const AdminUsers = () => {
             degree: "",
             major: "",
             graduationYear: "",
+            universityStartYear: "",
             linkedin: "",
             github: "",
             skills: [],
@@ -124,7 +125,8 @@ const AdminUsers = () => {
             internships: [],
             awards: [],
             certifications: [],
-            projects: []
+            projects: [],
+            jobPreferences: {}
         });
         setShowEditModal(true);
     };
@@ -641,6 +643,49 @@ const AdminUsers = () => {
 
                         {(viewingUser.role === "graduate" || viewingUser.role === "jobseeker") && (
                             <>
+
+                                {/* University Info */}
+                                {(viewingUser.university || viewingUser.degree || viewingUser.major || viewingUser.universityStartYear || viewingUser.graduationYear) && (
+                                <div>
+                                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-blue-600 rounded-full"></span>
+                                        Academic Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {viewingUser.university && (
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">University</h5>
+                                                <p className="text-gray-900 font-medium">{viewingUser.university}</p>
+                                            </div>
+                                        )}
+                                        {viewingUser.degree && (
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Degree</h5>
+                                                <p className="text-gray-900 font-medium">{viewingUser.degree}</p>
+                                            </div>
+                                        )}
+                                        {viewingUser.major && (
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Major</h5>
+                                                <p className="text-gray-900 font-medium">{viewingUser.major}</p>
+                                            </div>
+                                        )}
+                                        {viewingUser.universityStartYear && (
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Started</h5>
+                                                <p className="text-gray-900 font-medium">{viewingUser.universityStartYear}</p>
+                                            </div>
+                                        )}
+                                        {viewingUser.graduationYear && (
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Graduation Year</h5>
+                                                <p className="text-gray-900 font-medium">{viewingUser.graduationYear}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                )}
+
                                 {/* Skills */}
                                 <div>
                                     <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -823,6 +868,64 @@ const AdminUsers = () => {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Job Preferences */}
+                                <div>
+                                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-teal-600 rounded-full"></span>
+                                        <Briefcase className="w-5 h-5 text-teal-600" />
+                                        Job Preferences
+                                    </h4>
+                                    {viewingUser.jobPreferences && Object.keys(viewingUser.jobPreferences).some(k => viewingUser.jobPreferences[k] !== undefined && viewingUser.jobPreferences[k] !== "" && viewingUser.jobPreferences[k] !== false) ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {viewingUser.jobPreferences.desiredJobTitle && (
+                                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Desired Role</h5>
+                                                    <p className="text-gray-900 font-medium">{viewingUser.jobPreferences.desiredJobTitle}</p>
+                                                </div>
+                                            )}
+                                            {viewingUser.jobPreferences.industry && (
+                                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Industry</h5>
+                                                    <p className="text-gray-900 font-medium">{viewingUser.jobPreferences.industry}</p>
+                                                </div>
+                                            )}
+                                            {viewingUser.jobPreferences.preferredLocation && (
+                                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Preferred Location</h5>
+                                                    <p className="text-gray-900 font-medium">{viewingUser.jobPreferences.preferredLocation}</p>
+                                                </div>
+                                            )}
+                                            {viewingUser.jobPreferences.jobType && (
+                                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Job Type</h5>
+                                                    <span className="inline-block px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">
+                                                        {viewingUser.jobPreferences.jobType}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {viewingUser.jobPreferences.salaryExpectation ? (
+                                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Expected Salary</h5>
+                                                    <p className="text-gray-900 font-medium">
+                                                        ₱{Number(viewingUser.jobPreferences.salaryExpectation).toLocaleString()}
+                                                    </p>
+                                                </div>
+                                            ) : null}
+                                            <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm flex items-center justify-between">
+                                                <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Willing to Relocate</h5>
+                                                <span className={`text-xs font-bold px-3 py-1 rounded-full ${viewingUser.jobPreferences.relocation ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"}`}>
+                                                    {viewingUser.jobPreferences.relocation ? "Yes" : "No"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-center">
+                                            <p className="text-gray-500 italic">No job preferences listed</p>
+                                        </div>
+                                    )}
+                                </div>
+
                             </>
                         )}
                     </div>
