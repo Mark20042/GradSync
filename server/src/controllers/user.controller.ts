@@ -96,14 +96,14 @@ const updateProfile = async (
       if (body.experiences !== undefined) {
         const oldExperiences = user.experiences || [];
         const newExperiences = body.experiences;
-        
+
         newExperiences.forEach((newExp: any) => {
            // Try to match by _id or company + title
-           const oldExp = oldExperiences.find((e: any) => 
-             (e._id && newExp._id && e._id.toString() === newExp._id.toString()) || 
+           const oldExp = oldExperiences.find((e: any) =>
+             (e._id && newExp._id && e._id.toString() === newExp._id.toString()) ||
              (e.company === newExp.company && e.title === newExp.title)
            );
-           
+
            if (oldExp) {
              const wasCurrent = oldExp.current || !oldExp.endDate;
              const isEndedNow = newExp.endDate && !newExp.isCurrent;
@@ -112,8 +112,41 @@ const updateProfile = async (
              }
            }
         });
-        
+
         user.experiences = body.experiences;
+      }
+
+      // ─── workExperienceEntries (with automated exitStatus) ───────────────
+      if (body.workExperienceEntries !== undefined) {
+        const oldEntries = user.workExperienceEntries || [];
+        const newEntries = body.workExperienceEntries as any[];
+
+        // Process each incoming entry — auto-populate exitStatus when endDate
+        // is added to a previously ongoing (no endDate) record.
+        const processedEntries = newEntries.map((newEntry: any) => {
+          const oldEntry = oldEntries.find((e: any) =>
+            (e._id && newEntry._id && e._id.toString() === newEntry._id.toString()) ||
+            (e.companyName === newEntry.companyName && String(e.startDate) === String(newEntry.startDate)),
+          );
+
+          // Detect: was ongoing before (no endDate), now has an endDate
+          if (oldEntry) {
+            const wasOngoing = !oldEntry.endDate || oldEntry.endDate === null;
+            const nowHasEndDate = newEntry.endDate && newEntry.endDate !== null;
+
+            if (wasOngoing && nowHasEndDate && !newEntry.exitStatus) {
+              // Auto-populate: the user is ending this role → "Resigned"
+              newEntry.exitStatus = "Resigned";
+            } else if (!newEntry.exitStatus) {
+              // Preserve existing exitStatus or leave null
+              newEntry.exitStatus = oldEntry.exitStatus ?? null;
+            }
+          }
+
+          return newEntry;
+        });
+
+        user.workExperienceEntries = processedEntries as any;
       }
       if (body.internships !== undefined) user.internships = body.internships;
       if (body.education !== undefined) user.education = body.education;

@@ -47,6 +47,18 @@ const projectSchema = new Schema({
   technologies: [String],
 });
 
+const workExperienceEntrySchema = new Schema({
+  companyName: { type: String, required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, default: null },
+  exitStatus: {
+    type: String,
+    enum: ["Resigned", "Terminated", "Contract Ended", null],
+    default: null,
+  },
+});
+
+
 // ─── Main User Schema ──────────────────────────────────────────────────
 
 const userSchema = new Schema<IUser>(
@@ -125,6 +137,8 @@ const userSchema = new Schema<IUser>(
     // Work experience
     experiences: [experienceSchema],
     internships: [experienceSchema],
+    // Enhanced work experience with automated exitStatus
+    workExperienceEntries: [workExperienceEntrySchema],
 
     // Education
     education: [educationSchema],

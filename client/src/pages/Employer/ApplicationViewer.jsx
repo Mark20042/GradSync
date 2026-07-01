@@ -12,6 +12,12 @@ import {
   CheckCircle2,
   XCircle,
   UserX,
+  FileText,
+  Pencil,
+  X,
+  LayoutGrid,
+  LogOut,
+  CalendarX,
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
@@ -19,9 +25,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import { getInitials } from "../../utils/helper";
 import moment from "moment";
+import toast from "react-hot-toast";
 import StatusBadge from "./../../components/StatusBadge";
 import ApplicantProfilePreview from "./components/ApplicantProfilePreview";
-import RankedCandidates from "./RankedCandidates";
 import Breadcrumbs from "../../components/Breadcrumbs";
 
 const ApplicationViewer = () => {
@@ -34,6 +40,9 @@ const ApplicationViewer = () => {
   const [loading, setLoading] = useState(true);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [contracts, setContracts] = useState({});
+  const [showExtendModal, setShowExtendModal] = useState(null);
+  const [extendForm, setExtendForm] = useState({ duration: 6, durationUnit: "months", reason: "" });
 
   const fetchApplications = async () => {
     try {
@@ -53,6 +62,59 @@ const ApplicationViewer = () => {
     if (jobId) fetchApplications();
     else navigate("/manage-jobs");
   }, [jobId, navigate]);
+
+  // Fetch contracts for accepted applicants
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
+        const map = {};
+        res.data.forEach((c) => {
+          map[c.employee?._id || c.employee] = c;
+        });
+        setContracts(map);
+      } catch (_) {}
+    };
+    if (applications.length > 0) fetchContracts();
+  }, [applications]);
+
+  const handleExtendContract = async () => {
+    if (!showExtendModal) return;
+    try {
+      await axiosInstance.patch(API_PATH.CONTRACTS.EXTEND(showExtendModal._id), {
+        duration: extendForm.duration,
+        durationUnit: extendForm.durationUnit,
+        reason: extendForm.reason,
+      });
+      toast.success("Contract extended!");
+      const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
+      const map = {};
+      res.data.forEach((c) => { map[c.employee?._id || c.employee] = c; });
+      setContracts(map);
+      setShowExtendModal(null);
+      setExtendForm({ duration: 6, durationUnit: "months", reason: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Extension failed");
+    }
+  };
+
+  const handleEndContractStatus = async (contractId, status) => {
+    if (!window.confirm(`Are you sure you want to mark this contract as ${status}?`)) return;
+    try {
+      await axiosInstance.patch(API_PATH.CONTRACTS.UPDATE_STATUS(contractId), {
+        status,
+      });
+      toast.success(`Contract successfully marked as ${status}`);
+      // Refresh contracts and applications to update UI
+      fetchApplications();
+      const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
+      const map = {};
+      res.data.forEach((c) => { map[c.employee?._id || c.employee] = c; });
+      setContracts(map);
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Failed to update status to ${status}`);
+    }
+  };
 
   const groupedApplications = useMemo(() => {
     // Backend now provides matchScore and matchReason via aggregation
@@ -173,140 +235,192 @@ const ApplicationViewer = () => {
                       </div>
                     </div>
 
-                    {/* Status Counters */}
+                    {/* Clickable Status Filters */}
                     <div className="px-3 sm:px-6 py-3 bg-gray-50/80 border-b border-gray-100">
                       <div className="flex flex-wrap gap-2">
                         {[
-                          { label: "Applied", color: "bg-blue-100 text-blue-700", icon: Send },
-                          { label: "In Review", color: "bg-amber-100 text-amber-700", icon: Clock },
-                          { label: "Accepted", color: "bg-emerald-100 text-emerald-700", icon: CheckCircle2 },
-                          { label: "Rejected", color: "bg-red-100 text-red-700", icon: XCircle },
-                          { label: "Terminated", color: "bg-slate-200 text-slate-700", icon: UserX },
-                        ].map(({ label, color, icon: Icon }) => {
-                          const count = applications.filter(a => a.status === label).length;
+                          { key: "all", label: "All", color: "bg-gray-100 text-gray-700", activeColor: "bg-gray-700 text-white", icon: LayoutGrid },
+                          { key: "Applied", label: "Applied", color: "bg-blue-50 text-blue-700", activeColor: "bg-blue-600 text-white", icon: Send },
+                          { key: "In Review", label: "In Review", color: "bg-amber-50 text-amber-700", activeColor: "bg-amber-500 text-white", icon: Clock },
+                          { key: "Accepted", label: "Accepted", color: "bg-emerald-50 text-emerald-700", activeColor: "bg-emerald-600 text-white", icon: CheckCircle2 },
+                          { key: "Rejected", label: "Rejected", color: "bg-red-50 text-red-700", activeColor: "bg-red-600 text-white", icon: XCircle },
+                          { key: "Terminated", label: "Terminated", color: "bg-slate-100 text-slate-700", activeColor: "bg-slate-700 text-white", icon: UserX },
+                          { key: "Resigned", label: "Resigned", color: "bg-orange-50 text-orange-700", activeColor: "bg-orange-600 text-white", icon: LogOut },
+                          { key: "Contract Ended", label: "Contract Ended", color: "bg-purple-50 text-purple-700", activeColor: "bg-purple-600 text-white", icon: CalendarX },
+                        ].map(({ key, label, color, activeColor, icon: Icon }) => {
+                          const isContractStatus = key === "Resigned" || key === "Contract Ended";
+                          const count = isContractStatus
+                            ? applications.filter(a => { const c = contracts[a.applicant?._id]; return c && c.status === key; }).length
+                            : key === "all"
+                              ? applications.length
+                              : applications.filter(a => a.status === key).length;
+                          const isActive = activeTab === key;
                           return (
-                            <span key={label} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${color}`}>
+                            <button
+                              key={key}
+                              onClick={() => setActiveTab(key)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                isActive
+                                  ? `${activeColor} shadow-md ring-2 ring-offset-1 ring-current/20 scale-105`
+                                  : `${color} hover:shadow-sm hover:scale-[1.02]`
+                              }`}
+                            >
                               <Icon className="w-3.5 h-3.5" />
                               {count} {label}
-                            </span>
+                            </button>
                           );
                         })}
                       </div>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="px-3 sm:px-6 pt-4 border-b border-gray-200 bg-white">
-                      <div className="flex space-x-4 sm:space-x-8 overflow-x-auto scrollbar-hide whitespace-nowrap">
-                        <button
-                          onClick={() => setActiveTab("all")}
-                          className={`pb-4 text-sm font-medium transition-colors relative ${activeTab === "all" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                          All Applications
-                          {activeTab === "all" && (
-                            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => setActiveTab("ranked")}
-                          className={`pb-4 text-sm font-medium transition-colors relative flex items-center gap-2 ${activeTab === "ranked" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-                            }`}
-                        >
-                          🏆 Top Ranked Candidates
-                          {activeTab === "ranked" && (
-                            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
                     {/* Applications List */}
                     <div className="p-3 sm:p-6 bg-gray-50/50">
-                      {activeTab === "ranked" ? (
-                        <RankedCandidates
-                          applications={applications}
-                          handleDownloadResume={handleDownloadResume}
-                          setSelectedApplicant={setSelectedApplicant}
-                        />
-                      ) : (
-                        <div className="space-y-4">
-                          {applications.filter((app) => app.applicant).map((application) => (
-                            <div
-                              key={application._id}
-                              className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                              <div className="flex items-center gap-4">
-                                {/* Avatar */}
-                                <div className="flex-shrink-0">
-                                  {application.applicant.avatar ? (
-                                    <img
-                                      src={application.applicant.avatar}
-                                      alt={application.applicant.fullName}
-                                      className="h-12 w-12 rounded-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                      <span className="text-blue-600 font-semibold text-lg">
-                                        {getInitials(
-                                          application.applicant.fullName
+                      <div className="space-y-4">
+                        {applications
+                          .filter((app) => {
+                            if (!app.applicant) return false;
+                            if (activeTab === "all") return true;
+                            if (activeTab === "Contract Ended" || activeTab === "Resigned") {
+                              const c = contracts[app.applicant?._id];
+                              return c && c.status === activeTab;
+                            }
+                            return app.status === activeTab;
+                          })
+                          .map((application) => {
+                            const contract = contracts[application.applicant?._id];
+                            return (
+                              <div
+                                key={application._id}
+                                className="flex flex-col md:flex-row md:items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-4">
+                                  {/* Avatar */}
+                                  <div className="flex-shrink-0">
+                                    {application.applicant.avatar ? (
+                                      <img
+                                        src={application.applicant.avatar}
+                                        alt={application.applicant.fullName}
+                                        className="h-12 w-12 rounded-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span className="text-blue-600 font-semibold text-lg">
+                                          {getInitials(
+                                            application.applicant.fullName
+                                          )}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Applicant Info */}
+                                  <div className="min-w-0">
+                                    <h3 className="font-semibold text-gray-900 truncate">
+                                      {application.applicant.fullName}
+                                    </h3>
+                                    <p className="text-gray-600 text-sm truncate">
+                                      {application.applicant.email}
+                                    </p>
+                                    <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
+                                      <Calendar className="w-3 h-3" />
+                                      <span>
+                                        Applied{" "}
+                                        {moment(application.createdAt)?.format(
+                                          "Do MMM, YYYY"
                                         )}
                                       </span>
                                     </div>
-                                  )}
-                                </div>
 
-                                {/* Applicant Info */}
-                                <div className="min-w-0">
-                                  <h3 className="font-semibold text-gray-900 truncate">
-                                    {application.applicant.fullName}
-                                  </h3>
-                                  <p className="text-gray-600 text-sm truncate">
-                                    {application.applicant.email}
-                                  </p>
-                                  <div className="flex items-center gap-1 mt-1 text-gray-500 text-xs">
-                                    <Calendar className="w-3 h-3" />
-                                    <span>
-                                      Applied{" "}
-                                      {moment(application.createdAt)?.format(
-                                        "Do MMM, YYYY"
-                                      )}
-                                    </span>
+                                    {/* Contract Info */}
+                                    {contract && (
+                                      <div className="flex items-center gap-1 mt-1 text-xs flex-wrap">
+                                        <FileText className="w-3 h-3 text-green-600" />
+                                        <span className="text-green-700 font-medium">{contract.contractType}</span>
+                                        <span className="text-gray-400">•</span>
+                                        <span className="text-gray-500">
+                                          {moment(contract.startDate).format("MMM YYYY")} –{" "}
+                                          {contract.endDate ? moment(contract.endDate).format("MMM YYYY") : "No end date"}
+                                        </span>
+                                        <span className="text-gray-400">•</span>
+                                        <StatusBadge status={contract.status} />
+                                        {contract.contractType === "Fixed-Term" && contract.status === "Accepted" && (
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); setShowExtendModal(contract); setExtendForm({ duration: 6, durationUnit: "months", reason: "" }); }}
+                                            className="ml-1 text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5"
+                                          >
+                                            <Pencil className="w-3 h-3" /> Extend
+                                          </button>
+                                        )}
+                                        {contract.status === "Accepted" && (
+                                          <>
+                                            <span className="text-gray-400 mx-1">|</span>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Contract Ended"); }}
+                                              className="text-purple-600 hover:text-purple-800 underline inline-flex items-center gap-0.5"
+                                            >
+                                              <CheckCircle2 className="w-3 h-3" /> End Contract
+                                            </button>
+                                            <span className="text-gray-400 mx-1">|</span>
+                                            <button
+                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Resigned"); }}
+                                              className="text-orange-600 hover:text-orange-800 underline inline-flex items-center gap-0.5"
+                                            >
+                                              <UserX className="w-3 h-3" /> Mark Resigned
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
+                                </div>
 
+                                {/* Actions */}
+                                <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
+                                  <div className="col-span-2 sm:col-auto flex justify-start sm:mr-2">
+                                    <StatusBadge status={application.status} />
+                                  </div>
+                                  <button
+                                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                    onClick={() =>
+                                      handleDownloadResume(
+                                        application.applicant.resume
+                                      )
+                                    }
+                                  >
+                                    <Download className="w-4 h-4" />
+                                    <span>Resume</span>
+                                  </button>
+
+                                  <button
+                                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                                    onClick={() =>
+                                      setSelectedApplicant(application)
+                                    }
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                    <span>Preview</span>
+                                  </button>
                                 </div>
                               </div>
+                            );
+                          })}
 
-                              {/* Actions */}
-                              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
-                                <div className="col-span-2 sm:col-auto flex justify-start sm:mr-2">
-                                  <StatusBadge status={application.status} />
-                                </div>
-                                <button
-                                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                                  onClick={() =>
-                                    handleDownloadResume(
-                                      application.applicant.resume
-                                    )
-                                  }
-                                >
-                                  <Download className="w-4 h-4" />
-                                  <span>Resume</span>
-                                </button>
-
-                                <button
-                                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
-                                  onClick={() =>
-                                    setSelectedApplicant(application)
-                                  }
-                                >
-                                  <Eye className="w-4 h-4" />
-                                  <span>Preview</span>
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        {/* Empty state for filtered view */}
+                        {applications.filter((app) => {
+                          if (!app.applicant) return false;
+                          if (activeTab === "all") return true;
+                          if (activeTab === "Contract Ended" || activeTab === "Resigned") {
+                            const c = contracts[app.applicant?._id];
+                            return c && c.status === activeTab;
+                          }
+                          return app.status === activeTab;
+                        }).length === 0 && (
+                          <div className="text-center py-10">
+                            <Users className="mx-auto h-16 w-16 text-gray-300" />
+                            <p className="mt-3 text-gray-500 font-medium">No {activeTab === "all" ? "" : `"${activeTab}" `}applications found</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
@@ -316,10 +430,61 @@ const ApplicationViewer = () => {
         </div>
       </div>
 
+      {/* Extend Contract Modal */}
+      {showExtendModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Extend Contract</h3>
+              <button onClick={() => setShowExtendModal(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Current end: <strong>{moment(showExtendModal.endDate).format("Do MMM, YYYY")}</strong>
+            </p>
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                  <input type="number" min="1" value={extendForm.duration}
+                    onChange={e => setExtendForm({ ...extendForm, duration: Number(e.target.value) })}
+                    className="w-full border border-gray-200 rounded-lg p-2.5 text-sm" />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <select value={extendForm.durationUnit}
+                    onChange={e => setExtendForm({ ...extendForm, durationUnit: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg p-2.5 text-sm bg-white">
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <input type="text" value={extendForm.reason}
+                  onChange={e => setExtendForm({ ...extendForm, reason: e.target.value })}
+                  placeholder="e.g. Project extension"
+                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowExtendModal(null)}
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold">Cancel</button>
+              <button onClick={handleExtendContract}
+                className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-semibold">Extend</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Modal */}
       {selectedApplicant && (
         <ApplicantProfilePreview
           selectedApplicant={selectedApplicant}
+          contract={contracts[selectedApplicant.applicant._id]}
+          handleEndContractStatus={handleEndContractStatus}
           setSelectedApplicant={setSelectedApplicant}
           handleDownloadResume={handleDownloadResume}
           handleClose={() => {

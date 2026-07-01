@@ -3,30 +3,27 @@ export const BASE_URL =
 
 export const API_PATH = {
   AUTH: {
-    REGISTER: "/api/auth/register", //Signup
-    SETUP_GRAD_PROFILE: "/api/auth/setup-profile-grad", //Setup profile for graduates
-    LOGIN: "/api/auth/login", //Authenticate user & return JWT token
-    GET_PROFILE: "/api/auth/me", //Get logged in user details
-    UPDATE_PROFILE: "/api/users/profile", //Update profile details
-    DELETE_ACCOUNT: "/api/users/profile", //Delete user account
-    DELETE_RESUME: "/api/users/resume", //Delete resume
-    UPLOAD_IMAGE: "/api/auth/upload-image", //Upload profile image
-    UPLOAD_RESUME: "/api/auth/upload-resume", //Upload resume
-    CHECK_EMAIL: "/api/auth/check-email", //Check if email exists
-    FORGOT_PASSWORD: "/api/auth/forgot-password", //Request OTP for forgot password
-    RESET_PASSWORD: "/api/auth/reset-password", //Reset password using OTP
-    CHANGE_PASSWORD: "/api/auth/change-password", //Change password while logged in
+    REGISTER: "/api/auth/register",
+    SETUP_GRAD_PROFILE: "/api/auth/setup-profile-grad",
+    LOGIN: "/api/auth/login",
+    GET_PROFILE: "/api/auth/me",
+    UPDATE_PROFILE: "/api/users/profile",
+    DELETE_ACCOUNT: "/api/users/profile",
+    DELETE_RESUME: "/api/users/resume",
+    UPLOAD_IMAGE: "/api/auth/upload-image",
+    UPLOAD_RESUME: "/api/auth/upload-resume",
+    CHECK_EMAIL: "/api/auth/check-email",
+    FORGOT_PASSWORD: "/api/auth/forgot-password",
+    RESET_PASSWORD: "/api/auth/reset-password",
+    CHANGE_PASSWORD: "/api/auth/change-password",
   },
-
   USERS: {
     GET_PUBLIC_PROFILE: (id) => `/api/users/${id}`,
     GET_ALL_EMPLOYERS: "/api/users/employers",
   },
-
   DASHBOARD: {
     OVERVIEW: `/api/analytics/overview`,
   },
-
   JOBS: {
     GET_ALL_JOBS: "/api/jobs",
     GET_RECOMMENDED_JOBS: "/api/jobs/recommended",
@@ -37,12 +34,10 @@ export const API_PATH = {
     UPDATE_JOB: (id) => `/api/jobs/${id}`,
     TOGGLE_CLOSE: (id) => `/api/jobs/${id}/toggle-close`,
     DELETE_JOB: (id) => `/api/jobs/${id}`,
-
     SAVE_JOB: (id) => `/api/save-jobs/${id}`,
     UNSAVE_JOB: (id) => `/api/save-jobs/${id}`,
     GET_SAVED_JOBS: "/api/save-jobs/my",
   },
-
   APPLICATIONS: {
     APPLY_TO_JOB: (id) => `/api/applications/${id}`,
     GET_ALL_APPLICATIONS: (id) => `/api/applications/job/${id}`,
@@ -51,13 +46,11 @@ export const API_PATH = {
     UPDATE_STATUS: (id) => `/api/applications/${id}/status`,
     TERMINATE: (id) => `/api/applications/${id}/terminate`,
   },
-  IMAGE: {
-    ULOAD_IMAGE: "/api/auth/upload-image",
-  },
+  IMAGE: { ULOAD_IMAGE: "/api/auth/upload-image" },
   CHAT: {
     GET_CONVERSATIONS: "/api/conversations",
     GET_MESSAGES: (conversationId) => `/api/messages/${conversationId}`,
-    SEND_MESSAGE: "/api/messages", // This might not be used if using sockets, but good to have if we add a fallback
+    SEND_MESSAGE: "/api/messages",
     FIND_OR_CREATE_CONVERSATION: "/api/conversations",
   },
   AI: {
@@ -73,6 +66,7 @@ export const API_PATH = {
     MARK_ALL_READ: "/api/notifications/read-all",
     PUSH_SUBSCRIBE: "/api/notifications/push-subscribe",
   },
+
   ADMIN: {
     UPLOAD: "/api/admin/upload",
     ANALYTICS: "/api/admin/analytics",
@@ -124,40 +118,35 @@ export const API_PATH = {
     GET_INTERVIEW_BY_ID: (id) => `/api/interviews/${id}`,
     DELETE_INTERVIEW: (id) => `/api/interviews/${id}`,
   },
-
   TERMINATION_REVIEWS: {
-    // Termination reasons (admin-configurable)
     GET_REASONS: "/api/termination-reviews/reasons",
     CREATE_REASON: "/api/termination-reviews/reasons",
     UPDATE_REASON: (id) => `/api/termination-reviews/reasons/${id}`,
     DELETE_REASON: (id) => `/api/termination-reviews/reasons/${id}`,
-
-    // Terminate an applicant (employer)
     TERMINATE: "/api/termination-reviews/terminate",
-
-    // Ratings
     EMPLOYER_RATE: (id) => `/api/termination-reviews/${id}/employer-rate`,
     EMPLOYEE_REVIEWS: (userId) => `/api/termination-reviews/employee/${userId}/reviews`,
     JOBSEEKER_RATE: (id) => `/api/termination-reviews/${id}/jobseeker-rate`,
     DISMISS_PROMPT: (id) => `/api/termination-reviews/${id}/dismiss`,
-
-    // Jobseeker: get pending (unrated) reviews
     MY_PENDING: "/api/termination-reviews/my-pending",
-
-    // Public reads (anonymous)
     JOB_REVIEWS: (jobId) => `/api/termination-reviews/job/${jobId}`,
     COMPANY_REVIEWS: (companyId) => `/api/termination-reviews/company/${companyId}`,
     EMPLOYEE_SCORE: (userId) => `/api/termination-reviews/employee/${userId}/score`,
   },
-
+  CONTRACTS: {
+    CREATE: "/api/contracts",
+    GET_ALL: "/api/contracts",
+    GET_BY_ID: (id) => `/api/contracts/${id}`,
+    UPDATE_STATUS: (id) => `/api/contracts/${id}/status`,
+    EXTEND: (id) => `/api/contracts/${id}/extend`,
+    GET_BY_EMPLOYEE: (employeeId) => `/api/contracts?employee=${employeeId}`,
+  },
   EMPLOYER_ANALYTICS: {
-    // Option B GradCoin prices: 5 / 5 / 10 / 10 / 15 / 20
-    APPLICATIONS_OVER_TIME: "/api/analytics/employer/applications-over-time",   // 5 🪙
-    TOP_JOBS: "/api/analytics/employer/top-jobs",                               // 5 🪙
-    RETENTION: "/api/analytics/employer/retention",                             // 10 🪙
-    TERMINATION_REASONS: "/api/analytics/employer/termination-reasons",         // 10 🪙
-    SKILL_GAPS: "/api/analytics/employer/skill-gaps",                           // 15 🪙
-    AI_SUMMARY: "/api/analytics/employer/ai-summary",                           // 20 🪙
+    APPLICATIONS_OVER_TIME: "/api/analytics/employer/applications-over-time",
+    TOP_JOBS: "/api/analytics/employer/top-jobs",
+    RETENTION: "/api/analytics/employer/retention",
+    TERMINATION_REASONS: "/api/analytics/employer/termination-reasons",
+    SKILL_GAPS: "/api/analytics/employer/skill-gaps",
+    AI_SUMMARY: "/api/analytics/employer/ai-summary",
   },
 };
-

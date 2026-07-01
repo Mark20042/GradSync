@@ -70,6 +70,16 @@ export interface ILanguage {
   proficiency?: "Basic" | "Conversational" | "Fluent" | "Native";
 }
 
+// ─── Enhanced Work Experience (for Contract / Profile lifecycle) ─────────
+export interface IWorkExperience {
+  _id?: Types.ObjectId;
+  companyName: string;
+  startDate: Date;
+  endDate?: Date | null;
+  /** Auto-populated when endDate is first set on a previously-open record */
+  exitStatus?: "Resigned" | "Terminated" | "Contract Ended" | null;
+}
+
 /** Core User document interface (mirrors Mongoose schema) */
 export interface IUser extends Document {
   _id: Types.ObjectId;
@@ -160,6 +170,9 @@ export interface IUser extends Document {
 
   // Web Push Subscription
   pushSubscription?: any;
+
+  // Work Experience with exitStatus (Profile lifecycle)
+  workExperienceEntries?: IWorkExperience[];
 }
 
 // ─── Job Interface ──────────────────────────────────────────────────────

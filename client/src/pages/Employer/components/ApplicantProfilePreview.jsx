@@ -19,6 +19,8 @@ const statusOptions = ["Applied", "In Review", "Rejected", "Accepted"];
 
 const ApplicantProfilePreview = ({
   selectedApplicant,
+  contract,
+  handleEndContractStatus,
   setSelectedApplicant,
   handleDownloadResume,
   handleClose,
@@ -36,6 +38,14 @@ const ApplicantProfilePreview = ({
   const [pendingReviewId, setPendingReviewId] = useState(null);
   const [showEmployerRatingModal, setShowEmployerRatingModal] = useState(false);
   const { user } = useAuth();
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [contractForm, setContractForm] = useState({
+    contractType: "Fixed-Term",
+    startDate: new Date().toISOString().split("T")[0],
+    duration: 6,
+    durationUnit: "months",
+  });
+  const [existingContract, setExistingContract] = useState(null);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -105,7 +115,30 @@ const ApplicantProfilePreview = ({
       setShowRejectionModal(true);
       return;
     }
+    if (newStatus === "Accepted") {
+      try {
+        const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
+        const active = res.data.find(c => c.status === "Accepted" && c.employee?._id === selectedApplicant.applicant._id && c.job?._id === selectedApplicant.job?._id);
+        if (active) { setExistingContract(active); toast("Active contract exists.", { icon: "??" }); await updateStatusAPI(newStatus); return; }
+      } catch (_) {}
+      setShowContractModal(true);
+      return;
+    }
     await updateStatusAPI(newStatus);
+  };
+
+  const handleCreateContract = async () => {
+    setLoading(true);
+    try {
+      const payload = { applicationId: selectedApplicant._id, contractType: contractForm.contractType, startDate: contractForm.startDate };
+      if (contractForm.contractType === "Fixed-Term") { payload.duration = contractForm.duration; payload.durationUnit = contractForm.durationUnit; }
+      await updateStatusAPI("Accepted");
+      await axiosInstance.post(API_PATH.CONTRACTS.CREATE, payload);
+      toast.success("Contract created!");
+      setShowContractModal(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally { setLoading(false); }
   };
 
   const handleRejectConfirm = async () => {
@@ -192,23 +225,29 @@ const ApplicantProfilePreview = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0">
-                    <StatusBadge status={currentStatus} />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <StatusBadge status={contract ? contract.status : currentStatus} />
+                    </div>
+                    {(!contract || contract.status === "Accepted") ? (
+                      <select
+                        value={currentStatus}
+                        onChange={onChangeStatus}
+                        disabled={loading}
+                        className="w-full text-sm font-medium border border-gray-200 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm hover:border-gray-300 transition-colors cursor-pointer"
+                      >
+                        {statusOptions.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="w-full text-sm font-medium border border-gray-200 rounded-lg py-2 px-3 bg-gray-50 text-gray-500 shadow-sm cursor-not-allowed">
+                        {contract.status} (Finalized)
+                      </div>
+                    )}
                   </div>
-                  <select
-                    value={currentStatus}
-                    onChange={onChangeStatus}
-                    disabled={loading}
-                    className="w-full text-sm font-medium border border-gray-200 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm hover:border-gray-300 transition-colors cursor-pointer"
-                  >
-                    {statusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -223,7 +262,7 @@ const ApplicantProfilePreview = ({
               </div>
 
               <button
-                
+
                 onClick={() => {
                   if (!aiAnalysis && user?.aiTokens < 1) {
                     window.dispatchEvent(new CustomEvent("openTokenModal"));
@@ -277,15 +316,28 @@ const ApplicantProfilePreview = ({
               </button>
             </div>
 
-            {/* End Employment Button (only for Accepted) */}
-            {currentStatus === "Accepted" && (
-              <div className="pt-2">
+            {/* End Employment Buttons (only for Accepted) */}
+            {contract && contract.status === "Accepted" && (
+              <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => setShowTerminateModal(true)}
-                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-red-50 text-red-700 font-semibold rounded-xl hover:bg-red-100 transition-all shadow-sm active:scale-[0.98] border border-red-200"
+                  onClick={() => {
+                    handleClose();
+                    handleEndContractStatus(contract._id, "Contract Ended");
+                  }}
+                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-purple-50 text-purple-700 font-semibold rounded-xl hover:bg-purple-100 transition-all shadow-sm active:scale-[0.98] border border-purple-200"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  End Contract
+                </button>
+                <button
+                  onClick={() => {
+                    handleClose();
+                    handleEndContractStatus(contract._id, "Resigned");
+                  }}
+                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-orange-50 text-orange-700 font-semibold rounded-xl hover:bg-orange-100 transition-all shadow-sm active:scale-[0.98] border border-orange-200"
                 >
                   <UserX className="w-5 h-5" />
-                  End Employment
+                  Mark Resigned
                 </button>
               </div>
             )}
@@ -371,6 +423,73 @@ const ApplicantProfilePreview = ({
         reviewId={pendingReviewId}
         employeeName={selectedApplicant?.applicant?.fullName}
       />
+
+      {/* Contract Creation Modal */}
+      {showContractModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[70]">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">Create Contract</h3>
+              <button onClick={() => setShowContractModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Creating a contract for <strong>{selectedApplicant?.applicant?.fullName}</strong>. This will also accept the application.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
+                <div className="flex gap-3">
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${contractForm.contractType === "Fixed-Term" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                    <input type="radio" name="contractType" value="Fixed-Term" checked={contractForm.contractType === "Fixed-Term"} onChange={e => setContractForm({ ...contractForm, contractType: e.target.value })} className="sr-only" />
+                    <span className="text-sm font-medium">📅 Fixed-Term</span>
+                  </label>
+                  <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-colors ${contractForm.contractType === "Indefinite" ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
+                    <input type="radio" name="contractType" value="Indefinite" checked={contractForm.contractType === "Indefinite"} onChange={e => setContractForm({ ...contractForm, contractType: e.target.value })} className="sr-only" />
+                    <span className="text-sm font-medium">♾️ Indefinite</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <input type="date" value={contractForm.startDate} onChange={e => setContractForm({ ...contractForm, startDate: e.target.value })} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              </div>
+
+              {contractForm.contractType === "Fixed-Term" && (
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                    <input type="number" min="1" value={contractForm.duration} onChange={e => setContractForm({ ...contractForm, duration: Number(e.target.value) })} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                    <select value={contractForm.durationUnit} onChange={e => setContractForm({ ...contractForm, durationUnit: e.target.value })} className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {contractForm.contractType === "Fixed-Term" && contractForm.startDate && (
+                <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-800">
+                  📅 End date: <strong>{(() => { const d = new Date(contractForm.startDate); if (contractForm.durationUnit === "years") d.setFullYear(d.getFullYear() + contractForm.duration); else d.setMonth(d.getMonth() + contractForm.duration); return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }); })()}</strong>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowContractModal(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
+              <button onClick={handleCreateContract} disabled={loading} className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50">
+                {loading ? "Creating..." : "Create Contract & Accept"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

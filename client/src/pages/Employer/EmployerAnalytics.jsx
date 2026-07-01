@@ -24,7 +24,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
+  ComposedChart,
+  Line,
   Bar,
   PieChart,
   Pie,
@@ -175,7 +176,7 @@ const EmployerAnalytics = () => {
               Advanced Analytics
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Deep dive into your hiring funnel, retention, and termination metrics.
+              Deep dive into your hiring funnel, retention, and end of employment metrics.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100 shadow-sm">
@@ -348,13 +349,23 @@ const EmployerAnalytics = () => {
 
                 <div className="flex-1 min-h-[150px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <ComposedChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
-                      <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                      <Bar dataKey="terminated" name="Terminations" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
-                    </BarChart>
+                      <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                      <Tooltip 
+                        cursor={{ fill: '#f9fafb' }} 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                        formatter={(value, name) => {
+                          if (name === "Avg Tenure") return formatTenure(value);
+                          return value;
+                        }}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                      <Bar yAxisId="left" dataKey="terminated" name="Ended Employments" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
+                      <Line yAxisId="right" type="monotone" dataKey="avgTenureDays" name="Avg Tenure" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} />
+                    </ComposedChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -365,10 +376,10 @@ const EmployerAnalytics = () => {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-500" /> Top Termination Reasons
+                    <AlertTriangle className="w-5 h-5 text-amber-500" /> Top End of Employment Reasons
                   </h3>
                 </div>
-                <p className="text-xs text-gray-500 mb-4">Based on admin-configurable termination categories.</p>
+                <p className="text-xs text-gray-500 mb-4">Based on admin-configurable end of employment categories.</p>
                 
                 {data.terminationReasons.data.length > 0 ? (
                   <div className="flex-1 min-h-[250px] w-full">
