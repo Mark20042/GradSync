@@ -59,16 +59,17 @@ const UserProfile = () => {
     fetchUserProfile();
   }, []);
 
-  const formatDateForInput = (dateString) => {
+  const formatDateForInput = (dateString, type = 'month') => {
     if (!dateString) return "";
-    if (typeof dateString === "string" && /^\d{4}-\d{2}$/.test(dateString)) {
-      return dateString;
-    }
     try {
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0");
+        if (type === 'date') {
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        }
         return `${year}-${month}`;
       }
     } catch (error) {
@@ -100,12 +101,12 @@ const UserProfile = () => {
       const response = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
       const userData = response.data;
 
-      const formatDates = (items, dateFields) => {
+      const formatDates = (items, dateFields, type = 'month') => {
         return items.map((item) => {
           const newItem = { ...item };
           dateFields.forEach((field) => {
             if (newItem[field])
-              newItem[field] = formatDateForInput(newItem[field]);
+              newItem[field] = formatDateForInput(newItem[field], type);
           });
           return newItem;
         });
@@ -114,25 +115,25 @@ const UserProfile = () => {
       const formattedData = {
         ...userData,
         education: Array.isArray(userData.education)
-          ? formatDates(userData.education, ["startDate", "endDate"])
+          ? formatDates(userData.education, ["startDate", "endDate"], 'month')
           : [],
         experiences: Array.isArray(userData.experiences)
-          ? formatDates(userData.experiences, ["startDate", "endDate"])
+          ? formatDates(userData.experiences, ["startDate", "endDate"], 'date')
           : [],
         internships: Array.isArray(userData.internships)
-          ? formatDates(userData.internships, ["startDate", "endDate"])
+          ? formatDates(userData.internships, ["startDate", "endDate"], 'date')
           : [],
         projects: Array.isArray(userData.projects)
-          ? formatDates(userData.projects, ["startDate", "endDate"])
+          ? formatDates(userData.projects, ["startDate", "endDate"], 'date')
           : [],
         certifications: Array.isArray(userData.certifications)
           ? formatDates(userData.certifications, [
               "issueDate",
               "expirationDate",
-            ])
+            ], 'month')
           : [],
         awards: Array.isArray(userData.awards)
-          ? formatDates(userData.awards, ["date"])
+          ? formatDates(userData.awards, ["date"], 'date')
           : [],
         languages: Array.isArray(userData.languages) ? userData.languages : [],
         skills: formatSkills(userData.skills),

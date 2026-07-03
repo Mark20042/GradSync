@@ -54,4 +54,80 @@ const getAnalyticsOverview = async (req: AuthRequest, res: Response, next: NextF
   } catch (error) { next(error); }
 };
 
-export { getAnalyticsOverview };
+const getInDemandSkills = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const { category } = req.query;
+    
+    // Aggregation pipeline
+    const pipeline: any[] = [
+      { 
+        $match: { 
+          status: { $in: ["Hired", "Contract Ended", "Resigned", "Terminated"] } 
+        } 
+      },
+      {
+        $lookup: {
+          from: "jobs",
+          localField: "job",
+          foreignField: "_id",
+          as: "jobDetails"
+        }
+      },
+      { $unwind: "$jobDetails" }
+    ];
+
+    if (category && category !== "all" && category !== "All Categories") {
+      pipeline.push({
+        $match: {
+          "jobDetails.category": category
+        }
+      });
+    }
+
+    pipeline.push(
+      {
+        $lookup: {
+          from: "users",
+          localField: "applicant",
+          foreignField: "_id",
+          as: "applicantDetails"
+        }
+      },
+      { $unwind: "$applicantDetails" },
+      { $unwind: { path: "$applicantDetails.skills", preserveNullAndEmptyArrays: false } },
+      {
+        $group: {
+          _id: "$applicantDetails.skills",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      {
+        $project: {
+          skill: "$_id",
+          count: 1,
+          _id: 0
+        }
+      }
+    );
+
+    const data = await Application.aggregate(pipeline);
+    res.status(StatusCodes.OK).json({ data });
+  } catch (error) { next(error); }
+};
+
+const getJobCategories = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const data = await Job.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $match: { _id: { $ne: null } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      { $project: { category: "$_id", count: 1, _id: 0 } }
+    ]);
+    res.status(StatusCodes.OK).json({ data });
+  } catch (error) { next(error); }
+};
+
+export { getAnalyticsOverview, getInDemandSkills, getJobCategories };

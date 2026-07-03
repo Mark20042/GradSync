@@ -1,4 +1,4 @@
-import { Download, X, User, Sparkles, BrainCircuit, UserX } from "lucide-react";
+import { Download, X, User, Sparkles, BrainCircuit, UserX, UserMinus } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
@@ -227,9 +227,9 @@ const ApplicantProfilePreview = ({
 
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0">
-                      <StatusBadge status={contract ? contract.status : currentStatus} />
+                      <StatusBadge status={currentStatus === "Accepted" ? (contract ? contract.status : currentStatus) : currentStatus} />
                     </div>
-                    {(!contract || contract.status === "Accepted") ? (
+                    {(!contract || contract.status === "Accepted") && !["Terminated", "Resigned", "Contract Ended"].includes(currentStatus) ? (
                       <select
                         value={currentStatus}
                         onChange={onChangeStatus}
@@ -244,7 +244,7 @@ const ApplicantProfilePreview = ({
                       </select>
                     ) : (
                       <div className="w-full text-sm font-medium border border-gray-200 rounded-lg py-2 px-3 bg-gray-50 text-gray-500 shadow-sm cursor-not-allowed">
-                        {contract.status} (Finalized)
+                        {currentStatus} (Finalized)
                       </div>
                     )}
                   </div>
@@ -317,16 +317,16 @@ const ApplicantProfilePreview = ({
             </div>
 
             {/* End Employment Buttons (only for Accepted) */}
-            {contract && contract.status === "Accepted" && (
+            {contract && contract.status === "Accepted" && currentStatus === "Accepted" && (
               <div className="pt-2 flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => {
                     handleClose();
                     handleEndContractStatus(contract._id, "Contract Ended");
                   }}
-                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-purple-50 text-purple-700 font-semibold rounded-xl hover:bg-purple-100 transition-all shadow-sm active:scale-[0.98] border border-purple-200"
+                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 text-purple-700 font-semibold rounded-xl hover:bg-purple-100 transition-all shadow-sm active:scale-[0.98] border border-purple-200 text-sm"
                 >
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-4 h-4" />
                   End Contract
                 </button>
                 <button
@@ -334,10 +334,17 @@ const ApplicantProfilePreview = ({
                     handleClose();
                     handleEndContractStatus(contract._id, "Resigned");
                   }}
-                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-orange-50 text-orange-700 font-semibold rounded-xl hover:bg-orange-100 transition-all shadow-sm active:scale-[0.98] border border-orange-200"
+                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-orange-50 text-orange-700 font-semibold rounded-xl hover:bg-orange-100 transition-all shadow-sm active:scale-[0.98] border border-orange-200 text-sm"
                 >
-                  <UserX className="w-5 h-5" />
+                  <UserX className="w-4 h-4" />
                   Mark Resigned
+                </button>
+                <button
+                  onClick={() => setShowTerminateModal(true)}
+                  className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-700 font-semibold rounded-xl hover:bg-red-100 transition-all shadow-sm active:scale-[0.98] border border-red-200 text-sm"
+                >
+                  <UserMinus className="w-4 h-4" />
+                  Terminate
                 </button>
               </div>
             )}

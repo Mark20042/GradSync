@@ -3,6 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import toast from "react-hot-toast";
+import InDemandSkillsGraph from "../../components/InDemandSkillsGraph";
 import {
   BarChart3,
   LineChart as LineChartIcon,
@@ -18,6 +19,7 @@ import {
 import {
   AreaChart,
   Area,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -64,6 +66,8 @@ const AdminEmployerAnalytics = () => {
   
   const [employers, setEmployers] = useState([]);
   const [selectedEmployer, setSelectedEmployer] = useState("all");
+  const [allJobs, setAllJobs] = useState([]);
+  const [skillGapJobId, setSkillGapJobId] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -73,11 +77,46 @@ const AdminEmployerAnalytics = () => {
         setEmployers(res.data.filter(u => u.role === "employer"));
       })
       .catch(console.error);
+
+    axiosInstance.get("/api/admin/jobs")
+      .then(res => {
+        setAllJobs(res.data);
+      })
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
+    if (selectedEmployer !== "all") {
+      const employerJobs = allJobs.filter(j => j.company?._id === selectedEmployer);
+      if (employerJobs.length > 0) {
+        setSkillGapJobId(employerJobs[0]._id);
+      } else {
+        setSkillGapJobId("");
+      }
+    } else {
+      setSkillGapJobId("");
+    }
     fetchAllAnalytics();
-  }, [selectedEmployer]);
+  }, [selectedEmployer, allJobs]);
+
+  const fetchSkillGaps = async () => {
+    try {
+      let query = "";
+      if (skillGapJobId) {
+        query = `?jobId=${skillGapJobId}`;
+      } else if (selectedEmployer !== "all") {
+        query = `?companyId=${selectedEmployer}`;
+      }
+      const res = await axiosInstance.get(`/api/admin/platform-analytics/skill-gaps${query}`);
+      setData(prev => ({ ...prev, skillGaps: res.data.data }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSkillGaps();
+  }, [skillGapJobId, selectedEmployer]);
 
   const fetchAllAnalytics = async () => {
     setLoading(true);
@@ -89,25 +128,23 @@ const AdminEmployerAnalytics = () => {
         appsRes,
         jobsRes,
         retentionRes,
-        reasonsRes,
-        skillsRes
+        reasonsRes
       ] = await Promise.all([
         axiosInstance.get(`/api/admin/platform-analytics/ai-summary${query}`),
         axiosInstance.get(`/api/admin/platform-analytics/applications-over-time${query}`),
         axiosInstance.get(`/api/admin/platform-analytics/top-jobs${query}`),
         axiosInstance.get(`/api/admin/platform-analytics/retention${query}`),
-        axiosInstance.get(`/api/admin/platform-analytics/termination-reasons${query}`),
-        axiosInstance.get(`/api/admin/platform-analytics/skill-gaps${query}`),
+        axiosInstance.get(`/api/admin/platform-analytics/termination-reasons${query}`)
       ]);
 
-      setData({
+      setData(prev => ({
+        ...prev,
         aiSummary: aiSummaryRes.data,
         appsOverTime: appsRes.data.data,
         topJobs: jobsRes.data.data,
         retention: retentionRes.data,
-        terminationReasons: reasonsRes.data.data,
-        skillGaps: skillsRes.data.data,
-      });
+        terminationReasons: reasonsRes.data.data
+      }));
     } catch (error) {
       toast.error("Failed to load platform analytics.");
     } finally {
@@ -152,6 +189,11 @@ const AdminEmployerAnalytics = () => {
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Global In-Demand Skills (Always visible at the top) */}
+        <div className="mb-8">
+          <InDemandSkillsGraph />
         </div>
 
         {/* --- Top Row: AI Summary --- */}
@@ -270,13 +312,29 @@ const AdminEmployerAnalytics = () => {
 
               <div className="flex-1 min-h-[150px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <ComposedChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorAvgTenure" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                     <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
-                    <Tooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                    <Bar dataKey="terminated" name="Terminations" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
-                  </BarChart>
+                    <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
+                    <Tooltip 
+                      cursor={{ fill: '#f9fafb' }} 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                      formatter={(value, name) => {
+                        if (name === "Avg Tenure") return formatTenure(value);
+                        return value;
+                      }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                    <Bar yAxisId="left" dataKey="terminated" name="Ended Employments" fill="#f43f5e" radius={[6, 6, 6, 6]} barSize={12} />
+                    <Area yAxisId="right" type="monotone" dataKey="avgTenureDays" name="Avg Tenure" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAvgTenure)" />
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </div>
@@ -293,9 +351,22 @@ const AdminEmployerAnalytics = () => {
             </div>
           ) : data.skillGaps ? (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full min-h-[350px]">
-              <div className="flex items-center gap-2 mb-6">
-                <Target className="w-5 h-5 text-indigo-500" />
-                <h3 className="font-bold text-gray-900">Platform Skill Mismatch</h3>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-indigo-500" />
+                  <h3 className="font-bold text-gray-900">Platform Skill Mismatch</h3>
+                </div>
+                {selectedEmployer !== "all" && (
+                  <select
+                    className="bg-white border border-gray-200 text-gray-900 text-xs rounded-xl focus:ring-indigo-500 focus:border-indigo-500 p-2 shadow-sm max-w-[200px]"
+                    value={skillGapJobId}
+                    onChange={(e) => setSkillGapJobId(e.target.value)}
+                  >
+                    {allJobs.filter(j => j.company?._id === selectedEmployer).map(job => (
+                      <option key={job._id} value={job._id}>{job.title}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               
               <div className="flex flex-col sm:flex-row gap-6 mb-4">

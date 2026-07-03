@@ -776,6 +776,51 @@ export const getAllTerminations = async (_req: any, res: Response, next: NextFun
   } catch (error) { next(error); }
 };
 
+export const clearEmployerReview = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const review = await TerminationReview.findById(req.params.id);
+    if (!review) throw new NotFoundError("Review not found");
+    
+    review.employerRating = undefined;
+    review.employerFeedback = undefined;
+    review.employerTags = undefined;
+    await review.save();
+    
+    // We should also recalculate the employee's rating, but since jobseeker ratings from employers are not aggregated onto the user model right now (only companyRating is aggregated), we can just clear the review here.
+    
+    res.json({ message: "Employer review cleared successfully", review });
+  } catch (error) { next(error); }
+};
+
+export const clearJobseekerReview = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    const review = await TerminationReview.findById(req.params.id);
+    if (!review) throw new NotFoundError("Review not found");
+    
+    review.jobseekerRating = undefined;
+    review.jobseekerFeedback = undefined;
+    review.jobseekerTags = undefined;
+    await review.save();
+    
+    // Recalculate company rating
+    if (review.company) {
+      const allCompanyReviews = await TerminationReview.find({ 
+        company: review.company, 
+        jobseekerRating: { $exists: true, $ne: null } 
+      });
+      const totalRatings = allCompanyReviews.length;
+      const sumRatings = allCompanyReviews.reduce((sum, r) => sum + (r.jobseekerRating || 0), 0);
+      const avgRating = totalRatings > 0 ? sumRatings / totalRatings : 0;
+      await User.findByIdAndUpdate(review.company, { 
+        companyAverageRating: parseFloat(avgRating.toFixed(1)),
+        companyRatingCount: totalRatings
+      });
+    }
+
+    res.json({ message: "Jobseeker review cleared successfully", review });
+  } catch (error) { next(error); }
+};
+
 export const getPlatformApplicationsOverTime = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
@@ -849,32 +894,28 @@ export const getPlatformTopJobs = async (req: any, res: Response, next: NextFunc
 export const getPlatformRetentionStats = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
-    let matchQuery: any = { status: { $in: ["Accepted", "Hired", "Terminated"] } };
-    let appMatchQuery: any = { status: "Terminated", terminatedAt: { $ne: null } };
+    let appMatchQuery: any = { status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminatedAt: { $exists: true } };
 
     if (companyId) {
       const jobs = await Job.find({ company: companyId }).select("_id").lean();
       const jobIds = jobs.map((j) => j._id);
-      matchQuery.job = { $in: jobIds };
       appMatchQuery.job = { $in: jobIds };
     }
 
-    const hiredApps = await Application.find(matchQuery).lean();
-    const totalHired = hiredApps.length;
-    const totalTerminated = hiredApps.filter((a: any) => a.status === "Terminated").length;
-    
+    const totalCurrentlyHired = await Application.countDocuments({ ...(companyId ? appMatchQuery.job ? { job: appMatchQuery.job } : {} : {}), status: "Accepted" });
+    const totalTerminated = await Application.countDocuments(appMatchQuery);
+    const totalEverHired = totalCurrentlyHired + totalTerminated;
+
     // Monthly terminated counts
     const monthlyTerminated = await Application.aggregate([
-      { $match: { ...appMatchQuery } },
+      { $match: appMatchQuery },
+      { $lookup: { from: "contracts", localField: "_id", foreignField: "application", as: "contractData" } },
+      { $unwind: { path: "$contractData", preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: { year: { $year: "$terminatedAt" }, month: { $month: "$terminatedAt" } },
           count: { $sum: 1 },
-          avgTenureDays: {
-            $avg: {
-              $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }]
-            }
-          },
+          avgTenureDays: { $avg: { $max: [0, { $dateDiff: { startDate: { $ifNull: ["$contractData.startDate", "$createdAt"] }, endDate: "$terminatedAt", unit: "day" } }] } }
         }
       },
       { $sort: { "_id.year": 1, "_id.month": 1 } },
@@ -893,18 +934,16 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
       });
     }
 
-    const retentionRateVal = totalHired > 0 ? Math.round(((totalHired - totalTerminated) / totalHired) * 100) : null;
+    const retentionRateVal = totalEverHired > 0 ? Math.round(((totalEverHired - totalTerminated) / totalEverHired) * 100) : null;
 
     const avgTenure = await Application.aggregate([
       { $match: appMatchQuery },
+      { $lookup: { from: "contracts", localField: "_id", foreignField: "application", as: "contractData" } },
+      { $unwind: { path: "$contractData", preserveNullAndEmptyArrays: true } },
       {
         $group: {
           _id: null,
-          avg: { 
-            $avg: { 
-              $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] 
-            } 
-          }
+          avg: { $avg: { $max: [0, { $dateDiff: { startDate: { $ifNull: ["$contractData.startDate", "$createdAt"] }, endDate: "$terminatedAt", unit: "day" } }] } }
         }
       }
     ]);
@@ -912,7 +951,7 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
     res.status(200).json({
       retentionRate: retentionRateVal,
       avgTenureDays: avgTenure[0] ? Math.round(avgTenure[0].avg) : null,
-      totalHired,
+      totalHired: totalCurrentlyHired,
       totalTerminated,
       chartData,
     });
@@ -922,7 +961,7 @@ export const getPlatformRetentionStats = async (req: any, res: Response, next: N
 export const getPlatformTerminationReasons = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
-    let matchQuery: any = { status: "Terminated", terminationReason: { $exists: true, $ne: null } };
+    let matchQuery: any = { status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminationReason: { $exists: true, $ne: null } };
 
     if (companyId) {
       const jobs = await Job.find({ company: companyId }).select("_id").lean();
@@ -934,7 +973,7 @@ export const getPlatformTerminationReasons = async (req: any, res: Response, nex
       { $group: { _id: "$terminationReason", count: { $sum: 1 } } },
       { $lookup: { from: "terminationreasons", localField: "_id", foreignField: "_id", as: "reason" } },
       { $unwind: { path: "$reason", preserveNullAndEmptyArrays: true } },
-      { $project: { label: { $ifNull: ["$reason.label", "Unspecified"] }, count: 1 } },
+      { $project: { label: { $cond: [{ $eq: ["$reason.label", "Resigned (Profile Updated)"] }, "Resigned", { $ifNull: ["$reason.label", "Unspecified"] }] }, count: 1 } },
       { $sort: { count: -1 } },
     ]);
     res.status(200).json({ data });
@@ -943,16 +982,19 @@ export const getPlatformTerminationReasons = async (req: any, res: Response, nex
 
 export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFunction) => {
   try {
-    const { companyId } = req.query;
-    if (companyId) {
-      const employer = await User.findById(companyId).select("employerSkillGaps").lean();
-      if (employer?.employerSkillGaps) {
-        return res.status(200).json({ data: employer.employerSkillGaps });
-      }
-      return res.status(200).json({ data: null, message: "Employer has not generated this report yet." });
+    const { companyId, jobId } = req.query;
+    let matchQuery: any = { status: { $in: ["Rejected", "Terminated", "Resigned", "Contract Ended"] } };
+    let jobFilter: any = {};
+
+    if (jobId) {
+      jobFilter._id = jobId;
+      matchQuery.job = jobId;
+    } else if (companyId) {
+      jobFilter.company = companyId;
+      const jobs = await Job.find(jobFilter).select("_id").lean();
+      matchQuery.job = { $in: jobs.map((j) => j._id) };
     }
 
-    let matchQuery: any = { status: { $in: ["Rejected", "Terminated"] } };
     const rejectedApps = await Application.find(matchQuery)
       .populate("applicant", "skills").lean();
 
@@ -968,7 +1010,7 @@ export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFu
       .slice(0, 15)
       .map(([skill, count]) => ({ skill, rejectedCount: count }));
 
-    const jobSkillsData = await Job.find({}).select("title skills").lean();
+    const jobSkillsData = await Job.find(jobFilter).select("title skills").lean();
     const requiredSkills: Record<string, number> = {};
     jobSkillsData.forEach((j: any) => {
       (j.skills || []).forEach((sk: string) => {
@@ -994,30 +1036,29 @@ export const getPlatformSkillGaps = async (req: any, res: Response, next: NextFu
 export const getPlatformAISummary = async (req: any, res: Response, next: NextFunction) => {
   try {
     const { companyId } = req.query;
-    if (companyId) {
-      const employer = await User.findById(companyId).select("employerAISummary").lean();
-      if (employer?.employerAISummary) {
-        return res.status(200).json(employer.employerAISummary);
-      }
-      return res.status(200).json({ summary: null, insights: [], message: "Employer has not generated this report yet." });
-    }
-
-    let matchQuery: any = {};
     let appsQuery: any = {};
 
-    const [totalApps, totalHired, totalTerminated, totalRejected] = await Promise.all([
+    if (companyId) {
+      const jobs = await Job.find({ company: companyId }).select("_id").lean();
+      appsQuery.job = { $in: jobs.map(j => j._id) };
+    }
+
+    const [totalApps, totalCurrentlyHired, totalTerminated, totalRejected] = await Promise.all([
       Application.countDocuments(appsQuery),
       Application.countDocuments({ ...appsQuery, status: "Accepted" }),
-      Application.countDocuments({ ...appsQuery, status: "Terminated" }),
+      Application.countDocuments({ ...appsQuery, status: { $in: ["Terminated", "Resigned", "Contract Ended"] } }),
       Application.countDocuments({ ...appsQuery, status: "Rejected" }),
     ]);
 
-    const conversionRate = totalApps > 0 ? ((totalHired / totalApps) * 100).toFixed(1) : "0";
-    const retentionRate = totalHired > 0 ? (((totalHired - totalTerminated) / totalHired) * 100).toFixed(1) : "N/A";
+    const totalEverHired = totalCurrentlyHired + totalTerminated;
+    const conversionRate = totalApps > 0 ? ((totalEverHired / totalApps) * 100).toFixed(1) : "0";
+    const retentionRate = totalEverHired > 0 ? (((totalEverHired - totalTerminated) / totalEverHired) * 100).toFixed(1) : "N/A";
 
     const avgTenureAgg = await Application.aggregate([
-      { $match: { ...appsQuery, status: "Terminated", terminatedAt: { $exists: true } } },
-      { $group: { _id: null, avg: { $avg: { $max: [0, { $dateDiff: { startDate: "$createdAt", endDate: "$terminatedAt", unit: "day" } }] } } } }
+      { $match: { ...appsQuery, status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminatedAt: { $exists: true } } },
+      { $lookup: { from: "contracts", localField: "_id", foreignField: "application", as: "contractData" } },
+      { $unwind: { path: "$contractData", preserveNullAndEmptyArrays: true } },
+      { $group: { _id: null, avg: { $avg: { $max: [0, { $dateDiff: { startDate: { $ifNull: ["$contractData.startDate", "$createdAt"] }, endDate: "$terminatedAt", unit: "day" } }] } } } }
     ]);
     const avgTenureDays = avgTenureAgg[0] ? Math.round(avgTenureAgg[0].avg) : null;
 
@@ -1041,7 +1082,8 @@ export const getPlatformAISummary = async (req: any, res: Response, next: NextFu
 
     const analyticsData = {
       totalApps,
-      totalHired,
+      totalHired: totalCurrentlyHired,
+      totalEverHired,
       conversionRate,
       totalTerminated,
       retentionRate,

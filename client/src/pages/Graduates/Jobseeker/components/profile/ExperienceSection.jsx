@@ -142,11 +142,13 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                                 type="date"
                                 value={exp.endDate ? exp.endDate.split('T')[0] : ""}
                                 onChange={(e) => {
-                                    handleArrayChange(e, index, "endDate", section);
-                                    if (e.target.value) {
-                                        // If an end date is added, uncheck 'current' automatically
-                                        handleArrayChange({ target: { value: false } }, index, "current", section);
+                                    const val = e.target.value;
+                                    const newArray = [...(editData[section] || [])];
+                                    newArray[index] = { ...newArray[index], endDate: val };
+                                    if (val) {
+                                        newArray[index].current = false;
                                     }
+                                    setEditData({ ...editData, [section]: newArray });
                                 }}
                                 disabled={exp.current}
                                 className={`w-full bg-transparent border-b py-2 text-sm focus:outline-none ${exp.current ? 'border-gray-200 text-gray-400' : 'border-gray-300 focus:border-blue-500'}`}
@@ -159,10 +161,13 @@ const ExperienceSection = ({ user, editing, editData, setEditData }) => {
                             id={`current-${section}-${index}`}
                             checked={exp.current || false}
                             onChange={(e) => {
-                                handleArrayChange({ target: { value: e.target.checked } }, index, "current", section);
-                                if (e.target.checked) {
-                                    handleArrayChange({ target: { value: "" } }, index, "endDate", section);
+                                const isChecked = e.target.checked;
+                                const newArray = [...(editData[section] || [])];
+                                newArray[index] = { ...newArray[index], current: isChecked };
+                                if (isChecked) {
+                                    newArray[index].endDate = "";
                                 }
+                                setEditData({ ...editData, [section]: newArray });
                             }}
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />

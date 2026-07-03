@@ -42,6 +42,7 @@ const ApplicationViewer = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [contracts, setContracts] = useState({});
   const [showExtendModal, setShowExtendModal] = useState(null);
+  const [confirmEndContract, setConfirmEndContract] = useState(null);
   const [extendForm, setExtendForm] = useState({ duration: 6, durationUnit: "months", reason: "" });
 
   const fetchApplications = async () => {
@@ -70,7 +71,7 @@ const ApplicationViewer = () => {
         const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
         const map = {};
         res.data.forEach((c) => {
-          map[c.employee?._id || c.employee] = c;
+          map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c;
         });
         setContracts(map);
       } catch (_) {}
@@ -89,7 +90,7 @@ const ApplicationViewer = () => {
       toast.success("Contract extended!");
       const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
       const map = {};
-      res.data.forEach((c) => { map[c.employee?._id || c.employee] = c; });
+      res.data.forEach((c) => { map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c; });
       setContracts(map);
       setShowExtendModal(null);
       setExtendForm({ duration: 6, durationUnit: "months", reason: "" });
@@ -98,21 +99,27 @@ const ApplicationViewer = () => {
     }
   };
 
-  const handleEndContractStatus = async (contractId, status) => {
-    if (!window.confirm(`Are you sure you want to mark this contract as ${status}?`)) return;
+  const handleEndContractStatus = (contractId, status, applicantName) => {
+    setConfirmEndContract({ contractId, status, applicantName });
+  };
+
+  const confirmAndProcessEndContract = async () => {
+    if (!confirmEndContract) return;
+    const { contractId, status } = confirmEndContract;
     try {
       await axiosInstance.patch(API_PATH.CONTRACTS.UPDATE_STATUS(contractId), {
         status,
       });
       toast.success(`Contract successfully marked as ${status}`);
-      // Refresh contracts and applications to update UI
       fetchApplications();
       const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
       const map = {};
-      res.data.forEach((c) => { map[c.employee?._id || c.employee] = c; });
+      res.data.forEach((c) => { map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c; });
       setContracts(map);
+      setConfirmEndContract(null);
     } catch (err) {
       toast.error(err.response?.data?.message || `Failed to update status to ${status}`);
+      setConfirmEndContract(null);
     }
   };
 
@@ -250,7 +257,7 @@ const ApplicationViewer = () => {
                         ].map(({ key, label, color, activeColor, icon: Icon }) => {
                           const isContractStatus = key === "Resigned" || key === "Contract Ended";
                           const count = isContractStatus
-                            ? applications.filter(a => { const c = contracts[a.applicant?._id]; return c && c.status === key; }).length
+                            ? applications.filter(a => { const c = contracts[`${a.applicant?._id}_${jobId}`]; return (c && c.status === key) || a.status === key; }).length
                             : key === "all"
                               ? applications.length
                               : applications.filter(a => a.status === key).length;
@@ -281,13 +288,13 @@ const ApplicationViewer = () => {
                             if (!app.applicant) return false;
                             if (activeTab === "all") return true;
                             if (activeTab === "Contract Ended" || activeTab === "Resigned") {
-                              const c = contracts[app.applicant?._id];
-                              return c && c.status === activeTab;
+                              const c = contracts[`${app.applicant?._id}_${jobId}`];
+                              return (c && c.status === activeTab) || app.status === activeTab;
                             }
                             return app.status === activeTab;
                           })
                           .map((application) => {
-                            const contract = contracts[application.applicant?._id];
+                            const contract = contracts[`${application.applicant?._id}_${jobId}`];
                             return (
                               <div
                                 key={application._id}
@@ -332,18 +339,19 @@ const ApplicationViewer = () => {
                                     </div>
 
                                     {/* Contract Info */}
-                                    {contract && (
+                                    {contract && ["Accepted", "Terminated", "Resigned", "Contract Ended"].includes(application.status) && (
                                       <div className="flex items-center gap-1 mt-1 text-xs flex-wrap">
                                         <FileText className="w-3 h-3 text-green-600" />
                                         <span className="text-green-700 font-medium">{contract.contractType}</span>
                                         <span className="text-gray-400">•</span>
                                         <span className="text-gray-500">
                                           {moment(contract.startDate).format("MMM YYYY")} –{" "}
-                                          {contract.endDate ? moment(contract.endDate).format("MMM YYYY") : "No end date"}
+                                          {application.terminatedAt ? moment(application.terminatedAt).format("MMM YYYY") : contract.endDate ? moment(contract.endDate).format("MMM YYYY") : "No end date"}
                                         </span>
                                         <span className="text-gray-400">•</span>
-                                        <StatusBadge status={contract.status} />
-                                        {contract.contractType === "Fixed-Term" && contract.status === "Accepted" && (
+                                        <StatusBadge status={application.status === "Accepted" ? contract.status : application.status} />
+                                        
+                                        {contract.contractType === "Fixed-Term" && contract.status === "Accepted" && application.status === "Accepted" && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); setShowExtendModal(contract); setExtendForm({ duration: 6, durationUnit: "months", reason: "" }); }}
                                             className="ml-1 text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-0.5"
@@ -351,18 +359,18 @@ const ApplicationViewer = () => {
                                             <Pencil className="w-3 h-3" /> Extend
                                           </button>
                                         )}
-                                        {contract.status === "Accepted" && (
+                                        {contract.status === "Accepted" && application.status === "Accepted" && (
                                           <>
                                             <span className="text-gray-400 mx-1">|</span>
                                             <button
-                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Contract Ended"); }}
+                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Contract Ended", application.applicant.fullName); }}
                                               className="text-purple-600 hover:text-purple-800 underline inline-flex items-center gap-0.5"
                                             >
                                               <CheckCircle2 className="w-3 h-3" /> End Contract
                                             </button>
                                             <span className="text-gray-400 mx-1">|</span>
                                             <button
-                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Resigned"); }}
+                                              onClick={(e) => { e.stopPropagation(); handleEndContractStatus(contract._id, "Resigned", application.applicant.fullName); }}
                                               className="text-orange-600 hover:text-orange-800 underline inline-flex items-center gap-0.5"
                                             >
                                               <UserX className="w-3 h-3" /> Mark Resigned
@@ -474,6 +482,35 @@ const ApplicationViewer = () => {
                 className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold">Cancel</button>
               <button onClick={handleExtendContract}
                 className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-semibold">Extend</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmEndContract && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900 text-lg">Confirm Action</h3>
+              <button onClick={() => setConfirmEndContract(null)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to mark <span className="font-bold text-gray-900">{confirmEndContract.applicantName}'s</span> contract as <span className="font-bold text-gray-900">{confirmEndContract.status}</span>?
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmEndContract(null)}
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                  Cancel
+                </button>
+                <button onClick={confirmAndProcessEndContract}
+                  className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         </div>

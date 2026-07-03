@@ -286,7 +286,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 },
                 {
                   id: "admin-terminations",
-                  name: "Terminations & Reviews",
+                  name: "Post-Employment Reviews",
                   icon: FileText,
                 },
                 {

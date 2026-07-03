@@ -135,10 +135,11 @@ export const getRetentionStats = async (req: AuthRequest, res: Response, next: N
       });
     }
 
-    // Overall retention rate: hired - terminated / hired * 100
-    const totalHired = await Application.countDocuments({ job: { $in: jobIds }, status: "Accepted" });
+    // Overall retention rate
+    const totalCurrentlyHired = await Application.countDocuments({ job: { $in: jobIds }, status: "Accepted" });
     const totalTerminated = await Application.countDocuments({ job: { $in: jobIds }, status: { $in: ["Terminated", "Resigned", "Contract Ended"] } });
-    const retentionRate = totalHired > 0 ? Math.round(((totalHired - totalTerminated) / totalHired) * 100) : null;
+    const totalEverHired = totalCurrentlyHired + totalTerminated;
+    const retentionRate = totalEverHired > 0 ? Math.round(((totalEverHired - totalTerminated) / totalEverHired) * 100) : null;
 
     const avgTenure = await Application.aggregate([
       { $match: { job: { $in: jobIds }, status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminatedAt: { $exists: true } } },
@@ -155,7 +156,7 @@ export const getRetentionStats = async (req: AuthRequest, res: Response, next: N
     res.status(StatusCodes.OK).json({
       retentionRate,
       avgTenureDays: avgTenure[0] ? Math.round(avgTenure[0].avg) : null,
-      totalHired,
+      totalHired: totalCurrentlyHired,
       totalTerminated,
       chartData,
     });
@@ -177,7 +178,7 @@ export const getTerminationReasons = async (req: AuthRequest, res: Response, nex
       { $group: { _id: "$terminationReason", count: { $sum: 1 } } },
       { $lookup: { from: "terminationreasons", localField: "_id", foreignField: "_id", as: "reason" } },
       { $unwind: { path: "$reason", preserveNullAndEmptyArrays: true } },
-      { $project: { label: { $ifNull: ["$reason.label", "Unspecified"] }, count: 1 } },
+      { $project: { label: { $cond: [{ $eq: ["$reason.label", "Resigned (Profile Updated)"] }, "Resigned", { $ifNull: ["$reason.label", "Unspecified"] }] }, count: 1 } },
       { $sort: { count: -1 } },
     ]);
 
@@ -191,23 +192,21 @@ export const getTerminationReasons = async (req: AuthRequest, res: Response, nex
 export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const companyId = req.user._id;
-    const isRefresh = req.query.refresh === 'true';
+    const targetJobId = (req.query.jobId as string) || 'all';
 
-    // If not a refresh, try to return saved summary
-    if (!isRefresh) {
-      const employer = await User.findById(companyId).select("employerSkillGaps").lean();
-      if (employer?.employerSkillGaps) {
-        return res.status(StatusCodes.OK).json(employer.employerSkillGaps);
-      }
-      return res.status(StatusCodes.OK).json({ isCached: false });
+    // No coins required, completely free feature
+    await requireEmployerAndCoins(req, 0);
+    
+    const jobFilter: any = { company: companyId };
+    if (targetJobId !== 'all') {
+      jobFilter._id = targetJobId;
     }
 
-    await requireEmployerAndCoins(req, 15);
-    const jobs = await Job.find({ company: companyId }).select("_id").lean();
+    const jobs = await Job.find(jobFilter).select("_id title skills").lean();
     const jobIds = jobs.map(j => j._id);
 
     // Skills most cited in rejected applicants (skills they have = gaps employer doesn't value)
-    const rejectedApps = await Application.find({ job: { $in: jobIds }, status: { $in: ["Rejected", "Terminated", "Resigned", "Contract Ended"] } })
+    const rejectedApps = await Application.find({ job: { $in: jobIds }, status: "Rejected" })
       .populate("applicant", "skills").lean();
 
     const skillCount: Record<string, number> = {};
@@ -218,9 +217,8 @@ export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFu
     });
 
     // Also check required skills on job postings
-    const jobSkillsData = await Job.find({ company: companyId }).select("title skills").lean();
     const requiredSkills: Record<string, number> = {};
-    jobSkillsData.forEach((j: any) => {
+    jobs.forEach((j: any) => {
       (j.skills || []).forEach((sk: string) => {
         requiredSkills[sk] = (requiredSkills[sk] || 0) + 1;
       });
@@ -236,33 +234,8 @@ export const getSkillGaps = async (req: AuthRequest, res: Response, next: NextFu
       .slice(0, 15)
       .map(([skill, count]) => ({ skill, requiredInJobs: count }));
 
-    // Get termination reasons for AI context
-    const terminationReasonsAgg = await Application.aggregate([
-      { $match: { job: { $in: jobIds }, status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminationReason: { $exists: true, $ne: null } } },
-      { $group: { _id: "$terminationReason", count: { $sum: 1 } } },
-      { $lookup: { from: "terminationreasons", localField: "_id", foreignField: "_id", as: "reason" } },
-      { $unwind: { path: "$reason", preserveNullAndEmptyArrays: true } },
-      { $project: { label: { $ifNull: ["$reason.label", "Unspecified"] }, count: 1 } },
-      { $sort: { count: -1 } },
-    ]);
-    const terminationReasonsList = terminationReasonsAgg.map(r => r.label);
-
-    const geminiService = getGeminiService();
-    let aiRecommendations: string[] = [];
-    try {
-      const aiResult = await geminiService.analyzeSkillGaps(
-        terminationReasonsList, 
-        topSkillGaps.map(sk => ({ skill: sk.skill, count: sk.rejectedCount }))
-      );
-      aiRecommendations = aiResult.recommendations;
-    } catch (error) {
-      console.error("Gemini skill gaps analysis failed:", error);
-    }
-
-    const finalResult = { topSkillGaps, topRequiredSkills, aiRecommendations };
-    
-    // Save back to user
-    await User.findByIdAndUpdate(companyId, { employerSkillGaps: finalResult });
+    // Return the data directly without Gemini AI recommendations
+    const finalResult = { topSkillGaps, topRequiredSkills, aiRecommendations: [] };
 
     res.status(StatusCodes.OK).json(finalResult);
   } catch (e) { next(e); }
@@ -289,15 +262,16 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
     const jobs = await Job.find({ company: companyId }).select("_id title").lean();
     const jobIds = jobs.map(j => j._id);
 
-    const [totalApps, totalHired, totalTerminated, totalRejected] = await Promise.all([
+    const [totalApps, totalCurrentlyHired, totalTerminated, totalRejected] = await Promise.all([
       Application.countDocuments({ job: { $in: jobIds } }),
       Application.countDocuments({ job: { $in: jobIds }, status: "Accepted" }),
       Application.countDocuments({ job: { $in: jobIds }, status: { $in: ["Terminated", "Resigned", "Contract Ended"] } }),
       Application.countDocuments({ job: { $in: jobIds }, status: "Rejected" }),
     ]);
 
-    const conversionRate = totalApps > 0 ? ((totalHired / totalApps) * 100).toFixed(1) : "0";
-    const retentionRate = totalHired > 0 ? (((totalHired - totalTerminated) / totalHired) * 100).toFixed(1) : "N/A";
+    const totalEverHired = totalCurrentlyHired + totalTerminated;
+    const conversionRate = totalApps > 0 ? ((totalEverHired / totalApps) * 100).toFixed(1) : "0";
+    const retentionRate = totalEverHired > 0 ? (((totalEverHired - totalTerminated) / totalEverHired) * 100).toFixed(1) : "N/A";
 
     const avgTenureAgg = await Application.aggregate([
       { $match: { job: { $in: jobIds }, status: { $in: ["Terminated", "Resigned", "Contract Ended"] }, terminatedAt: { $exists: true } } },
@@ -321,7 +295,8 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
 
     const analyticsData = {
       totalApps,
-      totalHired,
+      totalHired: totalCurrentlyHired,
+      totalEverHired,
       conversionRate,
       totalTerminated,
       retentionRate,

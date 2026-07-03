@@ -106,7 +106,7 @@ const updateProfile = async (
 
            if (oldExp) {
              const wasCurrent = oldExp.current || !oldExp.endDate;
-             const isEndedNow = newExp.endDate && !newExp.isCurrent;
+             const isEndedNow = newExp.endDate && !newExp.current;
              if (wasCurrent && isEndedNow) {
                newlyEndedExperiences.push(newExp);
              }
@@ -225,7 +225,7 @@ const updateProfile = async (
           let defaultReason = await TerminationReason.findOne({ label: { $regex: /Resign/i } });
           if (!defaultReason) {
             defaultReason = await TerminationReason.create({
-              label: "Resigned (Profile Updated)",
+              label: "Resigned",
               category: "Other",
               description: "Auto-generated when jobseeker adds an end date to their experience profile.",
               createdBy: "system"
@@ -250,7 +250,7 @@ const updateProfile = async (
               for (const app of activeApps) {
                  if (app.job && employerIds.includes((app.job as any).company.toString())) {
                     // Match found! Auto terminate.
-                    app.status = "Terminated";
+                    app.status = "Resigned";
                     app.terminatedAt = exp.endDate ? new Date(exp.endDate) : new Date();
                     app.terminationReason = defaultReason._id;
                     await app.save();

@@ -8,7 +8,8 @@ import {
   UserX,
   Star,
   Eye,
-  X
+  X,
+  Trash2
 } from "lucide-react";
 import toast from "react-hot-toast";
 import DashboardLayout from "../../components/layout/DashboardLayout";
@@ -44,6 +45,22 @@ const AdminTerminations = () => {
     );
   });
 
+  const handleDeleteReview = async (type) => {
+    if (!window.confirm(`Are you sure you want to delete this ${type} review?`)) return;
+    try {
+      const endpoint = type === 'employer' ? 'employer-review' : 'jobseeker-review';
+      const res = await axiosInstance.delete(`/api/admin/terminations/${selectedReview._id}/${endpoint}`);
+      toast.success(`${type === 'employer' ? 'Employer' : 'Jobseeker'} review deleted.`);
+      
+      // Update selected review
+      setSelectedReview(res.data.review);
+      // Update main list
+      setTerminations(prev => prev.map(t => t._id === res.data.review._id ? res.data.review : t));
+    } catch (err) {
+      toast.error(`Failed to delete ${type} review.`);
+    }
+  };
+
   return (
     <DashboardLayout activeMenu="admin-terminations">
       <div className="p-8">
@@ -51,10 +68,10 @@ const AdminTerminations = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <UserX className="w-6 h-6 text-red-600" />
-              Terminations & Reviews
+              Post-Employment Reviews
             </h1>
             <p className="text-gray-500 mt-1">
-              Monitor all employment terminations, employer feedback, and jobseeker reviews.
+              Monitor all post-employment records, employer feedback, and jobseeker reviews.
             </p>
           </div>
 
@@ -91,7 +108,7 @@ const AdminTerminations = () => {
                   {filteredTerminations.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                        No terminations found.
+                        No records found.
                       </td>
                     </tr>
                   ) : (
@@ -150,7 +167,7 @@ const AdminTerminations = () => {
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 border-b border-gray-100">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Termination & Feedback Details</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Employment Feedback Details</h3>
                   <p className="text-sm text-gray-500">Full transparency report</p>
                 </div>
                 <button
@@ -163,11 +180,22 @@ const AdminTerminations = () => {
 
               <div className="p-6 overflow-y-auto space-y-6">
                 {/* Employer Feedback */}
-                <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5">
-                  <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-indigo-500" />
-                    Employer Review (About Employee)
-                  </h4>
+                <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5 relative group">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-indigo-500" />
+                      Employer Review (About Employee)
+                    </h4>
+                    {selectedReview.employerRating && (
+                      <button
+                        onClick={() => handleDeleteReview('employer')}
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"
+                        title="Delete Employer Review"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   {selectedReview.employerRating ? (
                     <>
                       <div className="flex items-center gap-2 mb-3">
@@ -197,11 +225,22 @@ const AdminTerminations = () => {
                 </div>
 
                 {/* Jobseeker Feedback */}
-                <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-5">
-                  <h4 className="text-sm font-bold text-purple-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <UserX className="w-4 h-4 text-purple-500" />
-                    Jobseeker Review (About Company)
-                  </h4>
+                <div className="bg-purple-50/50 border border-purple-100 rounded-xl p-5 relative group">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-purple-900 uppercase tracking-wider flex items-center gap-2">
+                      <UserX className="w-4 h-4 text-purple-500" />
+                      Jobseeker Review (About Company)
+                    </h4>
+                    {selectedReview.jobseekerRating && (
+                      <button
+                        onClick={() => handleDeleteReview('jobseeker')}
+                        className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"
+                        title="Delete Jobseeker Review"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                   {selectedReview.jobseekerRating ? (
                     <>
                       <div className="flex items-center gap-2 mb-3">

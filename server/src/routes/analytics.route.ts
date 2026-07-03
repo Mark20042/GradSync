@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAnalyticsOverview } from "@/controllers/analytics.controller.js";
+import { getAnalyticsOverview, getInDemandSkills, getJobCategories } from "@/controllers/analytics.controller.js";
 import {
   getApplicationsOverTime,
   getTopJobs,
@@ -14,6 +14,8 @@ const router = Router();
 
 // Existing
 router.get("/overview", authenticationMiddleware, getAnalyticsOverview as any);
+router.get("/public/in-demand-skills", getInDemandSkills as any);
+router.get("/public/job-categories", getJobCategories as any);
 
 // Phase 5: GradCoin-gated Employer Analytics
 router.get("/employer/applications-over-time", authenticationMiddleware, getApplicationsOverTime as any);

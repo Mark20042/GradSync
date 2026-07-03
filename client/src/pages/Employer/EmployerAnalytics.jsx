@@ -80,12 +80,32 @@ const EmployerAnalytics = () => {
 
   const [jobs, setJobs] = useState([]);
   const [filterJobId, setFilterJobId] = useState("");
+  const [skillGapJobId, setSkillGapJobId] = useState("");
+
+  const fetchSkillGaps = async (jobId = "") => {
+    try {
+      const query = jobId ? `?jobId=${jobId}` : "";
+      const res = await axiosInstance.get(`${API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS}${query}`);
+      setData(prev => ({ ...prev, skillGaps: res.data }));
+      setUnlockedState(prev => ({ ...prev, skillGaps: true }));
+    } catch (err) {
+      console.error("Failed to fetch skill gaps:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSkillGaps(skillGapJobId);
+  }, [skillGapJobId]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const res = await axiosInstance.get(API_PATH.JOBS.GET_JOBS_EMPLOYER);
-        setJobs(res.data.jobs || res.data || []);
+        const fetchedJobs = res.data.jobs || res.data || [];
+        setJobs(fetchedJobs);
+        if (fetchedJobs.length > 0) {
+          setSkillGapJobId(prev => prev || fetchedJobs[0]._id);
+        }
       } catch (err) {
         console.error("Failed to load jobs for filter:", err);
       }
@@ -128,22 +148,9 @@ const EmployerAnalytics = () => {
       }
     };
 
-    const fetchCachedSkillGaps = async () => {
-      try {
-        const res = await axiosInstance.get(API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS);
-        if (res.data.isCached !== false) {
-          setData(prev => ({ ...prev, skillGaps: res.data }));
-          setUnlockedState(prev => ({ ...prev, skillGaps: true }));
-        }
-      } catch (err) {
-        console.error("Failed to fetch cached skill gaps:", err);
-      }
-    };
-
     fetchJobs();
     fetchFreeAnalytics();
     fetchCachedAI();
-    fetchCachedSkillGaps();
   }, []);
 
   // Generic unlock handler
@@ -350,6 +357,12 @@ const EmployerAnalytics = () => {
                 <div className="flex-1 min-h-[150px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data.retention.chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorAvgTenure" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                       <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} dy={10} />
                       <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#6b7280" }} />
@@ -363,8 +376,8 @@ const EmployerAnalytics = () => {
                         }}
                       />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                      <Bar yAxisId="left" dataKey="terminated" name="Ended Employments" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={20} />
-                      <Line yAxisId="right" type="monotone" dataKey="avgTenureDays" name="Avg Tenure" stroke="#8b5cf6" strokeWidth={3} dot={{ r: 4 }} />
+                      <Bar yAxisId="left" dataKey="terminated" name="Ended Employments" fill="#f43f5e" radius={[6, 6, 6, 6]} barSize={12} />
+                      <Area yAxisId="right" type="monotone" dataKey="avgTenureDays" name="Avg Tenure" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAvgTenure)" />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -413,27 +426,26 @@ const EmployerAnalytics = () => {
             )}
 
           {/* Skill Gaps */}
-          <AnalyticsGate
-            title="Skill Gap Analysis"
-            description="Identify which skills your rejected applicants possess versus what you actually require."
-            icon={Target}
-            cost={15}
-            isUnlocked={unlockedState.skillGaps}
-            onUnlock={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS + "?refresh=true", 15)}
-          >
-            {data.skillGaps && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
-                <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-full min-h-[350px] flex flex-col">
+            {data.skillGaps ? (
+              <>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
                     <Target className="w-5 h-5 text-indigo-600" /> Skill Mismatch
                   </h3>
-                  <button 
-                    onClick={() => unlockFeature("skillGaps", API_PATH.EMPLOYER_ANALYTICS.SKILL_GAPS + "?refresh=true", 15)}
-                    className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-2.5 py-1.5 rounded-lg transition-colors border border-gray-200"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    Re-run (15 <img src="/gradcoin.svg" alt="coin" className="w-3.5 h-3.5 ml-0.5 object-contain" />)
-                  </button>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <select
+                      value={skillGapJobId}
+                      onChange={(e) => setSkillGapJobId(e.target.value)}
+                      className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm cursor-pointer w-full sm:w-auto"
+                    >
+                      {jobs.map((job) => (
+                        <option key={job._id} value={job._id}>
+                          {job.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 
                 <div className="flex flex-col sm:flex-row gap-6 mb-4">
@@ -467,26 +479,13 @@ const EmployerAnalytics = () => {
                     )}
                   </div>
                 </div>
-
-                {/* AI Recommendations */}
-                {data.skillGaps.aiRecommendations && data.skillGaps.aiRecommendations.length > 0 && (
-                  <div className="mt-auto pt-4 border-t border-gray-100">
-                    <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4" /> AI Recommendations
-                    </p>
-                    <ul className="space-y-2">
-                      {data.skillGaps.aiRecommendations.map((rec, idx) => (
-                        <li key={idx} className="text-sm text-gray-600 flex items-start gap-2 bg-indigo-50/50 p-2 rounded-lg border border-indigo-50">
-                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0" />
-                          <span className="leading-relaxed">{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
               </div>
             )}
-          </AnalyticsGate>
+          </div>
 
         </div>
       </div>

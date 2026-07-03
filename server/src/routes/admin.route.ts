@@ -41,6 +41,8 @@ router.get("/system-settings", adminController.getSystemSettings);
 router.put("/system-settings", adminController.updateSystemSettings);
 router.get("/system-metrics", adminController.getSystemMetrics);
 router.get("/terminations", adminController.getAllTerminations);
+router.delete("/terminations/:id/employer-review", adminController.clearEmployerReview);
+router.delete("/terminations/:id/jobseeker-review", adminController.clearJobseekerReview);
 
 // Platform Analytics
 router.get("/platform-analytics/applications-over-time", adminController.getPlatformApplicationsOverTime);
