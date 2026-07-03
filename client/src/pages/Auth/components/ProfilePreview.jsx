@@ -52,7 +52,7 @@ const ProfilePreview = ({ userData, formData }) => {
     displayEducation.unshift({
       school: formData.university,
       degree: formData.degree,
-      startDate: "",
+      startDate: formData.universityStartYear || "",
       endDate: `${formData.graduationMonth ? formData.graduationMonth + " " : ""}${formData.graduationYear}`,
       location: formData.universityAddress || "",
       activities: "",
