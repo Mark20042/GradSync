@@ -23,7 +23,6 @@ const SetupProfileGrad = () => {
     university: "",
     graduationYear: "",
     graduationMonth: "",
-    graduationMonth: "",
     universityStartYear: "",
     portfolio: "",
     linkedin: "",

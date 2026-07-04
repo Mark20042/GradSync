@@ -113,7 +113,21 @@ const getInDemandSkills = async (req: any, res: Response, next: NextFunction) =>
     );
 
     const data = await Application.aggregate(pipeline);
-    res.status(StatusCodes.OK).json({ data });
+    
+    // Find the most in-demand job title for this category
+    const jobPipeline: any[] = [];
+    if (category && category !== "all" && category !== "All Categories") {
+      jobPipeline.push({ $match: { category: category } });
+    }
+    jobPipeline.push(
+      { $group: { _id: "$title", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 3 }
+    );
+    const topJobData = await Job.aggregate(jobPipeline);
+    const topJobs = topJobData.map(j => ({ job: j._id, count: j.count }));
+
+    res.status(StatusCodes.OK).json({ data, topJobs });
   } catch (error) { next(error); }
 };
 
