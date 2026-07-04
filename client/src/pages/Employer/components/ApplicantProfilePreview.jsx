@@ -1,4 +1,4 @@
-import { Download, X, User, Sparkles, BrainCircuit, UserX, UserMinus } from "lucide-react";
+import { Download, X, User, Sparkles, BrainCircuit, UserX, UserMinus, Pencil, CheckCircle2 } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
@@ -23,6 +23,7 @@ const ApplicantProfilePreview = ({
   handleEndContractStatus,
   setSelectedApplicant,
   handleDownloadResume,
+  handleExtendClick,
   handleClose,
 }) => {
   const [currentStatus, setCurrentStatus] = useState(selectedApplicant.status);
@@ -326,9 +327,20 @@ const ApplicantProfilePreview = ({
                   }}
                   className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 text-purple-700 font-semibold rounded-xl hover:bg-purple-100 transition-all shadow-sm active:scale-[0.98] border border-purple-200 text-sm"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4" />
                   End Contract
                 </button>
+                {contract.contractType === "Fixed-Term" && (
+                  <button
+                    onClick={() => {
+                      if (handleExtendClick) handleExtendClick(contract);
+                    }}
+                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 font-semibold rounded-xl hover:bg-blue-100 transition-all shadow-sm active:scale-[0.98] border border-blue-200 text-sm"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Extend
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     handleClose();

@@ -520,10 +520,15 @@ const ApplicationViewer = () => {
       {selectedApplicant && (
         <ApplicantProfilePreview
           selectedApplicant={selectedApplicant}
-          contract={contracts[selectedApplicant.applicant._id]}
+          contract={contracts[`${selectedApplicant.applicant._id}_${selectedApplicant.job?._id || selectedApplicant.job}`]}
           handleEndContractStatus={handleEndContractStatus}
           setSelectedApplicant={setSelectedApplicant}
           handleDownloadResume={handleDownloadResume}
+          handleExtendClick={(contractData) => {
+            setSelectedApplicant(null);
+            setShowExtendModal(contractData);
+            setExtendForm({ duration: 6, durationUnit: "months", reason: "" });
+          }}
           handleClose={() => {
             setSelectedApplicant(null);
             fetchApplications();

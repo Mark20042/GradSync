@@ -62,7 +62,7 @@ const getInDemandSkills = async (req: any, res: Response, next: NextFunction) =>
     const pipeline: any[] = [
       { 
         $match: { 
-          status: { $in: ["Hired", "Contract Ended", "Resigned", "Terminated"] } 
+          status: { $in: ["Accepted", "Contract Ended", "Resigned", "Terminated"] } 
         } 
       },
       {
