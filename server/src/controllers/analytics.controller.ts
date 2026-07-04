@@ -62,7 +62,7 @@ const getInDemandSkills = async (req: any, res: Response, next: NextFunction) =>
     const pipeline: any[] = [
       { 
         $match: { 
-          status: { $in: ["Accepted", "Contract Ended", "Resigned", "Terminated"] } 
+          status: { $in: ["Accepted"] } 
         } 
       },
       {
@@ -97,7 +97,15 @@ const getInDemandSkills = async (req: any, res: Response, next: NextFunction) =>
       { $unwind: { path: "$applicantDetails.skills", preserveNullAndEmptyArrays: false } },
       {
         $group: {
-          _id: "$applicantDetails.skills",
+          _id: {
+            skill: "$applicantDetails.skills",
+            applicant: "$applicantDetails._id"
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.skill",
           count: { $sum: 1 }
         }
       },

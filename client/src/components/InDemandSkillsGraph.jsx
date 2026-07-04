@@ -96,7 +96,7 @@ const InDemandSkillsGraph = ({ compact = false }) => {
           ) : (
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={skillsData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={skillsData} margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
@@ -109,6 +109,7 @@ const InDemandSkillsGraph = ({ compact = false }) => {
                     tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
                     axisLine={false}
                     tickLine={false}
+                    padding={{ left: 20, right: 20 }}
                   />
                   <YAxis hide />
                   <Tooltip
