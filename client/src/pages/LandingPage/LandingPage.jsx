@@ -16,20 +16,16 @@ const LandingPage = () => {
       <Header />
 
       <Hero />
-      <Creators />
+
       <CompanyShowcase />
       <HowItWorks />
+      <InDemandSkillsGraph />
       <Features />
       <PublicJobSection />
-      
-      <section className="relative bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 py-24">
-        <div className="container mx-auto px-6 relative z-10 max-w-7xl">
-          <InDemandSkillsGraph />
-        </div>
-      </section>
+
 
       <About />
-
+      <Creators />
       <Contact />
     </div>
   );

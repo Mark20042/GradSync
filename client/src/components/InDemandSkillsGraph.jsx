@@ -39,8 +39,8 @@ const InDemandSkillsGraph = ({ compact = false }) => {
     }
   };
 
-  return (
-    <div className={`  overflow-hidden ${compact ? 'p-6' : 'p-8'}`}>
+  const content = (
+    <div className={`w-full ${compact ? 'bg-white rounded-3xl shadow-xl shadow-gray-200/40 border border-gray-100 p-6' : ''}`}>
       {/* Header */}
       <div className={`flex flex-col mb-10 ${compact ? '' : 'items-center text-center'}`}>
         <div className="max-w-2xl">
@@ -186,6 +186,18 @@ const InDemandSkillsGraph = ({ compact = false }) => {
       </div>
     </div>
   );
+
+  if (!compact) {
+    return (
+      <section className="relative bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/30 py-16 md:py-24 w-full">
+        <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
+          {content}
+        </div>
+      </section>
+    );
+  }
+
+  return content;
 };
 
 export default InDemandSkillsGraph;
