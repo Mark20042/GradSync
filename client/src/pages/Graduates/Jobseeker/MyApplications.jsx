@@ -142,10 +142,10 @@ const MyApplications = () => {
                 </div>
 
                 {/* Kanban Board Container */}
-                <div className="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar px-4 sm:px-6 lg:px-8 pb-8">
-                    <div className="flex gap-6 h-full items-start min-w-max pb-4">
+                <div className="flex-1 overflow-x-hidden overflow-y-auto md:overflow-x-auto md:overflow-y-hidden custom-scrollbar px-4 sm:px-6 lg:px-8 pb-8">
+                    <div className="flex flex-col md:flex-row gap-6 md:h-full items-start md:min-w-max pb-4">
                         {Object.entries(columns).map(([status, apps]) => (
-                            <div key={status} className="flex flex-col flex-1 min-w-[280px] max-w-[500px] max-h-full h-fit shrink-0">
+                            <div key={status} className="flex flex-col w-full md:flex-1 md:min-w-[280px] md:max-w-[500px] md:max-h-full h-fit shrink-0">
                                 {/* Column Header */}
                                 <div className={`flex items-center justify-between p-4 rounded-t-2xl border-b-[3px] bg-white shadow-sm shrink-0 z-10 relative ${getStatusBorderColor(status)}`}>
                                     <div className="flex items-center gap-2.5">
@@ -160,7 +160,7 @@ const MyApplications = () => {
                                 </div>
 
                                 {/* Column Content */}
-                                <div className="bg-gray-100/60 p-3.5 rounded-b-2xl overflow-y-auto custom-scrollbar space-y-3.5 border border-t-0 border-gray-200/80 shadow-inner min-h-[100px]">
+                                <div className="bg-gray-100/60 p-3.5 rounded-b-2xl overflow-y-auto custom-scrollbar space-y-3.5 border border-t-0 border-gray-200/80 shadow-inner min-h-[100px] max-h-[350px] md:max-h-none md:h-full">
                                     {apps.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-32 text-center px-4">
                                             <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3">
