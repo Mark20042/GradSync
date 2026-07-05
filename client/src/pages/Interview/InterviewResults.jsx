@@ -85,34 +85,34 @@ const InterviewResults = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 pb-16">
       {/* Header Bar */}
-      <div className="bg-white border-b border-slate-200 px-8 py-5">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+      <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
           <button
             onClick={() => navigate("/assessments")}
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-medium transition-colors"
+            className="flex items-center gap-2 text-slate-500 hover:text-slate-700 font-medium transition-colors text-sm sm:text-base"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Back to Skill Center
           </button>
-          <span className="text-sm text-slate-400">
-            Interview Results • {new Date(interview.createdAt).toLocaleDateString()}
+          <span className="text-xs sm:text-sm text-slate-400">
+            Results • {new Date(interview.createdAt).toLocaleDateString()}
           </span>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 pt-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10">
         {/* Score Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-8"
+          className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100 overflow-hidden mb-6 sm:mb-8"
         >
           <div className={`bg-gradient-to-r ${getScoreGradient(aiScore)} p-1`}>
-            <div className="bg-white rounded-t-[calc(1.5rem-4px)] px-8 py-10">
-              <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="bg-white rounded-t-[calc(1rem-4px)] sm:rounded-t-[calc(1.5rem-4px)] px-4 sm:px-8 py-6 sm:py-10">
+              <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-10">
                 {/* Circular Score */}
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 scale-75 sm:scale-100">
                   <svg width="180" height="180" className="transform -rotate-90">
                     <circle
                       cx="90" cy="90" r="70"
@@ -146,20 +146,20 @@ const InterviewResults = () => {
 
                 {/* Score Info */}
                 <div className="flex-1 text-center md:text-left">
-                  <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-2 sm:gap-3 mb-3 sm:mb-2">
                     <span
-                      className={`px-4 py-1.5 rounded-full text-white text-sm font-bold bg-gradient-to-r ${getScoreGradient(aiScore)}`}
+                      className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-white text-xs sm:text-sm font-bold bg-gradient-to-r ${getScoreGradient(aiScore)}`}
                     >
                       {getScoreLabel(aiScore)}
                     </span>
-                    <span className="text-slate-400 text-sm">
+                    <span className="text-slate-400 text-xs sm:text-sm">
                       {/^[0-9a-fA-F]{24}$/.test(roleName) ? "Tailored" : (roleName || "General")} Interview
                     </span>
                   </div>
-                  <h1 className="text-3xl font-extrabold text-slate-900 mb-3">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2 sm:mb-3">
                     Interview Performance
                   </h1>
-                  <p className="text-slate-500 leading-relaxed max-w-lg">
+                  <p className="text-sm sm:text-base text-slate-500 leading-relaxed max-w-lg mx-auto md:mx-0">
                     {aiFeedback?.summary || "Your interview has been evaluated by our AI system."}
                   </p>
                 </div>
@@ -169,24 +169,24 @@ const InterviewResults = () => {
         </motion.div>
 
         {/* Strengths & Improvements */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-6"
           >
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Strengths</h3>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Strengths</h3>
             </div>
             <ul className="space-y-3">
               {(aiFeedback?.strengths || []).map((s, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-slate-600 leading-relaxed">{s}</span>
+                <li key={idx} className="flex items-start gap-2 sm:gap-3">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-slate-600 leading-relaxed">{s}</span>
                 </li>
               ))}
             </ul>
@@ -196,19 +196,19 @@ const InterviewResults = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-100 p-5 sm:p-6"
           >
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                <TrendingDown className="w-5 h-5 text-amber-600" />
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">Areas for Improvement</h3>
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Areas for Improvement</h3>
             </div>
             <ul className="space-y-3">
               {(aiFeedback?.areasForImprovement || []).map((s, idx) => (
-                <li key={idx} className="flex items-start gap-3">
-                  <XCircle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-slate-600 leading-relaxed">{s}</span>
+                <li key={idx} className="flex items-start gap-2 sm:gap-3">
+                  <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-slate-600 leading-relaxed">{s}</span>
                 </li>
               ))}
             </ul>
@@ -220,33 +220,33 @@ const InterviewResults = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 mb-8"
+          className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-100 p-4 sm:p-8 mb-6 sm:mb-8"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-3 mb-5 sm:mb-6">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">
               Question-by-Question Breakdown
             </h3>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             {answers?.map((answer, idx) => {
               const displayCat = getDisplayCategory(answer);
               return (
               <div
                 key={idx}
-                className="border border-slate-100 rounded-xl p-5 hover:border-slate-200 transition-colors"
+                className="border border-slate-100 rounded-xl p-4 sm:p-5 hover:border-slate-200 transition-colors"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 mr-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <div className="flex flex-col sm:flex-row items-start justify-between mb-3 gap-2 sm:gap-4">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1 sm:mb-0">
+                      <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                         Question {idx + 1}
                       </span>
                       {displayCat && (
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] uppercase tracking-widest rounded-md font-bold">
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] sm:text-[10px] uppercase tracking-widest rounded-md font-bold">
                           {displayCat}
                         </span>
                       )}
@@ -256,7 +256,7 @@ const InterviewResults = () => {
                     </p>
                   </div>
                   <div
-                    className={`flex-shrink-0 px-4 py-2 rounded-xl text-white font-bold text-sm bg-gradient-to-r ${getScoreGradient(answer.score)}`}
+                    className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-white font-bold text-xs sm:text-sm bg-gradient-to-r ${getScoreGradient(answer.score)} self-start`}
                   >
                     {answer.score}/100
                   </div>
@@ -303,20 +303,20 @@ const InterviewResults = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 pb-8"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pb-8"
         >
           <button
             onClick={() => navigate("/profile")}
-            className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl font-semibold hover:border-blue-300 hover:text-blue-600 transition-all flex items-center gap-2"
+            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl sm:rounded-2xl font-semibold hover:border-blue-300 hover:text-blue-600 transition-all flex justify-center items-center gap-2 text-sm sm:text-base"
           >
-            <User size={20} />
+            <User className="w-4 h-4 sm:w-5 sm:h-5" />
             View on My Profile
           </button>
           <button
             onClick={() => navigate("/interview-room", { state: { jobRole: roleName } })}
-            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-[1.02] transition-all flex items-center gap-2"
+            className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2 text-sm sm:text-base"
           >
-            <RefreshCw size={20} />
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
             Try Again
           </button>
         </motion.div>

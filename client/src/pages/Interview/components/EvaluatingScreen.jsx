@@ -3,18 +3,18 @@ import { Loader2 } from "lucide-react";
 
 const EvaluatingScreen = () => {
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800">
-      <div className="text-center max-w-md">
-        <div className="relative w-24 h-24 mx-auto mb-8">
+    <div className="h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800 p-4">
+      <div className="text-center max-w-md w-full">
+        <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-6 sm:mb-8">
           <div className="absolute inset-0 rounded-full bg-blue-100 animate-ping opacity-30"></div>
-          <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3">
           AI is Evaluating Your Answers
         </h2>
-        <p className="text-slate-500 leading-relaxed">
+        <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
           Our AI interviewer is carefully analyzing your responses against the
           ideal answers. This may take a minute...
         </p>

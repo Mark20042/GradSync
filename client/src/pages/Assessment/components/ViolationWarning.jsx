@@ -68,47 +68,47 @@ const ViolationWarning = ({ violationCount, violationType, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-200">
-      <div className={`${config.bgColor} border-2 ${config.borderColor} rounded-2xl shadow-2xl max-w-md w-full p-4 md:p-6 animate-in zoom-in-95 duration-300`}>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 sm:p-6 animate-in fade-in duration-200">
+      <div className={`${config.bgColor} border-2 ${config.borderColor} rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-[95%] sm:w-full p-4 sm:p-6 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto`}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 md:w-12 md:h-12 ${config.bgColor} rounded-xl flex items-center justify-center border-2 ${config.borderColor} shrink-0`}>
-              <Icon className={`w-5 h-5 md:w-6 md:h-6 ${config.iconColor}`} />
+        <div className="flex items-start justify-between mb-4 sm:mb-5">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 ${config.bgColor} rounded-xl flex items-center justify-center border-2 ${config.borderColor} shrink-0`}>
+              <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${config.iconColor}`} />
             </div>
             <div>
-              <h3 className={`text-lg md:text-xl font-bold ${config.iconColor} m-0`}>{config.title}</h3>
-              <p className="text-xs md:text-sm text-gray-600 mt-1 m-0">Violation Type: {getViolationTypeText()}</p>
+              <h3 className={`text-base sm:text-lg md:text-xl font-bold ${config.iconColor} m-0 leading-tight`}>{config.title}</h3>
+              <p className="text-[11px] sm:text-xs md:text-sm text-gray-600 mt-1 m-0">Violation Type: {getViolationTypeText()}</p>
             </div>
           </div>
           {violationCount < 3 && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors shrink-0 p-1"
             >
-              <X size={20} />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
         </div>
 
         {/* Message */}
-        <div className="mb-6">
-          <p className="text-gray-700 text-sm leading-relaxed m-0">
+        <div className="mb-5 sm:mb-6">
+          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed m-0">
             {config.message}
           </p>
         </div>
 
         {/* Strike Indicator */}
-        <div className="mb-6">
+        <div className="mb-5 sm:mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase">Violations</span>
-            <span className={`text-sm font-bold ${config.iconColor}`}>{violationCount} / 3</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Violations</span>
+            <span className={`text-xs sm:text-sm font-bold ${config.iconColor}`}>{violationCount} / 3</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             {[1, 2, 3].map((strike) => (
               <div
                 key={strike}
-                className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                className={`flex-1 h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                   strike <= violationCount
                     ? strike === 1
                       ? 'bg-yellow-500'
@@ -125,16 +125,17 @@ const ViolationWarning = ({ violationCount, violationType, onClose }) => {
         {/* Action Button */}
         <button
           onClick={onClose}
-          className={`w-full py-3 ${config.buttonColor} text-white font-semibold rounded-xl transition-all shadow-lg`}
+          className={`w-full py-2.5 sm:py-3 px-4 ${config.buttonColor} text-white text-sm sm:text-base font-semibold rounded-xl transition-all shadow-lg active:scale-[0.98]`}
         >
           {violationCount < 3 ? 'I Understand - Continue' : 'Close'}
         </button>
 
         {/* Additional Info for Strike 3 */}
         {violationCount === 3 && (
-          <div className="mt-4 p-3 bg-white rounded-lg border border-red-200">
-            <p className="text-xs text-gray-600 m-0">
-              <strong>What happens next:</strong> Your answers have been saved and submitted. An administrator will review your assessment attempt and the violation log before releasing your results.
+          <div className="mt-4 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl border border-red-200 shadow-inner">
+            <p className="text-[11px] sm:text-xs text-gray-600 m-0 leading-relaxed">
+              <strong className="block text-red-700 mb-1">What happens next:</strong>
+              Your answers have been saved and submitted. An administrator will review your assessment attempt and the violation log before releasing your results.
             </p>
           </div>
         )}

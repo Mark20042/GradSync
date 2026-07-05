@@ -551,7 +551,7 @@ const InterviewRoom = () => {
     return (
       <div className="h-screen flex flex-col bg-slate-50 text-slate-800 overflow-hidden">
         <SetupProgressBar setupStep={setupStep} onBack={() => navigate(-1)} />
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex overflow-y-auto items-start sm:items-center justify-center p-4 sm:p-6 pb-20 sm:pb-6">
           <div className="w-full">
             {setupStep === 1 && <RulesStep onNext={() => setSetupStep(2)} />}
             {setupStep === 2 && (
@@ -584,168 +584,169 @@ const InterviewRoom = () => {
   const currentQuestion = questions[currentQIndex];
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 text-slate-800 overflow-hidden">
-      <div className="flex-1 flex w-full h-[calc(100vh-100px)]">
-        <div className="flex-1 flex w-full">
-          {/* AI Interviewer Box */}
-          <div className="flex-1 bg-white overflow-hidden relative border-r border-slate-200 flex flex-col items-center justify-center">
-            <div className="absolute top-6 left-6 right-6 bg-white/95 backdrop-blur-xl p-6 rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] z-10 transition-all duration-500 translate-y-0 opacity-100">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="inline-block bg-blue-500 text-white text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider">
-                  Question {currentQIndex + 1} of {questions.length}
-                </div>
-                {currentQuestion?.category && (
-                  <div className="inline-block bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold py-1 px-3 rounded-full uppercase tracking-wider">
-                    {currentQuestion.category}
-                  </div>
-                )}
+    <div className="h-[100dvh] flex flex-col bg-slate-50 text-slate-800 overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row w-full h-[calc(100dvh-120px)] sm:h-[calc(100dvh-100px)]">
+        {/* AI Interviewer Box */}
+        <div className="flex-1 bg-white overflow-hidden relative border-b md:border-b-0 md:border-r border-slate-200 flex flex-col items-center justify-center min-h-[40vh] md:min-h-0">
+          <div className="absolute top-3 sm:top-6 left-3 sm:left-6 right-3 sm:right-6 bg-white/95 backdrop-blur-xl p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] z-10 transition-all duration-500 translate-y-0 opacity-100 max-h-[40%] overflow-y-auto">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+              <div className="inline-block bg-blue-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-2 sm:px-3 rounded-full uppercase tracking-wider">
+                Question {currentQIndex + 1} of {questions.length}
               </div>
-              <h2 className="text-2xl font-semibold leading-relaxed text-slate-900 m-0">
-                "{currentQuestion?.question}"
-              </h2>
-            </div>
-
-            <Lottie
-              lottieRef={lottieRef}
-              animationData={talkingAnimation}
-              loop={true}
-              autoplay={false}
-              style={{
-                width: "90%",
-                height: "90%",
-                maxHeight: 600,
-                opacity: isSpeaking ? 1 : 0.8,
-                transition: "opacity 0.3s",
-              }}
-            />
-
-            <div className="absolute bottom-5 left-5 bg-white/85 backdrop-blur-md py-2 px-4 rounded-lg font-semibold text-sm text-slate-900 flex items-center gap-2 border border-black/5 shadow-sm">
-              <div
-                className={`w-2 h-2 rounded-full ${isSpeaking ? "bg-emerald-500" : "bg-slate-500"}`}
-              />
-              AI Interviewer
-            </div>
-          </div>
-
-          {/* User Camera Box */}
-          <div className="flex-1 bg-white overflow-hidden relative flex flex-col items-center justify-center">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover -scale-x-100"
-            />
-
-            {!camActive && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
-                <VideoOff size={64} className="text-slate-400" />
-              </div>
-            )}
-
-            {/* Live Transcript Overlay */}
-            <div className="absolute bottom-20 left-4 right-4 z-10">
-              {(isListening || currentTranscript) && (
-                <div className="bg-black/70 backdrop-blur-md text-white p-4 rounded-xl max-h-32 overflow-y-auto">
-                  <div className="flex items-center gap-2 mb-2">
-                    {isListening && (
-                      <>
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-xs font-semibold text-red-300 uppercase tracking-wider">
-                          Listening...
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <p className="text-sm leading-relaxed">
-                    {currentTranscript || (
-                      <span className="text-white/50 italic">
-                        Start speaking your answer...
-                      </span>
-                    )}
-                  </p>
+              {currentQuestion?.category && (
+                <div className="inline-block bg-slate-100 text-slate-600 border border-slate-200 text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-2 sm:px-3 rounded-full uppercase tracking-wider">
+                  {currentQuestion.category}
                 </div>
               )}
             </div>
+            <h2 className="text-base sm:text-lg md:text-2xl font-semibold leading-relaxed text-slate-900 m-0">
+              "{currentQuestion?.question}"
+            </h2>
+          </div>
 
-            <div className="absolute bottom-5 left-5 bg-white/85 backdrop-blur-md py-2 px-4 rounded-lg font-semibold text-sm text-slate-900 flex items-center gap-2 border border-black/5 shadow-sm">
-              <div
-                className={`w-2 h-2 rounded-full ${micActive ? "bg-emerald-500" : "bg-red-500"}`}
-              />
-              You
+          <Lottie
+            lottieRef={lottieRef}
+            animationData={talkingAnimation}
+            loop={true}
+            autoplay={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              maxHeight: "100%",
+              opacity: isSpeaking ? 1 : 0.8,
+              transition: "opacity 0.3s",
+            }}
+          />
+
+          <div className="absolute bottom-3 sm:bottom-5 left-3 sm:left-5 bg-white/85 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5 sm:gap-2 border border-black/5 shadow-sm">
+            <div
+              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isSpeaking ? "bg-emerald-500" : "bg-slate-500"}`}
+            />
+            AI Interviewer
+          </div>
+        </div>
+
+        {/* User Camera Box */}
+        <div className="flex-1 bg-white overflow-hidden relative flex flex-col items-center justify-center min-h-[40vh] md:min-h-0">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover -scale-x-100"
+          />
+
+          {!camActive && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+              <VideoOff className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400" />
             </div>
+          )}
 
-            {!micActive && (
-              <div className="absolute top-5 right-5 bg-red-500/90 p-2 rounded-full">
-                <MicOff size={20} className="text-white" />
+          {/* Live Transcript Overlay */}
+          <div className="absolute bottom-16 sm:bottom-20 left-3 right-3 sm:left-4 sm:right-4 z-10">
+            {(isListening || currentTranscript) && (
+              <div className="bg-black/70 backdrop-blur-md text-white p-3 sm:p-4 rounded-xl max-h-24 sm:max-h-32 overflow-y-auto">
+                <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                  {isListening && (
+                    <>
+                      <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[10px] sm:text-xs font-semibold text-red-300 uppercase tracking-wider">
+                        Listening...
+                      </span>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm leading-relaxed">
+                  {currentTranscript || (
+                    <span className="text-white/50 italic">
+                      Start speaking your answer...
+                    </span>
+                  )}
+                </p>
               </div>
             )}
           </div>
+
+          <div className="absolute bottom-3 sm:bottom-5 left-3 sm:left-5 bg-white/85 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5 sm:gap-2 border border-black/5 shadow-sm">
+            <div
+              className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${micActive ? "bg-emerald-500" : "bg-red-500"}`}
+            />
+            You
+          </div>
+
+          {!micActive && (
+            <div className="absolute top-3 sm:top-5 right-3 sm:right-5 bg-red-500/90 p-1.5 sm:p-2 rounded-full">
+              <MicOff className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+          )}
         </div>
       </div>
 
       {/* Control Bar */}
-      <div className="h-[100px] bg-white flex items-center justify-center gap-4 px-8 border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-        <button
-          onClick={toggleMic}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${micActive
-              ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
-              : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
-            }`}
-        >
-          {micActive ? <Mic /> : <MicOff />}
-        </button>
+      <div className="h-[120px] sm:h-[100px] bg-white flex flex-wrap sm:flex-nowrap items-center justify-center gap-2 sm:gap-4 px-2 sm:px-8 py-2 sm:py-0 border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+        <div className="flex justify-center gap-2 sm:gap-4">
+          <button
+            onClick={toggleMic}
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${micActive
+                ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
+                : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
+              }`}
+          >
+            {micActive ? <Mic className="w-5 h-5 sm:w-6 sm:h-6" /> : <MicOff className="w-5 h-5 sm:w-6 sm:h-6" />}
+          </button>
 
-        <button
-          onClick={toggleCam}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${camActive
-              ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
-              : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
-            }`}
-        >
-          {camActive ? <VideoIcon /> : <VideoOff />}
-        </button>
+          <button
+            onClick={toggleCam}
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer ${camActive
+                ? "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5"
+                : "bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5"
+              }`}
+          >
+            {camActive ? <VideoIcon className="w-5 h-5 sm:w-6 sm:h-6" /> : <VideoOff className="w-5 h-5 sm:w-6 sm:h-6" />}
+          </button>
+        </div>
 
-        <div className="flex-1 flex justify-center gap-4">
+        <div className="flex-1 flex justify-center w-full sm:w-auto gap-2 sm:gap-4 mt-1 sm:mt-0">
           <button
             onClick={repeatQuestion}
-            className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5 border-none"
+            className="flex-1 sm:flex-none justify-center px-3 sm:px-6 h-12 sm:h-14 rounded-full flex items-center gap-1.5 sm:gap-2 font-semibold text-xs sm:text-base transition-all duration-200 cursor-pointer bg-slate-100 text-slate-700 hover:bg-slate-200 hover:-translate-y-0.5 border-none"
           >
-            <RefreshCw size={20} />
-            Repeat Question
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Repeat</span>
+            <span className="sm:hidden">Repeat</span>
+          </button>
+
+          <button
+            onClick={handleEndInterview}
+            disabled={isSubmitting || isEvaluating}
+            className="flex-none px-3 sm:px-6 h-12 sm:h-14 rounded-full flex items-center gap-1.5 sm:gap-2 font-semibold text-xs sm:text-base transition-all duration-200 cursor-pointer bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <PhoneOff className="w-4 h-4 sm:w-5 sm:h-5" />
+            {isSubmitting ? <span className="hidden sm:inline">Ending...</span> : "End"}
           </button>
 
           <button
             onClick={nextQuestion}
             disabled={isSubmitting || isEvaluating}
-            className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none justify-center px-4 sm:px-6 h-12 sm:h-14 rounded-full flex items-center gap-1.5 sm:gap-2 font-semibold text-xs sm:text-base transition-all duration-200 cursor-pointer bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {currentQIndex === questions.length - 1 ? (
               isSubmitting ? (
                 <>
-                  Finishing <Loader2 size={20} className="animate-spin" />
+                  <span className="hidden sm:inline">Finishing</span> <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 </>
               ) : (
                 <>
-                  Finish <Check size={20} />
+                  Finish <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                 </>
               )
             ) : (
               <>
-                Next <ChevronRight size={20} />
+                Next <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </>
             )}
           </button>
         </div>
-
-        <button
-          onClick={handleEndInterview}
-          disabled={isSubmitting || isEvaluating}
-          className="px-6 h-14 rounded-full flex items-center gap-2 font-semibold text-base transition-all duration-200 cursor-pointer bg-red-500 text-white hover:bg-red-600 hover:-translate-y-0.5 border-none disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          <PhoneOff size={20} />
-          {isSubmitting ? "Ending..." : "End"}
-        </button>
       </div>
     </div>
   );
