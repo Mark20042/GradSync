@@ -210,6 +210,22 @@ export const CATEGORIES = [
     label: "Finance",
   },
   {
+    value: "Hospitality & Tourism",
+    label: "Hospitality & Tourism",
+  },
+  {
+    value: "Education & Teaching",
+    label: "Education & Teaching",
+  },
+  {
+    value: "Law Enforcement & Security",
+    label: "Law Enforcement & Security",
+  },
+  {
+    value: "Healthcare & Medical",
+    label: "Healthcare & Medical",
+  },
+  {
     value: "Other",
     label: "Other",
   },

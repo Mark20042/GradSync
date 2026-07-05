@@ -56,12 +56,12 @@ const InDemandSkillsGraph = ({ compact = false }) => {
       </div>
 
       {/* Category Selector Pills */}
-      <div className={`flex flex-wrap gap-2 mb-8 ${compact ? '' : 'justify-center'}`}>
+      <div className={`flex gap-2 mb-8 overflow-x-auto pb-3 snap-x hide-scrollbar sm:flex-wrap ${compact ? '' : 'sm:justify-center'}`}>
         {categories.map((cat) => (
           <button
             key={cat.value}
             onClick={() => setSelectedCategory(cat.label)}
-            className={`px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 border ${selectedCategory === cat.label
+            className={`px-4 py-2 sm:py-2.5 rounded-full text-[13px] sm:text-sm font-medium transition-all duration-300 flex items-center gap-2 border flex-shrink-0 snap-start whitespace-nowrap ${selectedCategory === cat.label
               ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20'
               : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'
               }`}
@@ -106,7 +106,8 @@ const InDemandSkillsGraph = ({ compact = false }) => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
                   <XAxis
                     dataKey="skill"
-                    tick={{ fill: '#374151', fontSize: 12, fontWeight: 500 }}
+                    tickFormatter={(value) => value.length > 14 ? `${value.substring(0, 14)}...` : value}
+                    tick={{ fill: '#374151', fontSize: 11, fontWeight: 500 }}
                     axisLine={false}
                     tickLine={false}
                     padding={{ left: 20, right: 20 }}
@@ -159,10 +160,11 @@ const InDemandSkillsGraph = ({ compact = false }) => {
                   <YAxis
                     dataKey="job"
                     type="category"
+                    tickFormatter={(value) => value.length > 18 ? `${value.substring(0, 18)}...` : value}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: '#374151', fontSize: 13, fontWeight: 600 }}
-                    width={140}
+                    tick={{ fill: '#374151', fontSize: 11, fontWeight: 600 }}
+                    width={110}
                   />
                   <Tooltip
                     cursor={{ fill: '#f3f4f6' }}
