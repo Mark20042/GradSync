@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Shield,
   AlertTriangle,
@@ -10,6 +10,10 @@ import {
 
 const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
   const [agreed, setAgreed] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const rules = [
     {
