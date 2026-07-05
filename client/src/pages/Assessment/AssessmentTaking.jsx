@@ -517,7 +517,7 @@ const AssessmentTaking = () => {
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 p-4 md:p-10 overflow-y-auto flex flex-col">
+          <div className="flex-1 min-w-0 p-4 md:p-10 overflow-y-auto flex flex-col">
             <div className="flex flex-col-reverse sm:flex-row justify-between sm:items-center gap-2 mb-3 md:mb-6">
               <span className="text-[11px] md:text-sm font-bold text-blue-600 uppercase tracking-wider">
                 Question {currentIndex + 1} of {assessment.questions.length}
@@ -534,9 +534,11 @@ const AssessmentTaking = () => {
             </h2>
 
             {currentQuestion.codeSnippet && (
-              <pre className="bg-slate-800 text-slate-200 p-3 md:p-4 rounded-lg overflow-x-auto font-mono text-[10px] md:text-sm mb-4 md:mb-6 leading-tight">
-                {currentQuestion.codeSnippet}
-              </pre>
+              <div className="w-full max-w-full overflow-x-auto bg-slate-800 rounded-lg mb-4 md:mb-6">
+                <pre className="text-slate-200 p-3 md:p-4 font-mono text-[10px] sm:text-[11px] md:text-sm leading-relaxed whitespace-pre">
+                  {currentQuestion.codeSnippet}
+                </pre>
+              </div>
             )}
 
             {currentQuestion.imageUrl && (

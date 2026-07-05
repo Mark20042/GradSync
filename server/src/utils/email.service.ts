@@ -69,7 +69,7 @@ export const sendVerificationSuccessEmail = async (
   try {
     const isEmployer = role === "employer";
     const dashboardPath = isEmployer ? "/employer-dashboard" : "/find-jobs";
-    const dashboardUrl = `${env.FRONTEND_URL || "http://localhost:5173"}${dashboardPath}`;
+    const dashboardUrl = `${env.FRONTEND_URL || "https://gradsync.tech"}${dashboardPath}`;
 
     if (shouldUseMailtrap()) {
       const client = getMailtrapClient();
@@ -115,7 +115,7 @@ export const sendVerificationFailedEmail = async (
   role: string,
 ): Promise<boolean> => {
   try {
-    const signupUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/signup`;
+    const signupUrl = `${env.FRONTEND_URL || "https://gradsync.tech"}/signup`;
 
     if (shouldUseMailtrap()) {
       const client = getMailtrapClient();
@@ -160,7 +160,7 @@ export const sendApprovalEmail = async (
   userName: string,
 ): Promise<boolean> => {
   try {
-    const loginUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/login`;
+    const loginUrl = `${env.FRONTEND_URL || "https://gradsync.tech"}/login`;
 
     if (shouldUseMailtrap()) {
       const client = getMailtrapClient();
@@ -238,7 +238,7 @@ export const sendInterviewResultEmail = async (
   summary: string,
 ): Promise<boolean> => {
   try {
-    const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/profile`;
+    const resultUrl = `${env.FRONTEND_URL || "https://gradsync.tech"}/profile`;
 
     if (shouldUseMailtrap()) {
       const client = getMailtrapClient();
@@ -291,7 +291,7 @@ export const sendAssessmentApprovalEmail = async (
   level?: string,
 ): Promise<boolean> => {
   try {
-    const resultUrl = `${env.FRONTEND_URL || "http://localhost:5173"}/profile`;
+    const resultUrl = `${env.FRONTEND_URL || "https://gradsync.tech"}/profile`;
     const pdfBuffer = await generateAssessmentCertificatePdf({
       userName,
       assessmentTitle,

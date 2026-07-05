@@ -342,35 +342,35 @@ const AssessmentList = () => {
 
       {selectedSubmission && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-2 sm:p-4 backdrop-blur-sm"
           onClick={() => setSelectedSubmission(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in"
+            className="bg-white rounded-xl sm:rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
-              <h3 className="text-xl font-bold text-gray-900 capitalize">
+            <div className="flex justify-between items-start sm:items-center p-4 sm:p-5 border-b border-gray-100 bg-gray-50/50 flex-shrink-0 gap-3">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 capitalize pr-2">
                 {selectedSubmission.assessment?.skill || "Assessment"} Results
               </h3>
               <button
                 onClick={() => setSelectedSubmission(null)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full h-fit transition-colors"
+                className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full h-fit transition-colors shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="p-4 md:p-6 overflow-y-auto flex-1">
-              <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-                <div className="w-full sm:flex-1 bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                  <p className="text-xs md:text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
-                  <p className="text-2xl md:text-3xl font-black text-blue-700">{Math.round(selectedSubmission.score)}%</p>
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-6">
+                <div className="w-full sm:flex-1 bg-blue-50 border border-blue-100 rounded-xl p-3 sm:p-4 text-center">
+                  <p className="text-[10px] sm:text-xs md:text-sm font-bold text-blue-600 mb-1 uppercase tracking-wider">Score</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-black text-blue-700">{Math.round(selectedSubmission.score)}%</p>
                 </div>
-                <div className={`w-full sm:flex-1 border rounded-xl p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
-                  <p className={`text-xs md:text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
-                  <div className={`flex items-center justify-center gap-2 text-xl font-bold capitalize ${selectedSubmission.passed ? 'text-green-700' : 'text-red-700'}`}>
-                    {selectedSubmission.passed ? <><CheckCircle size={22} /> Passed</> : <><X size={22} /> Failed</>}
+                <div className={`w-full sm:flex-1 border rounded-xl p-3 sm:p-4 text-center flex flex-col items-center justify-center ${selectedSubmission.passed ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
+                  <p className={`text-[10px] sm:text-xs md:text-sm font-bold mb-1 uppercase tracking-wider ${selectedSubmission.passed ? 'text-green-600' : 'text-red-600'}`}>Status</p>
+                  <div className={`flex items-center justify-center gap-1.5 sm:gap-2 text-lg sm:text-xl font-bold capitalize ${selectedSubmission.passed ? 'text-green-700' : 'text-red-700'}`}>
+                    {selectedSubmission.passed ? <><CheckCircle size={20} className="sm:w-[22px] sm:h-[22px]" /> Passed</> : <><X size={20} className="sm:w-[22px] sm:h-[22px]" /> Failed</>}
                   </div>
                 </div>
               </div>
@@ -426,14 +426,16 @@ const AssessmentList = () => {
                               <X className="w-6 h-6 text-red-500" />
                             )}
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <p className="font-semibold text-gray-900 mb-2">
                               {index + 1}. {q.questionText}
                             </p>
 
                             {q.codeSnippet && (
-                              <div className="bg-slate-900 text-slate-50 p-4 rounded-lg my-3 font-mono text-sm overflow-x-auto whitespace-pre">
-                                {q.codeSnippet}
+                              <div className="w-full max-w-full overflow-x-auto bg-slate-900 rounded-lg my-3">
+                                <pre className="text-slate-50 p-3 sm:p-4 font-mono text-[10px] sm:text-sm whitespace-pre">
+                                  {q.codeSnippet}
+                                </pre>
                               </div>
                             )}
 
@@ -472,47 +474,49 @@ const AssessmentList = () => {
 
       {/* Interview Result Modal */}
       {selectedInterviewResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSelectedInterviewResult(null)}>
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2 sm:p-4" onClick={() => setSelectedInterviewResult(null)}>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start sm:items-center p-4 sm:p-6 border-b border-gray-100 shrink-0 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 m-0">Interview Results</h3>
-                <p className="text-sm text-gray-500 m-0 mt-1">
-                  Role: <span className="font-semibold text-gray-700">{selectedInterviewResult.roleName || "General"}</span> • Score: <span className={`font-bold ${getScoreColor(selectedInterviewResult.aiScore)} px-2 py-0.5 rounded-full`}>{selectedInterviewResult.aiScore}/100</span>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 m-0">Interview Results</h3>
+                <p className="text-xs sm:text-sm text-gray-500 m-0 mt-1 flex flex-wrap items-center gap-1 sm:gap-2">
+                  <span>Role:</span> <span className="font-semibold text-gray-700 truncate max-w-[150px] sm:max-w-xs">{selectedInterviewResult.roleName || "General"}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Score:</span> <span className={`font-bold ${getScoreColor(selectedInterviewResult.aiScore)} px-2 py-0.5 rounded-full`}>{selectedInterviewResult.aiScore}/100</span>
                 </p>
               </div>
               <button
                 onClick={() => setSelectedInterviewResult(null)}
-                className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors"
+                className="text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 p-1.5 sm:p-2 rounded-full transition-colors shrink-0"
               >
-                <X size={20} />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-slate-50 flex-1">
-              <div className="mb-6 bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <h4 className="text-sm font-bold text-gray-900 mb-2">
+            <div className="p-4 sm:p-6 overflow-y-auto bg-slate-50 flex-1">
+              <div className="mb-5 sm:mb-6 bg-white p-4 sm:p-5 rounded-xl border border-gray-100 shadow-sm">
+                <h4 className="text-xs sm:text-sm font-bold text-gray-900 mb-2">
                   AI Feedback Summary
                 </h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   {selectedInterviewResult.aiFeedback?.summary || "No summary available."}
                 </p>
 
                 {getDisplayCategoryScores(selectedInterviewResult) && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Category Performance</h5>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <h5 className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Category Performance</h5>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
                       {Object.entries(getDisplayCategoryScores(selectedInterviewResult)).map(([cat, score]) => (
-                        <div key={cat} className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 truncate">{cat}</p>
-                          <p className={`text-lg font-extrabold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            {score}<span className="text-xs text-gray-400 font-medium">/100</span>
+                        <div key={cat} className="bg-gray-50 rounded-lg p-2 sm:p-3 border border-gray-100">
+                          <p className="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1 truncate">{cat}</p>
+                          <p className={`text-base sm:text-lg font-extrabold ${score >= 80 ? 'text-green-600' : score >= 60 ? 'text-blue-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {score}<span className="text-[10px] sm:text-xs text-gray-400 font-medium">/100</span>
                           </p>
                         </div>
                       ))}
                     </div>
                     {getDisplayCategoryInterpretation(selectedInterviewResult, getDisplayCategoryScores(selectedInterviewResult)) && (
-                      <p className="text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg font-medium border border-indigo-100 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-indigo-700 bg-indigo-50 p-2.5 sm:p-3 rounded-lg font-medium border border-indigo-100 leading-relaxed">
                         💡 {getDisplayCategoryInterpretation(selectedInterviewResult, getDisplayCategoryScores(selectedInterviewResult))}
                       </p>
                     )}
@@ -520,35 +524,35 @@ const AssessmentList = () => {
                 )}
               </div>
               
-              <h4 className="text-[0.7rem] font-bold text-gray-400 mb-3 uppercase tracking-widest px-1">
+              <h4 className="text-[10px] sm:text-[0.7rem] font-bold text-gray-400 mb-2 sm:mb-3 uppercase tracking-widest px-1">
                 Per-Question Breakdown ({selectedInterviewResult.answers?.length || 0} questions)
               </h4>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:gap-4">
                 {selectedInterviewResult.answers?.map((answer, idx) => {
                   const displayCat = getDisplayCategory(answer);
                   return (
-                    <div key={idx} className="bg-white rounded-xl p-4 md:p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
-                      <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-3 md:gap-4">
-                        <p className="font-bold text-gray-800 text-sm flex-1 leading-snug">
+                    <div key={idx} className="bg-white rounded-xl p-3 sm:p-4 md:p-5 border border-gray-200 shadow-sm transition-all hover:border-blue-200">
+                      <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2 sm:gap-3 md:gap-4">
+                        <p className="font-bold text-gray-800 text-xs sm:text-sm flex-1 leading-snug">
                           {displayCat && (
-                            <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
+                            <span className="inline-block px-1.5 sm:px-2 py-0.5 bg-gray-100 text-gray-500 text-[9px] sm:text-[10px] uppercase tracking-widest rounded-md font-bold mr-2 mb-1 align-bottom">
                               {displayCat}
                             </span>
                           )}
                           Q{idx + 1}: {answer.questionText}
                         </p>
-                      <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full font-bold text-[0.7rem] shrink-0 self-start sm:self-auto ${getScoreColor(answer.score)}`}>
+                      <span className={`inline-flex items-center justify-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full font-bold text-[10px] sm:text-[0.7rem] shrink-0 self-start sm:self-auto ${getScoreColor(answer.score)}`}>
                         {answer.score}/100
                       </span>
                     </div>
-                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-3">
-                      <p className="text-[0.8rem] text-gray-600 leading-relaxed italic m-0">
-                        <strong className="text-gray-500 not-italic mr-2">Your Answer:</strong> 
+                    <div className="bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-100 mb-2 sm:mb-3">
+                      <p className="text-xs sm:text-[0.8rem] text-gray-600 leading-relaxed italic m-0">
+                        <strong className="text-gray-500 not-italic mr-1 sm:mr-2">Your Answer:</strong> 
                         {answer.candidateAnswer || <em className="text-gray-300">No answer</em>}
                       </p>
                     </div>
-                    <p className="text-[0.8rem] text-gray-700 leading-relaxed m-0">
-                      <strong className="text-gray-900 mr-2">Feedback:</strong> {answer.feedback}
+                    <p className="text-xs sm:text-[0.8rem] text-gray-700 leading-relaxed m-0">
+                      <strong className="text-gray-900 mr-1 sm:mr-2">Feedback:</strong> {answer.feedback}
                     </p>
                   </div>
                   );
@@ -556,10 +560,10 @@ const AssessmentList = () => {
               </div>
             </div>
             
-            <div className="p-6 border-t border-gray-100 flex justify-end shrink-0">
+            <div className="p-4 sm:p-6 border-t border-gray-100 flex justify-end shrink-0">
               <button
                 onClick={() => setSelectedInterviewResult(null)}
-                className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
+                className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-sm text-sm sm:text-base"
               >
                 Close Results
               </button>
