@@ -72,7 +72,7 @@ const InDemandSkillsGraph = ({ compact = false }) => {
       </div>
 
       {/* Graphs Container */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto">
 
         {/* Skills Area Graph */}
         <div className="bg-gray-50/50 rounded-2xl border border-gray-100 p-6 relative">

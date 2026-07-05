@@ -602,9 +602,10 @@ const SignUp = () => {
             {/* Right Column */}
             <div className="space-y-4 sm:space-y-5">
               {/* Avatar Upload */}
-              <div>
+              {formData.role && (
+                <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Profile Picture / Company Logo (Optional)
+                  {formData.role === "employer" ? "Company Logo (Optional)" : "Profile Picture (Optional)"}
                 </label>
                 <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                   {/* Avatar Preview */}
@@ -617,7 +618,11 @@ const SignUp = () => {
                       />
                     ) : (
                       <div className="w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full bg-gray-200 text-gray-400">
-                        <User className="w-6 h-6 sm:w-8 sm:h-8" />
+                        {formData.role === "employer" ? (
+                          <Building2 className="w-6 h-6 sm:w-8 sm:h-8" />
+                        ) : (
+                          <User className="w-6 h-6 sm:w-8 sm:h-8" />
+                        )}
                       </div>
                     )}
                   </div>
@@ -648,6 +653,7 @@ const SignUp = () => {
                   </p>
                 )}
               </div>
+              )}
 
               {/* Dynamic Fields based on Role */}
               <div className="min-h-[120px]">
