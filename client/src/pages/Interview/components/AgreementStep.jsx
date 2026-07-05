@@ -46,18 +46,16 @@ const AgreementStep = ({ hasAgreed, setHasAgreed, onBack, onNext }) => {
 
         <div
           onClick={() => setHasAgreed(!hasAgreed)}
-          className={`flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-            hasAgreed
+          className={`flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${hasAgreed
               ? "border-emerald-400 bg-emerald-50"
               : "border-slate-200 bg-slate-50 hover:border-slate-300"
-          }`}
+            }`}
         >
           <div
-            className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-md sm:rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-              hasAgreed
+            className={`w-5 h-5 sm:w-6 sm:h-6 mt-0.5 sm:mt-0 rounded-md sm:rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${hasAgreed
                 ? "bg-emerald-500 border-emerald-500"
                 : "border-slate-300 bg-white"
-            }`}
+              }`}
           >
             {hasAgreed && <Check size={14} className="text-white" />}
           </div>
@@ -72,16 +70,15 @@ const AgreementStep = ({ hasAgreed, setHasAgreed, onBack, onNext }) => {
           onClick={onBack}
           className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all hover:border-slate-300 cursor-pointer flex items-center justify-center gap-2 order-last sm:order-none"
         >
-          <ArrowLeft size={18} /> Back
+          <ArrowLeft size={18} /> Previous
         </button>
         <button
           onClick={onNext}
           disabled={!hasAgreed}
-          className={`flex-[2] font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg ${
-            hasAgreed
+          className={`flex-[2] font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg ${hasAgreed
               ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200 hover:-translate-y-0.5"
               : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
-          }`}
+            }`}
         >
           Continue to Setup <ChevronRight size={20} />
         </button>

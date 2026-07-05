@@ -59,8 +59,8 @@ const CameraSetupStep = ({
           <button
             onClick={toggleMic}
             className={`flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer border-2 ${micActive
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                : "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+              : "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
               }`}
           >
             {micActive ? <Mic className="w-4 h-4 sm:w-5 sm:h-5" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -69,8 +69,8 @@ const CameraSetupStep = ({
           <button
             onClick={toggleCam}
             className={`flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer border-2 ${camActive
-                ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                : "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+              : "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
               }`}
           >
             {camActive ? <VideoIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -104,7 +104,12 @@ const CameraSetupStep = ({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-
+        <button
+          onClick={onBack}
+          className="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all hover:border-slate-300 cursor-pointer flex items-center justify-center gap-2 order-last sm:order-none"
+        >
+          <ArrowLeft size={18} /> Previous
+        </button>
         <button
           className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
           onClick={onStart}

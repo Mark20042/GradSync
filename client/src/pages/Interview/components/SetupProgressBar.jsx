@@ -5,7 +5,7 @@ const SetupProgressBar = ({ setupStep, onBack }) => {
   const stepLabels = ["Rules & Guidelines", "Agreement", "Camera Setup"];
 
   return (
-    <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
+    <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between relative z-20 shadow-sm">
       <button
         onClick={onBack}
         className="flex items-center gap-1 sm:gap-2 border-none bg-transparent text-slate-500 font-semibold text-xs sm:text-sm cursor-pointer hover:text-slate-700 transition-colors"
