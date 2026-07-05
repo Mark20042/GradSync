@@ -72,12 +72,7 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
               </p>
             </div>
           </div>
-          <button
-            onClick={onCancel}
-            className="text-white/80 hover:text-white transition-colors shrink-0"
-          >
-            <X className="w-6 h-6 sm:w-7 sm:h-7" />
-          </button>
+
         </div>
       </div>
 
@@ -148,15 +143,15 @@ const PreAssessmentAgreement = ({ assessment, onAgree, onCancel }) => {
               </h3>
               <div className="space-y-2 text-xs sm:text-sm text-amber-800">
                 <p className="m-0 flex items-start gap-2">
-                  <strong className="whitespace-nowrap">Strike 1:</strong> 
+                  <strong className="whitespace-nowrap">Strike 1:</strong>
                   <span>Warning notification - Continue with caution</span>
                 </p>
                 <p className="m-0 flex items-start gap-2">
-                  <strong className="whitespace-nowrap">Strike 2:</strong> 
+                  <strong className="whitespace-nowrap">Strike 2:</strong>
                   <span>Final warning - One more violation will end the assessment</span>
                 </p>
                 <p className="m-0 flex items-start gap-2">
-                  <strong className="whitespace-nowrap">Strike 3:</strong> 
+                  <strong className="whitespace-nowrap">Strike 3:</strong>
                   <span>Assessment automatically submitted for admin review</span>
                 </p>
               </div>
