@@ -31,7 +31,8 @@ export const validateAvatar = (file) => {
 export const getInitials = (name) => {
   if (!name || typeof name !== "string") return "?";
   return name
-    .split(" ")
-    .map((n) => n[0].toUpperCase())
+    .trim()
+    .split(/\s+/)
+    .map((n) => n[0]?.toUpperCase() || "")
     .join("");
 };
