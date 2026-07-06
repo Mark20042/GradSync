@@ -226,6 +226,10 @@ export const CATEGORIES = [
     label: "Healthcare & Medical",
   },
   {
+    value: "Psychology & Human Services",
+    label: "Psychology & Human Services",
+  },
+  {
     value: "Other",
     label: "Other",
   },
