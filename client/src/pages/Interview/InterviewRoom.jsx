@@ -587,8 +587,8 @@ const InterviewRoom = () => {
     <div className="h-[100dvh] flex flex-col bg-slate-50 text-slate-800 overflow-hidden">
       <div className="flex-1 flex flex-col md:flex-row w-full h-[calc(100dvh-120px)] sm:h-[calc(100dvh-100px)]">
         {/* AI Interviewer Box */}
-        <div className="flex-1 bg-white overflow-hidden relative border-b md:border-b-0 md:border-r border-slate-200 flex flex-col items-center justify-center min-h-[40vh] md:min-h-0">
-          <div className="absolute top-3 sm:top-6 left-3 sm:left-6 right-3 sm:right-6 bg-white/95 backdrop-blur-xl p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] z-10 transition-all duration-500 translate-y-0 opacity-100 max-h-[40%] overflow-y-auto">
+        <div className="flex-1 bg-white overflow-hidden relative border-b md:border-b-0 md:border-r border-slate-200 flex flex-col min-h-[45vh] md:min-h-0">
+          <div className="relative md:absolute mt-3 mx-3 md:m-0 md:top-6 md:left-6 md:right-6 bg-white/95 backdrop-blur-xl p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-black/5 shadow-[0_10px_30px_rgba(0,0,0,0.05)] z-10 transition-all duration-500 max-h-[40%] overflow-y-auto shrink-0">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
               <div className="inline-block bg-blue-500 text-white text-[10px] sm:text-xs font-bold py-0.5 sm:py-1 px-2 sm:px-3 rounded-full uppercase tracking-wider">
                 Question {currentQIndex + 1} of {questions.length}
@@ -604,19 +604,23 @@ const InterviewRoom = () => {
             </h2>
           </div>
 
-          <Lottie
-            lottieRef={lottieRef}
-            animationData={talkingAnimation}
-            loop={true}
-            autoplay={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              maxHeight: "100%",
-              opacity: isSpeaking ? 1 : 0.8,
-              transition: "opacity 0.3s",
-            }}
-          />
+          <div className="flex-1 w-full flex items-center justify-center min-h-0 pb-10 md:pb-0 pt-4 md:pt-0 relative z-0">
+            <div className="w-[65%] sm:w-[50%] md:w-full h-full flex items-center justify-center">
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={talkingAnimation}
+                loop={true}
+                autoplay={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  maxHeight: "100%",
+                  opacity: isSpeaking ? 1 : 0.8,
+                  transition: "opacity 0.3s",
+                }}
+              />
+            </div>
+          </div>
 
           <div className="absolute bottom-3 sm:bottom-5 left-3 sm:left-5 bg-white/85 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg font-semibold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5 sm:gap-2 border border-black/5 shadow-sm">
             <div
