@@ -63,7 +63,7 @@ const ProfilePreview = ({ userData, formData }) => {
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="w-full lg:w-2/5 space-y-6 h-fit sticky top-6"
+      className="w-full lg:w-2/5 space-y-6 h-fit lg:sticky lg:top-6"
     >
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
         {/* Header / Cover */}
