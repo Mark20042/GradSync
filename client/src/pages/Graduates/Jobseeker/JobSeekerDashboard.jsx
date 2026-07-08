@@ -88,6 +88,60 @@ const FilterDropdown = ({
   );
 };
 
+const ConfirmApplyModal = ({ isOpen, onClose, onConfirm, loading, jobTitle }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={!loading ? onClose : undefined}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="bg-white rounded-2xl shadow-xl w-full max-w-sm relative z-[201] overflow-hidden flex flex-col"
+          >
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
+                <Briefcase className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Application</h3>
+              <p className="text-gray-500 mb-6 text-sm">
+                Are you sure you want to apply for <span className="font-bold text-gray-900">{jobTitle || "this job"}</span>? Make sure your profile is up to date before submitting.
+              </p>
+              <div className="flex flex-col sm:flex-row w-full gap-3">
+                <button
+                  onClick={onClose}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={onConfirm}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors shadow-md shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  {loading ? (
+                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  ) : (
+                    "Yes, Apply"
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const JobSeekerDashboard = () => {
   const { user } = useAuth();
 
@@ -99,6 +153,10 @@ const JobSeekerDashboard = () => {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Application Modal States
+  const [jobToApply, setJobToApply] = useState(null);
+  const [isApplying, setIsApplying] = useState(false);
 
   // Active dropdown state: 'jobType', 'category', 'salary', or null
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -288,6 +346,18 @@ const JobSeekerDashboard = () => {
 
   const toggleSaveJob = async (jobId, isSaved) => {
     try {
+      // Optimistically update local state to avoid full page refresh
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job._id === jobId ? { ...job, isSaved: !isSaved } : job
+        )
+      );
+      setRecommendedJobs((prevRecommended) =>
+        prevRecommended.map((job) =>
+          job._id === jobId ? { ...job, isSaved: !isSaved } : job
+        )
+      );
+
       if (isSaved) {
         await axiosInstance.delete(API_PATH.JOBS.UNSAVE_JOB(jobId));
         toast.success("Job removed from saved");
@@ -295,22 +365,52 @@ const JobSeekerDashboard = () => {
         await axiosInstance.post(API_PATH.JOBS.SAVE_JOB(jobId));
         toast.success("Job saved successfully");
       }
-      fetchJobs(filters);
     } catch (err) {
       console.error("Error:", err);
+      // Revert state on error
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job._id === jobId ? { ...job, isSaved: isSaved } : job
+        )
+      );
+      setRecommendedJobs((prevRecommended) =>
+        prevRecommended.map((job) =>
+          job._id === jobId ? { ...job, isSaved: isSaved } : job
+        )
+      );
       toast.error("Something went wrong! Try again later");
     }
   };
-  const applyToJob = async (jobId) => {
+  const applyToJob = (jobId) => {
+    setJobToApply(jobId);
+  };
+
+  const confirmApply = async () => {
+    if (!jobToApply) return;
+    setIsApplying(true);
     try {
-      if (jobId) {
-        await axiosInstance.post(API_PATH.APPLICATIONS.APPLY_TO_JOB(jobId));
-        toast.success("Applied to job successfully");
-      }
+      await axiosInstance.post(API_PATH.APPLICATIONS.APPLY_TO_JOB(jobToApply));
+      toast.success("Applied to job successfully");
+      
+      // Optimistically update the UI to show the job as applied
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job._id === jobToApply ? { ...job, applicationStatus: "Pending" } : job
+        )
+      );
+      setRecommendedJobs((prevRecommended) =>
+        prevRecommended.map((job) =>
+          job._id === jobToApply ? { ...job, applicationStatus: "Pending" } : job
+        )
+      );
+      
+      setJobToApply(null);
     } catch (err) {
       console.error("Error:", err);
       const errorMsg = err?.response?.data?.message;
       toast.error(errorMsg || "Something went wrong! Try again later");
+    } finally {
+      setIsApplying(false);
     }
   };
 
@@ -318,6 +418,11 @@ const JobSeekerDashboard = () => {
     (filters.type ? 1 : 0) +
     (filters.category ? 1 : 0) +
     (filters.minSalary || filters.maxSalary ? 1 : 0);
+
+  const selectedJob = jobToApply
+    ? jobs.find((j) => j._id === jobToApply) ||
+      recommendedJobs.find((j) => j._id === jobToApply)
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
@@ -615,6 +720,14 @@ const JobSeekerDashboard = () => {
       </div>
 
       <MobileFilterOverlay />
+
+      <ConfirmApplyModal
+        isOpen={!!jobToApply}
+        onClose={() => setJobToApply(null)}
+        onConfirm={confirmApply}
+        loading={isApplying}
+        jobTitle={selectedJob?.title}
+      />
     </div>
   );
 };
