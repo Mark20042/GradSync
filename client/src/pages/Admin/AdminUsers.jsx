@@ -160,8 +160,10 @@ const AdminUsers = () => {
         try {
             if (editingUser._id) {
                 // Update existing user
-                // Remove password from update payload if empty or not needed (backend handles this usually, but let's be safe)
-                const { password, ...updateData } = editingUser;
+                const updateData = { ...editingUser };
+                if (!updateData.password) {
+                    delete updateData.password;
+                }
                 const response = await axiosInstance.put(API_PATH.ADMIN.UPDATE_USER(editingUser._id), updateData);
                 setUsers(users.map((user) => (user._id === editingUser._id ? { ...user, ...response.data } : user)));
                 toast.success("User updated successfully");

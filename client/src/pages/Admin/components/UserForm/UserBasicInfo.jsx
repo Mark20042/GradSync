@@ -58,6 +58,7 @@ const UserBasicInfo = ({ editingUser, setEditingUser, showPassword, setShowPassw
                                             onChange={(e) => setEditingUser({ ...editingUser, password: e.target.value })}
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
                                             required={!editingUser._id}
+                                            autoComplete="new-password"
                                         />
                                         <button
                                             type="button"
