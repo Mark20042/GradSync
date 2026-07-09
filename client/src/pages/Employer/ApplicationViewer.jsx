@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Users,
   MapPin,
@@ -34,6 +34,7 @@ const ApplicationViewer = () => {
   const location = useLocation();
   const stateJobId = location.state?.jobId || null;
   const stateAppId = location.state?.applicationId || null;
+  const hasAutoOpened = useRef(false);
 
   const navigate = useNavigate();
 
@@ -56,9 +57,12 @@ const ApplicationViewer = () => {
         API_PATH.APPLICATIONS.GET_ALL_APPLICATIONS(jId)
       );
       setApplications(response.data);
-      if (stateAppId) {
+      if (stateAppId && !hasAutoOpened.current) {
         const targetApp = response.data.find(a => a._id === stateAppId);
-        if (targetApp) setSelectedApplicant(targetApp);
+        if (targetApp) {
+          setSelectedApplicant(targetApp);
+          hasAutoOpened.current = true;
+        }
       }
     } catch (error) {
       console.error("Error fetching applications:", error);
@@ -69,9 +73,7 @@ const ApplicationViewer = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (jobId) {
-        fetchApplications(jobId);
-      } else if (stateAppId) {
+      if (stateAppId) {
         try {
           setLoading(true);
           const res = await axiosInstance.get(API_PATH.APPLICATIONS.GET_APPLICATION_BY_ID(stateAppId));
@@ -85,6 +87,11 @@ const ApplicationViewer = () => {
         } catch (err) {
           navigate("/manage-jobs");
         }
+      } else if (stateJobId) {
+        setJobId(stateJobId);
+        fetchApplications(stateJobId);
+      } else if (jobId) {
+        fetchApplications(jobId);
       } else {
         navigate("/manage-jobs");
       }

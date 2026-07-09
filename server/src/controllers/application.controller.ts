@@ -178,6 +178,7 @@ const getApplicationsByJob = async (req: AuthRequest, res: Response, next: NextF
           _id: 1,
           status: 1,
           terminatedAt: 1,
+          resignationRequest: 1,
           createdAt: 1,
           updatedAt: 1,
           job: {

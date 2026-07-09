@@ -189,7 +189,7 @@ const Header = () => {
               }}
               className="block cursor-pointer hover:text-purple-400 font-medium"
             >
-              Documentation
+              Demo
             </a>
 
             {isAuthenticated ? (
