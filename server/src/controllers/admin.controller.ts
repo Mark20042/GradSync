@@ -23,6 +23,7 @@ import { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } from "@/
 import { createNotification } from "@/utils/notification.helper.js";
 import { recalcCompanyRating, recalcEmployeeRating } from "@/controllers/termination-review.controller.js";
 import { getIo } from "@/services/socket.service.js";
+import bcrypt from "bcrypt";
 
 export const getAnalytics = async (req: any, res: Response, next: NextFunction) => {
   try {
@@ -298,6 +299,11 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     user.verified = body.verified !== undefined ? body.verified : user.verified;
     if (body.avatar !== undefined) user.avatar = body.avatar;
     if (body.companyLogo !== undefined) user.companyLogo = body.companyLogo;
+
+    if (body.password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(body.password, salt);
+    }
     
     let tokensAdded = false;
     let tokensReduced = false;
