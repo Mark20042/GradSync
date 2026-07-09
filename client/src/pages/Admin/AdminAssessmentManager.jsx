@@ -383,12 +383,12 @@ const AdminAssessmentManager = () => {
               </div>
             ) : (
               <div className="flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-100">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate.fullName}'s Assessments</h2>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                  <div className="w-full">
+                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedCandidate.fullName}'s Assessments</h2>
                     <p className="text-gray-500 mt-1">Review, manage, or generate new assessments.</p>
                   </div>
-                  <div className="flex gap-2 items-center">
+                  <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
                     <button
                       onClick={() => fetchAssessmentsForCandidate(selectedCandidate._id)}
                       className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
@@ -442,10 +442,10 @@ const AdminAssessmentManager = () => {
                     assessments.map(a => (
                       <div key={a._id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all flex flex-col">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-lg text-gray-900">{a.title}</h3>
-                              <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full font-semibold uppercase">{a.skill}</span>
+                          <div className="flex-1 min-w-0 pr-4">
+                            <div className="flex items-start md:items-center flex-col md:flex-row gap-2">
+                              <h3 className="font-bold text-lg text-gray-900 leading-tight">{a.title}</h3>
+                              <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full font-semibold uppercase w-fit">{a.skill}</span>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">{a.questions?.length || 0} questions generated</p>
                           </div>
@@ -507,7 +507,7 @@ const AdminAssessmentManager = () => {
                   <h2 className="text-2xl font-bold text-gray-900">{viewingAssessment.title}</h2>
                   <p className="text-gray-500 text-sm mt-1">{viewingAssessment.questions.length} questions available</p>
                 </div>
-                <button onClick={() => { setViewingAssessment(null); setIsAddingQuestion(false); }} className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                <button onClick={() => { setViewingAssessment(null); setIsAddingQuestion(false); }} className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>
