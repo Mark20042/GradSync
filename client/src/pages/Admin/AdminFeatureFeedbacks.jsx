@@ -118,7 +118,7 @@ const AdminFeatureFeedbacks = () => {
                 <p>No feedback found.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto admin-table-responsive">
                 <table className="w-full">
                   <thead>
                     <tr className="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/50">

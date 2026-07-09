@@ -317,7 +317,7 @@ const AdminDashboard = () => {
                         <div className="w-1.5 h-6 bg-blue-500 rounded-full"></div>
                         Recent Registrations
                     </h2>
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto admin-table-responsive">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-gray-100">

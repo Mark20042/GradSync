@@ -417,7 +417,7 @@ const AdminAIResourceCenter = () => {
               Monitor remaining tokens for all users and manually add more GradCoins to their accounts. Users with the lowest balances are shown first.
             </p>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto admin-table-responsive">
             <table className="w-full text-left">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
