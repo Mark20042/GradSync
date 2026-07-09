@@ -12,6 +12,7 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
+import Documentation from "./pages/Documentation/Documentation";
 import SetupProfileGrad from "./pages/Auth/SetupProfileGrad";
 import SetupProfileJobseeker from "./pages/Auth/SetupProfileJobseeker";
 import JobSeekerDashboard from "./pages/Graduates/Jobseeker/JobSeekerDashboard";
@@ -84,6 +85,7 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/docs" element={<Documentation />} />
 
             {/* Protected Routes for Graduates & Job Seekers */}
             <Route element={<ProtectedRoute requiredRoles={["graduate", "jobseeker"]} />}>

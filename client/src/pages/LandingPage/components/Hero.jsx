@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Search, ArrowRight, Star } from "lucide-react";
+import { Search, ArrowRight, Star, PlayCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./../../../context/AuthContext";
 import HeroCards from "./HeroCards";
@@ -104,6 +104,13 @@ const Hero = () => {
               >
                 <span>Post a Job</span>
                 <ArrowRight className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => navigate("/docs")}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-50 text-blue-700 px-8 py-4 rounded-2xl shadow-xl shadow-blue-500/10 font-semibold border border-blue-100 hover:bg-blue-100 transition-colors"
+              >
+                <span>Watch Demo</span>
+                <PlayCircle className="w-5 h-5" />
               </button>
             </motion.div>
 

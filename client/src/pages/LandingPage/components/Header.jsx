@@ -85,6 +85,12 @@ const Header = () => {
             >
               Hire
             </a>
+            <a
+              onClick={() => navigate("/docs")}
+              className="cursor-pointer text-gray-300 hover:text-white transition-colors font-medium text-sm"
+            >
+              Documentation
+            </a>
           </nav>
 
           {/* Desktop Auth Buttons */}
@@ -175,6 +181,15 @@ const Header = () => {
               className="block cursor-pointer hover:text-purple-400 font-medium"
             >
               Hire
+            </a>
+            <a
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/docs");
+              }}
+              className="block cursor-pointer hover:text-purple-400 font-medium"
+            >
+              Documentation
             </a>
 
             {isAuthenticated ? (
