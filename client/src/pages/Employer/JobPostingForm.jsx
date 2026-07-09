@@ -76,8 +76,8 @@ const JobPostingForm = () => {
       qualifications: formData.qualifications,
       skills: formData.skills ? formData.skills.split(",").map(s => s.trim()).filter(Boolean) : [],
       benefits: formData.benefits,
-      salaryMin: formData.salaryMin,
-      salaryMax: formData.salaryMax,
+      salaryMin: formData.salaryMin ? Number(formData.salaryMin) : null,
+      salaryMax: formData.salaryMax ? Number(formData.salaryMax) : null,
     };
 
     try {
@@ -146,10 +146,12 @@ const JobPostingForm = () => {
       errors.skills = "Skills are required";
     }
 
-    if (!formData.salaryMin || !formData.salaryMax) {
-      errors.salary = "Both minimum and maximum salary are required";
-    } else if (parseInt(formData.salaryMin) >= parseInt(formData.salaryMax)) {
-      errors.salary = "Maximum salary must be greater than the minimum salary";
+    if (formData.salaryMin && formData.salaryMax) {
+      if (parseInt(formData.salaryMin) >= parseInt(formData.salaryMax)) {
+        errors.salary = "Maximum salary must be greater than the minimum salary";
+      }
+    } else if ((formData.salaryMin && !formData.salaryMax) || (!formData.salaryMin && formData.salaryMax)) {
+      errors.salary = "Both minimum and maximum salary must be provided if you want to set a range";
     }
 
     return errors;
@@ -370,7 +372,7 @@ const JobPostingForm = () => {
               {/* Salary Range */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Salary range <span className="text-red-500">*</span>
+                  Salary range (per month) <span className="text-gray-400 font-normal text-xs ml-1">(Optional)</span>
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
