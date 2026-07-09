@@ -121,7 +121,7 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
       throw new UnauthorizedError("Only employers can update contract status");
     }
 
-    const { status } = req.body;
+    const { status, endDate } = req.body;
     const allowed = ["Resigned", "Contract Ended", "Terminated"] as const;
     if (!allowed.includes(status)) {
       throw new BadRequestError(
@@ -137,9 +137,11 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
       );
     }
 
+    const terminationDate = endDate ? new Date(endDate) : new Date();
+
     contract.status = status;
     contract.workExperience.exitStatus = status;
-    contract.workExperience.endDate = new Date();
+    contract.workExperience.endDate = terminationDate;
     await contract.save();
 
     const application = await Application.findById(contract.application);
@@ -149,7 +151,7 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
           { _id: contract.employee, "experiences._id": application.experienceRef },
           {
             $set: {
-              "experiences.$.endDate": new Date(),
+              "experiences.$.endDate": terminationDate,
               "experiences.$.current": false,
             },
           },
@@ -158,7 +160,7 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
       
       // Create TerminationReview stub so they can rate each other
       const tenureDays = Math.max(0, Math.floor(
-        (new Date().getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24)
+        (terminationDate.getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24)
       ));
 
       const review = await TerminationReview.create({
@@ -166,13 +168,13 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
         job: contract.job,
         company: contract.employer,
         employee: contract.employee,
-        terminationDate: new Date(),
+        terminationDate: terminationDate,
         tenureDays,
         // No terminationReason by default for Resigned or Contract Ended
       });
       
       application.status = status as any;
-      application.terminatedAt = new Date();
+      application.terminatedAt = terminationDate;
       (application as any).terminationReview = review._id;
       await application.save();
     }

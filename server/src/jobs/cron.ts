@@ -48,22 +48,38 @@ export const initCronJobs = () => {
         contract.workExperience.endDate = contract.endDate ?? now;
         await contract.save();
 
-        await Application.findByIdAndUpdate(contract.application, {
-          status: "Terminated",
-          terminatedAt: now,
-        });
-
         const application = await Application.findById(contract.application);
-        if (application?.experienceRef) {
-          await User.updateOne(
-            { _id: contract.employee, "experiences._id": application.experienceRef },
-            {
-              $set: {
-                "experiences.$.endDate": contract.endDate ?? now,
-                "experiences.$.current": false,
+        if (application) {
+          if (application.experienceRef) {
+            await User.updateOne(
+              { _id: contract.employee, "experiences._id": application.experienceRef },
+              {
+                $set: {
+                  "experiences.$.endDate": contract.endDate ?? now,
+                  "experiences.$.current": false,
+                },
               },
-            },
-          );
+            );
+          }
+
+          const TerminationReview = (await import('@/models/TerminationReview.model.js')).default;
+          const tenureDays = Math.max(0, Math.floor(
+            ((contract.endDate ?? now).getTime() - new Date(contract.startDate).getTime()) / (1000 * 60 * 60 * 24)
+          ));
+
+          const review = await TerminationReview.create({
+            application: application._id,
+            job: contract.job,
+            company: contract.employer,
+            employee: contract.employee,
+            terminationDate: contract.endDate ?? now,
+            tenureDays,
+          });
+
+          application.status = "Contract Ended" as any;
+          application.terminatedAt = contract.endDate ?? now;
+          (application as any).terminationReview = review._id;
+          await application.save();
         }
 
         try {

@@ -49,6 +49,7 @@ const ApplicationViewer = () => {
   const [extendForm, setExtendForm] = useState({ duration: 6, durationUnit: "months", reason: "" });
   const [rejectResignationModal, setRejectResignationModal] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [terminationEndDate, setTerminationEndDate] = useState(new Date().toISOString().split("T")[0]);
 
   const fetchApplications = async (jId) => {
     try {
@@ -109,7 +110,7 @@ const ApplicationViewer = () => {
           map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c;
         });
         setContracts(map);
-      } catch (_) {}
+      } catch (_) { }
     };
     if (applications.length > 0) fetchContracts();
   }, [applications]);
@@ -137,9 +138,9 @@ const ApplicationViewer = () => {
   const handleReviewResignation = async (appId, status, reason = "") => {
     try {
       if (status === 'Rejected' && !reason && rejectResignationModal !== appId) {
-         setRejectResignationModal(appId);
-         setRejectReason("");
-         return;
+        setRejectResignationModal(appId);
+        setRejectReason("");
+        return;
       }
 
       await axiosInstance.post(API_PATH.APPLICATIONS.REVIEW_RESIGNATION(appId), {
@@ -160,6 +161,7 @@ const ApplicationViewer = () => {
   };
 
   const handleEndContractStatus = (contractId, status, applicantName) => {
+    setTerminationEndDate(new Date().toISOString().split("T")[0]);
     setConfirmEndContract({ contractId, status, applicantName });
   };
 
@@ -169,6 +171,7 @@ const ApplicationViewer = () => {
     try {
       await axiosInstance.patch(API_PATH.CONTRACTS.UPDATE_STATUS(contractId), {
         status,
+        endDate: terminationEndDate
       });
       toast.success(`Contract successfully marked as ${status}`);
       if (jobId) fetchApplications(jobId);
@@ -224,11 +227,11 @@ const ApplicationViewer = () => {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4">
               <div className="w-full sm:w-auto overflow-hidden">
-                <Breadcrumbs 
+                <Breadcrumbs
                   items={[
                     { label: 'Manage Jobs', onClick: () => navigate('/manage-jobs') },
                     { label: currentJobTitle }
-                  ]} 
+                  ]}
                 />
               </div>
               <button
@@ -326,11 +329,10 @@ const ApplicationViewer = () => {
                             <button
                               key={key}
                               onClick={() => setActiveTab(key)}
-                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                                isActive
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${isActive
                                   ? `${activeColor} shadow-md ring-2 ring-offset-1 ring-current/20 scale-105`
                                   : `${color} hover:shadow-sm hover:scale-[1.02]`
-                              }`}
+                                }`}
                             >
                               <Icon className="w-3.5 h-3.5" />
                               {count} {label}
@@ -410,7 +412,7 @@ const ApplicationViewer = () => {
                                         </span>
                                         <span className="text-gray-400">•</span>
                                         <StatusBadge status={application.status === "Accepted" ? contract.status : application.status} />
-                                        
+
                                         {contract.contractType === "Fixed-Term" && contract.status === "Accepted" && application.status === "Accepted" && (
                                           <button
                                             onClick={(e) => { e.stopPropagation(); setShowExtendModal(contract); setExtendForm({ duration: 6, durationUnit: "months", reason: "" }); }}
@@ -507,11 +509,11 @@ const ApplicationViewer = () => {
                           }
                           return app.status === activeTab;
                         }).length === 0 && (
-                          <div className="text-center py-10">
-                            <Users className="mx-auto h-16 w-16 text-gray-300" />
-                            <p className="mt-3 text-gray-500 font-medium">No {activeTab === "all" ? "" : `"${activeTab}" `}applications found</p>
-                          </div>
-                        )}
+                            <div className="text-center py-10">
+                              <Users className="mx-auto h-16 w-16 text-gray-300" />
+                              <p className="mt-3 text-gray-500 font-medium">No {activeTab === "all" ? "" : `"${activeTab}" `}applications found</p>
+                            </div>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -585,6 +587,17 @@ const ApplicationViewer = () => {
               <p className="text-gray-600 mb-6">
                 Are you sure you want to mark <span className="font-bold text-gray-900">{confirmEndContract.applicantName}'s</span> contract as <span className="font-bold text-gray-900">{confirmEndContract.status}</span>?
               </p>
+
+              <div className="mb-6 text-left">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Effective End Date</label>
+                <input
+                  type="date"
+                  value={terminationEndDate}
+                  onChange={(e) => setTerminationEndDate(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
               <div className="flex gap-3">
                 <button onClick={() => setConfirmEndContract(null)}
                   className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors">

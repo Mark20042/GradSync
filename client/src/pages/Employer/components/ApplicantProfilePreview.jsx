@@ -353,7 +353,7 @@ const ApplicantProfilePreview = ({
                 <button
                   onClick={() => {
                     handleClose();
-                    handleEndContractStatus(contract._id, "Contract Ended");
+                    handleEndContractStatus(contract._id, "Contract Ended", selectedApplicant.applicant.fullName);
                   }}
                   className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 text-purple-700 font-semibold rounded-xl hover:bg-purple-100 transition-all shadow-sm active:scale-[0.98] border border-purple-200 text-sm"
                 >
@@ -374,7 +374,7 @@ const ApplicantProfilePreview = ({
                 <button
                   onClick={() => {
                     handleClose();
-                    handleEndContractStatus(contract._id, "Resigned");
+                    handleEndContractStatus(contract._id, "Resigned", selectedApplicant.applicant.fullName);
                   }}
                   className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-orange-50 text-orange-700 font-semibold rounded-xl hover:bg-orange-100 transition-all shadow-sm active:scale-[0.98] border border-orange-200 text-sm"
                 >

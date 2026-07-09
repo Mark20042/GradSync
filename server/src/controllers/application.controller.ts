@@ -339,16 +339,16 @@ const reviewResignationRequest = async (req: AuthRequest, res: Response, next: N
 
     if (status === 'Approved') {
       // 1. Update Application status
-      app.status = 'Resigned';
+      app.status = 'Contract Ended';
       app.terminatedAt = app.resignationRequest.requestedEndDate;
       app.resignationRequest.status = 'Approved';
       
       // 2. Fetch default TerminationReason
       const TerminationReason = (await import('@/models/TerminationReason.model.js')).default;
-      let defaultReason = await TerminationReason.findOne({ label: { $regex: /Resign/i } });
+      let defaultReason = await TerminationReason.findOne({ label: { $regex: /Contract Ended/i } });
       if (!defaultReason) {
          defaultReason = await TerminationReason.create({
-            label: "Resigned",
+            label: "Contract Ended",
             category: "Other",
             description: "Auto-generated when jobseeker adds an end date to their experience profile.",
             createdBy: "system"
@@ -365,8 +365,18 @@ const reviewResignationRequest = async (req: AuthRequest, res: Response, next: N
               "experiences.$.endDate": app.resignationRequest.requestedEndDate,
               "experiences.$.current": false,
             },
-          }
         );
+      }
+
+      // Update Contract if exists
+      const Contract = (await import('@/models/Contract.model.js')).default;
+      const contract = await Contract.findOne({ application: app._id });
+      if (contract) {
+        contract.status = 'Contract Ended';
+        contract.workExperience.exitStatus = 'Contract Ended';
+        contract.workExperience.endDate = app.resignationRequest.requestedEndDate;
+        contract.endDate = app.resignationRequest.requestedEndDate;
+        await contract.save();
       }
 
       // 4. Create Termination Review stub
