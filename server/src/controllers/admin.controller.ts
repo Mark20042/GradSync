@@ -292,10 +292,12 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
 
     user.email = body.email || user.email;
     user.role = body.role || user.role;
-    user.phone = body.phone || user.phone;
-    user.address = body.address || user.address;
-    user.website = body.website || user.website;
+    if (body.phone !== undefined) user.phone = body.phone;
+    if (body.address !== undefined) user.address = body.address;
+    if (body.website !== undefined) user.website = body.website;
     user.verified = body.verified !== undefined ? body.verified : user.verified;
+    if (body.avatar !== undefined) user.avatar = body.avatar;
+    if (body.companyLogo !== undefined) user.companyLogo = body.companyLogo;
     
     let tokensAdded = false;
     let tokensReduced = false;
@@ -333,8 +335,8 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
       if (body.projects) user.projects = body.projects;
     }
     if (user.role === "employer") {
-      user.companyName = body.companyName || user.companyName;
-      user.companyDescription = body.companyDescription || user.companyDescription;
+      if (body.companyName !== undefined) user.companyName = body.companyName;
+      if (body.companyDescription !== undefined) user.companyDescription = body.companyDescription;
     }
     const updatedUser = await user.save();
 
