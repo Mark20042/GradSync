@@ -330,8 +330,8 @@ const ApplicationViewer = () => {
                               key={key}
                               onClick={() => setActiveTab(key)}
                               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${isActive
-                                  ? `${activeColor} shadow-md ring-2 ring-offset-1 ring-current/20 scale-105`
-                                  : `${color} hover:shadow-sm hover:scale-[1.02]`
+                                ? `${activeColor} shadow-md ring-2 ring-offset-1 ring-current/20 scale-105`
+                                : `${color} hover:shadow-sm hover:scale-[1.02]`
                                 }`}
                             >
                               <Icon className="w-3.5 h-3.5" />
@@ -618,14 +618,14 @@ const ApplicationViewer = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-              <h3 className="font-bold text-gray-900 text-lg">Decline Resignation</h3>
+              <h3 className="font-bold text-gray-900 text-lg">Decline End Date</h3>
               <button onClick={() => setRejectResignationModal(null)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6">
               <p className="text-gray-600 mb-4 text-sm">
-                Please provide a reason for declining this resignation or contract end date request. The applicant will be notified.
+                Please provide a reason for declining this contract end date request. The applicant will be notified.
               </p>
               <textarea
                 value={rejectReason}
