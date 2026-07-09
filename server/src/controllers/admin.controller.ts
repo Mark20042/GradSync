@@ -719,7 +719,7 @@ export const updateSystemSettings = async (req: any, res: Response, next: NextFu
       settings = new SystemSettings(req.body);
     } else {
       if (req.body.aiCosts) {
-        if (!settings.aiCosts) settings.aiCosts = { interview: 20, jobMatch: 1, suitability: 1, skillVerification: 1, profileGeneration: 1 };
+        if (!settings.aiCosts) settings.aiCosts = { interview: 20, jobMatch: 1, suitability: 1, skillVerification: 1, profileGeneration: 1, employerSummary: 5 };
         if (req.body.aiCosts.interview !== undefined) settings.aiCosts.interview = req.body.aiCosts.interview;
         if (req.body.aiCosts.jobMatch !== undefined) settings.aiCosts.jobMatch = req.body.aiCosts.jobMatch;
         if (req.body.aiCosts.suitability !== undefined) settings.aiCosts.suitability = req.body.aiCosts.suitability;

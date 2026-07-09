@@ -32,10 +32,12 @@ import Breadcrumbs from "../../components/Breadcrumbs";
 
 const ApplicationViewer = () => {
   const location = useLocation();
-  const jobId = location.state?.jobId || null;
+  const stateJobId = location.state?.jobId || null;
+  const stateAppId = location.state?.applicationId || null;
 
   const navigate = useNavigate();
 
+  const [jobId, setJobId] = useState(stateJobId);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -44,14 +46,20 @@ const ApplicationViewer = () => {
   const [showExtendModal, setShowExtendModal] = useState(null);
   const [confirmEndContract, setConfirmEndContract] = useState(null);
   const [extendForm, setExtendForm] = useState({ duration: 6, durationUnit: "months", reason: "" });
+  const [rejectResignationModal, setRejectResignationModal] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
 
-  const fetchApplications = async () => {
+  const fetchApplications = async (jId) => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(
-        API_PATH.APPLICATIONS.GET_ALL_APPLICATIONS(jobId)
+        API_PATH.APPLICATIONS.GET_ALL_APPLICATIONS(jId)
       );
       setApplications(response.data);
+      if (stateAppId) {
+        const targetApp = response.data.find(a => a._id === stateAppId);
+        if (targetApp) setSelectedApplicant(targetApp);
+      }
     } catch (error) {
       console.error("Error fetching applications:", error);
     } finally {
@@ -60,9 +68,29 @@ const ApplicationViewer = () => {
   };
 
   useEffect(() => {
-    if (jobId) fetchApplications();
-    else navigate("/manage-jobs");
-  }, [jobId, navigate]);
+    const init = async () => {
+      if (jobId) {
+        fetchApplications(jobId);
+      } else if (stateAppId) {
+        try {
+          setLoading(true);
+          const res = await axiosInstance.get(API_PATH.APPLICATIONS.GET_APPLICATION_BY_ID(stateAppId));
+          if (res.data && res.data.job) {
+            const jId = res.data.job._id || res.data.job;
+            setJobId(jId);
+            fetchApplications(jId);
+          } else {
+            navigate("/manage-jobs");
+          }
+        } catch (err) {
+          navigate("/manage-jobs");
+        }
+      } else {
+        navigate("/manage-jobs");
+      }
+    };
+    init();
+  }, [stateJobId, stateAppId, navigate]);
 
   // Fetch contracts for accepted applicants
   useEffect(() => {
@@ -99,6 +127,31 @@ const ApplicationViewer = () => {
     }
   };
 
+  const handleReviewResignation = async (appId, status, reason = "") => {
+    try {
+      if (status === 'Rejected' && !reason && rejectResignationModal !== appId) {
+         setRejectResignationModal(appId);
+         setRejectReason("");
+         return;
+      }
+
+      await axiosInstance.post(API_PATH.APPLICATIONS.REVIEW_RESIGNATION(appId), {
+        status,
+        rejectedReason: reason
+      });
+      toast.success(`Resignation request ${status.toLowerCase()}`);
+      if (jobId) fetchApplications(jobId);
+      const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
+      const map = {};
+      res.data.forEach((c) => { map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c; });
+      setContracts(map);
+      setRejectResignationModal(null);
+      setRejectReason("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to process request");
+    }
+  };
+
   const handleEndContractStatus = (contractId, status, applicantName) => {
     setConfirmEndContract({ contractId, status, applicantName });
   };
@@ -111,7 +164,7 @@ const ApplicationViewer = () => {
         status,
       });
       toast.success(`Contract successfully marked as ${status}`);
-      fetchApplications();
+      if (jobId) fetchApplications(jobId);
       const res = await axiosInstance.get(API_PATH.CONTRACTS.GET_ALL);
       const map = {};
       res.data.forEach((c) => { map[`${c.employee?._id || c.employee}_${c.job?._id || c.job}`] = c; });
@@ -379,6 +432,30 @@ const ApplicationViewer = () => {
                                         )}
                                       </div>
                                     )}
+
+                                    {/* Resignation Request Info */}
+                                    {application.resignationRequest && application.resignationRequest.status === 'Pending' && (
+                                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between flex-wrap gap-3">
+                                        <div className="flex items-center gap-2 text-sm text-amber-800">
+                                          <CalendarX className="w-4 h-4 text-amber-600" />
+                                          <span>Requested End Date: <span className="font-semibold">{moment(application.resignationRequest.requestedEndDate).format("Do MMM, YYYY")}</span></span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); handleReviewResignation(application._id, 'Rejected'); }}
+                                            className="px-3 py-1.5 bg-white text-gray-700 border border-gray-200 rounded-md text-xs font-semibold hover:bg-gray-50"
+                                          >
+                                            Decline
+                                          </button>
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); handleReviewResignation(application._id, 'Approved'); }}
+                                            className="px-3 py-1.5 bg-amber-600 text-white rounded-md text-xs font-semibold hover:bg-amber-700 shadow-sm"
+                                          >
+                                            Approve
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
 
@@ -516,6 +593,42 @@ const ApplicationViewer = () => {
         </div>
       )}
 
+      {/* Reject Resignation Modal */}
+      {rejectResignationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900 text-lg">Decline Resignation</h3>
+              <button onClick={() => setRejectResignationModal(null)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-600 mb-4 text-sm">
+                Please provide a reason for declining this resignation or contract end date request. The applicant will be notified.
+              </p>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. End date does not match our records, please contact HR."
+                className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 min-h-[100px]"
+              />
+              <div className="flex gap-3 mt-6">
+                <button onClick={() => setRejectResignationModal(null)}
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
+                  Cancel
+                </button>
+                <button onClick={() => handleReviewResignation(rejectResignationModal, 'Rejected', rejectReason)}
+                  disabled={!rejectReason.trim()}
+                  className="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  Confirm Decline
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Modal */}
       {selectedApplicant && (
         <ApplicantProfilePreview
@@ -529,9 +642,10 @@ const ApplicationViewer = () => {
             setShowExtendModal(contractData);
             setExtendForm({ duration: 6, durationUnit: "months", reason: "" });
           }}
+          handleReviewResignation={handleReviewResignation}
           handleClose={() => {
             setSelectedApplicant(null);
-            fetchApplications();
+            if (jobId) fetchApplications(jobId);
           }}
         />
       )}

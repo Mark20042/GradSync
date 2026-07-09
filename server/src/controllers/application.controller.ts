@@ -318,4 +318,101 @@ const terminateApplication = async (req: AuthRequest, res: Response, next: NextF
   } catch (error) { next(error); }
 };
 
-export { applyToJob, getMyApplications, getApplicationsByJob, getApplicationById, updateApplicationStatus, terminateApplication };
+const reviewResignationRequest = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { status, rejectedReason } = req.body;
+    const app = await Application.findById(req.params.id).populate("job");
+    if (!app) throw new NotFoundError("Application not found");
+    if (app.status !== "Accepted") {
+      throw new BadRequestError("Can only review active employments");
+    }
+    
+    const job = app.job as any;
+    if (String(job.company) !== String(req.user._id)) {
+      throw new UnauthorizedError("Not authorized to review this application");
+    }
+
+    if (!app.resignationRequest || app.resignationRequest.status !== 'Pending') {
+      throw new BadRequestError("No pending resignation request found");
+    }
+
+    if (status === 'Approved') {
+      // 1. Update Application status
+      app.status = 'Resigned';
+      app.terminatedAt = app.resignationRequest.requestedEndDate;
+      app.resignationRequest.status = 'Approved';
+      
+      // 2. Fetch default TerminationReason
+      const TerminationReason = (await import('@/models/TerminationReason.model.js')).default;
+      let defaultReason = await TerminationReason.findOne({ label: { $regex: /Resign/i } });
+      if (!defaultReason) {
+         defaultReason = await TerminationReason.create({
+            label: "Resigned",
+            category: "Other",
+            description: "Auto-generated when jobseeker adds an end date to their experience profile.",
+            createdBy: "system"
+         });
+      }
+      app.terminationReason = defaultReason._id;
+      
+      // 3. Update User Experience
+      if (app.experienceRef) {
+        await User.updateOne(
+          { _id: app.applicant, "experiences._id": app.experienceRef },
+          {
+            $set: {
+              "experiences.$.endDate": app.resignationRequest.requestedEndDate,
+              "experiences.$.current": false,
+            },
+          }
+        );
+      }
+
+      // 4. Create Termination Review stub
+      const TerminationReview = (await import('@/models/TerminationReview.model.js')).default;
+      const tenureDays = Math.floor(
+         (app.terminatedAt.getTime() - new Date(app.createdAt!).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const review = await TerminationReview.create({
+         application: app._id,
+         employee: app.applicant,
+         company: job.company,
+         job: job._id,
+         terminationReason: defaultReason._id,
+         terminationDate: app.terminatedAt,
+         tenureDays: tenureDays > 0 ? tenureDays : 0,
+      });
+      app.terminationReview = review._id;
+      await app.save();
+
+      // Notify Jobseeker
+      await createNotification(
+        app.applicant,
+        "SYSTEM_ALERT",
+        "Resignation Approved",
+        `Your request to end your role at ${job.companyName || 'the company'} has been approved. The end date has been updated on your profile.`,
+        app._id
+      );
+
+    } else if (status === 'Rejected') {
+      app.resignationRequest.status = 'Rejected';
+      app.resignationRequest.rejectedReason = rejectedReason || '';
+      await app.save();
+
+      // Notify Jobseeker
+      await createNotification(
+        app.applicant,
+        "SYSTEM_ALERT",
+        "Resignation Request Declined",
+        `Your request to end your role at ${job.companyName || 'the company'} has been declined by the employer. Reason: ${rejectedReason || 'No reason provided.'}`,
+        app._id
+      );
+    } else {
+      throw new BadRequestError("Invalid status");
+    }
+
+    res.status(StatusCodes.OK).json({ message: `Resignation request ${status.toLowerCase()} successfully`, application: app });
+  } catch (error) { next(error); }
+};
+
+export { applyToJob, getMyApplications, getApplicationsByJob, getApplicationById, updateApplicationStatus, terminateApplication, reviewResignationRequest };

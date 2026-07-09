@@ -194,6 +194,68 @@ const updateProfile = async (
           : user.companyDescription;
     }
 
+    // Intercept end dates for system-managed jobs before saving
+    if (newlyEndedExperiences.length > 0) {
+      try {
+        for (const exp of newlyEndedExperiences) {
+          const activeApps = await Application.find({
+             applicant: user._id,
+             status: { $in: ["Accepted", "Hired"] }
+          }).populate("job");
+
+          const employers = await User.find({ 
+            role: "employer", 
+            companyName: { $regex: new RegExp(exp.company, "i") } 
+          }).select("_id");
+          const employerIds = employers.map(e => e._id.toString());
+
+          if (employerIds.length > 0) {
+            for (const app of activeApps) {
+               if (app.job && employerIds.includes((app.job as any).company.toString())) {
+                  // This experience is tied to an active system job!
+                  // 1. Revert the endDate in the user's experiences array
+                  const userExpIndex = user.experiences.findIndex((e: any) => 
+                    (e._id && exp._id && e._id.toString() === exp._id.toString()) ||
+                    (e.company === exp.company && e.title === exp.title)
+                  );
+                  
+                  if (userExpIndex !== -1) {
+                    (user.experiences[userExpIndex] as any).endDate = null;
+                    (user.experiences[userExpIndex] as any).current = true;
+                  }
+
+                  // 2. Create Resignation Request on Application
+                  app.resignationRequest = {
+                    requestedEndDate: exp.endDate ? new Date(exp.endDate) : new Date(),
+                    status: 'Pending',
+                  };
+                  await app.save();
+
+                  // 3. Send notification to Employer
+                  await createNotification(
+                    (app.job as any).company,
+                    "APPLICATION",
+                    "Resignation / End Contract Request",
+                    `${user.fullName} has requested to add an end date (${new Date(app.resignationRequest.requestedEndDate).toLocaleDateString()}) for their role. Please review and verify this in your Applicant tracking system.`,
+                    app._id
+                  );
+
+                  // 4. Inform Jobseeker that it's pending
+                  await createNotification(
+                    user._id,
+                    "SYSTEM_ALERT",
+                    "End Date Verification Pending",
+                    `Your request to end your role at ${exp.company} has been sent to the employer for verification. The end date will not be added until they approve it.`
+                  );
+               }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error processing resignation request intercept:", err);
+      }
+    }
+
     await user.save();
     
     // Auto-generate assessments for any newly added skills
@@ -219,82 +281,6 @@ const updateProfile = async (
         console.error("Error detecting missing skills on profile update:", err);
       }
       
-      // Handle auto-terminations for newly ended experiences
-      if (newlyEndedExperiences.length > 0) {
-        try {
-          let defaultReason = await TerminationReason.findOne({ label: { $regex: /Resign/i } });
-          if (!defaultReason) {
-            defaultReason = await TerminationReason.create({
-              label: "Resigned",
-              category: "Other",
-              description: "Auto-generated when jobseeker adds an end date to their experience profile.",
-              createdBy: "system"
-            });
-          }
-
-          for (const exp of newlyEndedExperiences) {
-            // Find active applications for this user
-            const activeApps = await Application.find({
-               applicant: user._id,
-               status: { $in: ["Accepted", "Hired"] }
-            }).populate("job");
-
-            // Look for employer matching the experience company name
-            const employers = await User.find({ 
-              role: "employer", 
-              companyName: { $regex: new RegExp(exp.company, "i") } 
-            }).select("_id");
-            const employerIds = employers.map(e => e._id.toString());
-
-            if (employerIds.length > 0) {
-              for (const app of activeApps) {
-                 if (app.job && employerIds.includes((app.job as any).company.toString())) {
-                    // Match found! Auto terminate.
-                    app.status = "Resigned";
-                    app.terminatedAt = exp.endDate ? new Date(exp.endDate) : new Date();
-                    app.terminationReason = defaultReason._id;
-                    await app.save();
-
-                    // Create Review stub
-                    const tenureDays = Math.floor(
-                      (app.terminatedAt.getTime() - new Date(app.createdAt!).getTime()) / (1000 * 60 * 60 * 24)
-                    );
-                    
-                    const review = await TerminationReview.create({
-                       application: app._id,
-                       employee: user._id,
-                       company: (app.job as any).company,
-                       job: (app.job as any)._id,
-                       terminationReason: defaultReason._id,
-                       terminationDate: app.terminatedAt,
-                       tenureDays: tenureDays > 0 ? tenureDays : 0,
-                    });
-                    
-                    // Link the review to the application
-                    (app as any).terminationReview = review._id;
-                    await app.save();
-
-                    // Send notifications
-                    await createNotification(
-                      (app.job as any).company,
-                      "SYSTEM_ALERT",
-                      "Employee Resignation Update",
-                      `${user.fullName} has updated their profile to indicate they no longer work at your company. Please submit a review in your Applicant tracking system.`
-                    );
-                    await createNotification(
-                      user._id,
-                      "SYSTEM_ALERT",
-                      "Review Your Past Employer",
-                      `We noticed you added an end date for your role at ${exp.company}. Would you like to leave a review in your Applications page?`
-                    );
-                 }
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Error processing auto-termination:", err);
-        }
-      }
     }
 
     const updatedUser = await User.findById(req.user._id).select("-password");

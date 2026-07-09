@@ -1,4 +1,4 @@
-import { Download, X, User, Sparkles, BrainCircuit, UserX, UserMinus, Pencil, CheckCircle2 } from "lucide-react";
+import { Download, X, User, Sparkles, BrainCircuit, UserX, UserMinus, Pencil, CheckCircle2, CalendarX } from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../context/AuthContext";
@@ -24,6 +24,7 @@ const ApplicantProfilePreview = ({
   setSelectedApplicant,
   handleDownloadResume,
   handleExtendClick,
+  handleReviewResignation,
   handleClose,
 }) => {
   const [currentStatus, setCurrentStatus] = useState(selectedApplicant.status);
@@ -200,6 +201,34 @@ const ApplicantProfilePreview = ({
               <p className="text-gray-500 text-sm mt-0.5">{selectedApplicant.applicant.email}</p>
             </div>
           </div>
+
+          {selectedApplicant.resignationRequest && selectedApplicant.resignationRequest.status === 'Pending' && (
+            <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between flex-wrap gap-3 shadow-sm">
+              <div className="flex items-center gap-3 text-amber-800">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <CalendarX className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Resignation / End Contract Request</p>
+                  <p className="text-xs mt-0.5">Requested End Date: <span className="font-bold">{moment(selectedApplicant.resignationRequest.requestedEndDate).format("Do MMM, YYYY")}</span></p>
+                </div>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleClose(); handleReviewResignation(selectedApplicant._id, 'Rejected'); }}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Decline
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleClose(); handleReviewResignation(selectedApplicant._id, 'Approved'); }}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 shadow-sm transition-colors"
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-5">
             {/* Info Grid */}

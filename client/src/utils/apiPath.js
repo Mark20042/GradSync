@@ -45,6 +45,7 @@ export const API_PATH = {
     GET_MY_APPLICATIONS: "/api/applications/my",
     UPDATE_STATUS: (id) => `/api/applications/${id}/status`,
     TERMINATE: (id) => `/api/applications/${id}/terminate`,
+    REVIEW_RESIGNATION: (id) => `/api/applications/${id}/resignation-request`,
   },
   IMAGE: { ULOAD_IMAGE: "/api/auth/upload-image" },
   CHAT: {
