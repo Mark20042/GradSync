@@ -42,12 +42,19 @@ const SkillsSection = ({ user, verifiedSkills = [], editing, editData, setEditDa
     const handleAddSkill = () => {
         if (newSkill.trim()) {
             const currentSkills = editData.skills || [];
-            if (!currentSkills.includes(newSkill.trim())) {
-                setEditData({
-                    ...editData,
-                    skills: [...currentSkills, newSkill.trim()]
-                });
-            }
+            const skillsToAdd = newSkill.split(",").map(s => s.trim()).filter(Boolean);
+            
+            let updatedSkills = [...currentSkills];
+            skillsToAdd.forEach(skill => {
+                if (!updatedSkills.includes(skill)) {
+                    updatedSkills.push(skill);
+                }
+            });
+
+            setEditData({
+                ...editData,
+                skills: updatedSkills
+            });
             setNewSkill('');
         }
     };
