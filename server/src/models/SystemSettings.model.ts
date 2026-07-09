@@ -7,6 +7,7 @@ export interface ISystemSettings extends Document {
     suitability: number;
     skillVerification: number;
     profileGeneration: number;
+    employerSummary: number;
   };
   initialTokens: {
     graduate: number;
@@ -27,6 +28,7 @@ const systemSettingsSchema = new Schema<ISystemSettings>({
     suitability: { type: Number, default: 1 },
     skillVerification: { type: Number, default: 1 },
     profileGeneration: { type: Number, default: 1 },
+    employerSummary: { type: Number, default: 20 },
   },
   initialTokens: {
     graduate: { type: Number, default: 5 },

@@ -17,7 +17,8 @@ const AdminAIResourceCenter = () => {
     jobMatch: 1,
     suitability: 1,
     skillVerification: 1,
-    profileGeneration: 1
+    profileGeneration: 1,
+    employerSummary: 20
   });
   const [initialTokens, setInitialTokens] = useState({
     graduate: 5,
@@ -280,6 +281,17 @@ const AdminAIResourceCenter = () => {
                   name="profileGeneration"
                   min="0"
                   value={costs.profileGeneration || 1}
+                  onChange={handleCostChange}
+                  className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employer Summary Cost</label>
+                <input
+                  type="number"
+                  name="employerSummary"
+                  min="0"
+                  value={costs.employerSummary || 20}
                   onChange={handleCostChange}
                   className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />

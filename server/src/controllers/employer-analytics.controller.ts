@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import type { Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { UnauthorizedError, BadRequestError } from "@/errors/index.js";
@@ -258,7 +259,9 @@ export const getAISummary = async (req: AuthRequest, res: Response, next: NextFu
       return res.status(StatusCodes.OK).json({ isCached: false });
     }
 
-    await requireEmployerAndCoins(req, 20);
+    const settings = await mongoose.model("SystemSettings").findOne().lean() as any;
+    const cost = settings?.aiCosts?.employerSummary ?? 20;
+    await requireEmployerAndCoins(req, cost);
     const jobs = await Job.find({ company: companyId }).select("_id title").lean();
     const jobIds = jobs.map(j => j._id);
 

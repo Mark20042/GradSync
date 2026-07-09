@@ -460,15 +460,16 @@ const JobDetails = () => {
               <button
                 
                 onClick={() => {
-                  if (user?.aiTokens < 1) {
+                  const cost = user?.systemSettings?.aiCosts?.suitability || 1;
+                  if (user?.aiTokens < cost) {
                     window.dispatchEvent(new CustomEvent("openTokenModal"));
                     return;
                   }
                   setShowSuitabilityModal(true);
                 }}
-                className={`w-full font-bold py-3 rounded-xl transition-colors relative z-10 flex items-center justify-center gap-2 shadow-sm ${user?.aiTokens < 1 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white text-indigo-600 hover:bg-indigo-50"}`}
+                className={`w-full font-bold py-3 rounded-xl transition-colors relative z-10 flex items-center justify-center gap-2 shadow-sm ${user?.aiTokens < (user?.systemSettings?.aiCosts?.suitability || 1) ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-white text-indigo-600 hover:bg-indigo-50"}`}
               >
-                Check My Match <span className="flex items-center gap-1 ml-1 text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> 1</span>
+                Check My Match <span className="flex items-center gap-1 ml-1 text-[11px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full"><img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain" /> {user?.systemSettings?.aiCosts?.suitability || 1}</span>
               </button>
             </div>
 
