@@ -7,7 +7,7 @@ const UserBasicInfo = ({ editingUser, setEditingUser, showPassword, setShowPassw
         <>
                         <div className="space-y-4">
                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b pb-2">Basic Information</h3>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
                                     <input
@@ -90,7 +90,7 @@ const UserBasicInfo = ({ editingUser, setEditingUser, showPassword, setShowPassw
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     />
                                 </div>
-                                <div className="col-span-2">
+                                <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                                     <input
                                         type="text"
@@ -99,7 +99,7 @@ const UserBasicInfo = ({ editingUser, setEditingUser, showPassword, setShowPassw
                                         className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     />
                                 </div>
-                                <div className="col-span-2">
+                                <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
                                     <input
                                         type="text"
@@ -109,7 +109,7 @@ const UserBasicInfo = ({ editingUser, setEditingUser, showPassword, setShowPassw
                                     />
                                 </div>
                                 {!editingUser.isAdmin && (
-                                    <div className="col-span-2 flex items-center gap-2 pt-2">
+                                    <div className="md:col-span-2 flex items-center gap-2 pt-2">
                                         <input
                                             type="checkbox"
                                             id="manual-verify"

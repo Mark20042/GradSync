@@ -246,6 +246,7 @@ const AdminFAQs = () => {
 
                 {/* Job FAQs Table */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-100">
                             <tr>
@@ -330,6 +331,7 @@ const AdminFAQs = () => {
                         </tbody>
                     </table>
                 </div>
+                </div>
             </div>
 
             {/* Edit/Add FAQ Modal */}
@@ -363,7 +365,7 @@ const AdminFAQs = () => {
 
                     {activeTab === "system" ? (
                         <>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
                                     <select
@@ -472,7 +474,7 @@ const AdminFAQs = () => {
 
 
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Last Updated</h3>
                                 <p className="text-gray-900 text-sm">{new Date(viewingFaq.updatedAt).toLocaleString()}</p>

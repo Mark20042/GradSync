@@ -166,6 +166,7 @@ const AdminJobs = () => {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-100">
                             <tr>
@@ -244,6 +245,7 @@ const AdminJobs = () => {
                         </tbody>
                     </table>
                 </div>
+                </div>
             </div>
 
             {/* Edit Job Modal */}
@@ -254,7 +256,7 @@ const AdminJobs = () => {
             >
                 {editingJob && (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
                                 <input
@@ -452,7 +454,7 @@ const AdminJobs = () => {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
                                 <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Category</h4>
                                 <p className="text-gray-900 font-medium">{viewingJob.category}</p>

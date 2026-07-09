@@ -203,6 +203,7 @@ const AdminEmployerSettings = () => {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50 border-b border-gray-100">
                             <tr>
@@ -277,6 +278,7 @@ const AdminEmployerSettings = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
                 </div>
             </div>
 
@@ -377,7 +379,7 @@ const AdminEmployerSettings = () => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                 <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Timezone</h3>
                                 <p className="text-gray-900 font-medium">{viewingSettings.timezone}</p>

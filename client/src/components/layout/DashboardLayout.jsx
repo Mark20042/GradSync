@@ -40,16 +40,14 @@ const NavigationItem = ({ item, active, onClick, isCollapsed }) => {
     <button
       onClick={() => onClick(item.id)}
       title={isCollapsed ? item.name : undefined}
-      className={`w-full flex items-center ${isCollapsed ? "justify-center px-0" : "px-3"} py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group relative ${
-        active
-          ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
-          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-      }`}
+      className={`w-full flex items-center ${isCollapsed ? "justify-center px-0" : "px-3"} py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group relative ${active
+        ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-50"
+        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`}
     >
       <Icon
-        className={`w-5 h-5 flex-shrink-0 ${
-          active ? "text-blue-600" : "text-gray-500"
-        }`}
+        className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-600" : "text-gray-500"
+          }`}
       />
       {!isCollapsed && <span className="ml-3 truncate">{item.name}</span>}
       {isCollapsed && (
@@ -101,10 +99,10 @@ const DashboardLayout = ({ activeMenu, children }) => {
     if (user && !user.isAdmin) {
       const socket = io(BASE_URL);
       socket.emit("joinRoom", user._id);
-      
+
       socket.on("receiveNotification", (notification) => {
         setUnreadCount(prev => prev + 1);
-        
+
         if (notification.type === "TOKENS_ADDED") {
           setNewTokensData(notification);
         } else if (notification.type === "TERMINATION") {
@@ -116,8 +114,8 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 setPendingRatingReview(res.data[0]);
               }
             })
-            .catch(() => {});
-            
+            .catch(() => { });
+
           toast(notification.title + ": " + notification.message, {
             icon: '🔔',
             duration: 5000,
@@ -130,7 +128,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
           });
         }
       });
-      
+
       return () => socket.disconnect();
     }
   }, [user]);
@@ -147,11 +145,11 @@ const DashboardLayout = ({ activeMenu, children }) => {
         if (res.data && res.data.length > 0) {
           const unprompted = res.data.find(r => !r.employerRatingPromptDismissed);
           if (unprompted) {
-             setPendingEmployerReview(unprompted);
+            setPendingEmployerReview(unprompted);
           }
         }
       })
-      .catch(() => {}); // silently fail
+      .catch(() => { }); // silently fail
   }, [user]);
 
   // Listen for instant mark-as-read events
@@ -201,7 +199,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
   const toggleDesktopSidebar = () => {
     const newValue = !sidebarCollapsed;
     setSidebarCollapsed(newValue);
-    try { localStorage.setItem("sidebarCollapsed", String(newValue)); } catch {}
+    try { localStorage.setItem("sidebarCollapsed", String(newValue)); } catch { }
   };
 
   return (
@@ -209,13 +207,12 @@ const DashboardLayout = ({ activeMenu, children }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 transition-transform duration-300 transform
-      ${
-        isMobile
-          ? sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full"
-          : "translate-x-0"
-      }
+      ${isMobile
+            ? sidebarOpen
+              ? "translate-x-0"
+              : "-translate-x-full"
+            : "translate-x-0"
+          }
       ${sidebarCollapsed ? "w-16" : "w-64"}
       bg-white border-r border-gray-200 flex flex-col`}
       >
@@ -240,7 +237,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
         </div>
 
         {/* Navigation */}
-        <nav className={`${sidebarCollapsed ? "p-2" : "p-4"} space-y-1 flex-1 overflow-y-auto pb-24 no-scrollbar`}>
+        <nav className={`${sidebarCollapsed ? "p-2" : "p-4"} space-y-1 flex-1 overflow-y-auto no-scrollbar`}>
           {/* Employer Navigation - Only if NOT admin */}
           {!user?.isAdmin &&
             user?.role === "employer" &&
@@ -341,9 +338,9 @@ const DashboardLayout = ({ activeMenu, children }) => {
         </nav>
 
         {/* Logout */}
-        <div className={`absolute bottom-4 ${sidebarCollapsed ? "left-2 right-2" : "left-4 right-4"}`}>
+        <div className={`p-4 border-t border-gray-100 mt-auto ${sidebarCollapsed ? "px-2" : "px-4"}`}>
           <button
-            className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-0" : "px-3"} py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group relative`}
+            className={`w-full flex items-center ${sidebarCollapsed ? "justify-center px-0" : "px-3"} py-2.5 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 group relative`}
             onClick={logout}
             title={sidebarCollapsed ? "Logout" : undefined}
           >
@@ -409,8 +406,8 @@ const DashboardLayout = ({ activeMenu, children }) => {
                 {user?.isAdmin
                   ? "Here's the platform activity for today."
                   : user?.role === "employer"
-                  ? "Here's what's happening with your jobs today."
-                  : "Here's what's happening with your career today."}
+                    ? "Here's what's happening with your jobs today."
+                    : "Here's what's happening with your career today."}
               </p>
             </div>
           </div>
@@ -425,9 +422,8 @@ const DashboardLayout = ({ activeMenu, children }) => {
                     setNotificationOpen(!notificationOpen);
                     setProfileDropdownOpen(false);
                   }}
-                  className={`relative flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full transition-all duration-300 ${
-                    notificationOpen ? "bg-blue-600 text-white shadow-lg shadow-blue-200/50" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
+                  className={`relative flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full transition-all duration-300 ${notificationOpen ? "bg-blue-600 text-white shadow-lg shadow-blue-200/50" : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                    }`}
                 >
                   <Bell className="w-5 h-5 sm:w-5 sm:h-5" strokeWidth={notificationOpen ? 2.5 : 2} />
                   {unreadCount > 0 && (
@@ -448,23 +444,23 @@ const DashboardLayout = ({ activeMenu, children }) => {
 
             {/* AI Tokens Display */}
             {!user?.isAdmin && (
-              <button 
+              <button
                 onClick={() => setTokenModalOpen(true)}
                 className="group flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all duration-300 p-1 pr-3 sm:pr-5 rounded-full shadow-md shadow-blue-200/50 ring-1 ring-blue-500/30 relative overflow-hidden mx-1 sm:mx-2 h-10 sm:h-12"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -skew-x-12"></div>
-                
+
                 <div className="h-8 w-8 sm:h-10 sm:w-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center shadow-inner ring-1 ring-white/30 z-10 shrink-0">
                   <img src="/gradcoin.svg" alt="GradCoin" className="w-6 h-6 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.4)] group-hover:rotate-12 group-hover:scale-110 transition-transform duration-500" />
                 </div>
-                
+
                 <div className="flex items-center gap-1.5 z-10 text-white pr-1">
                   <span className="font-black text-[14px] sm:text-[16px] tracking-tight">{user?.aiTokens || 0}</span>
                   <span className="text-[12px] font-bold text-blue-100 hidden sm:inline tracking-wide">GradCoins</span>
                 </div>
               </button>
             )}
-            
+
             <div className="h-6 w-px bg-gray-200 hidden sm:block"></div>
             <ProfileDropdpwn
               isOpen={profileDropdownOpen}
@@ -487,24 +483,24 @@ const DashboardLayout = ({ activeMenu, children }) => {
       </div>
 
       {/* Token Info Modal */}
-      <TokenInfoModal 
-        isOpen={tokenModalOpen} 
-        onClose={() => setTokenModalOpen(false)} 
+      <TokenInfoModal
+        isOpen={tokenModalOpen}
+        onClose={() => setTokenModalOpen(false)}
       />
 
       {/* New Tokens Received Modal */}
       {newTokensData && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden relative animate-in fade-in zoom-in duration-300">
-            <button 
+            <button
               onClick={() => setNewTokensData(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-8 text-white text-center">
-              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <img src="/gradcoin.svg" alt="GradCoin" className="w-12 h-12 drop-shadow-md animate-bounce" />
+              <div className="w-20 h-20 bg-opacity-20  flex items-center justify-center mx-auto mb-4 relative">
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-12 h-12 drop-shadow-md " />
               </div>
               <h2 className="text-2xl font-bold mb-1">Woohoo!</h2>
               <p className="text-green-50 font-medium">Tokens Received</p>
@@ -513,7 +509,7 @@ const DashboardLayout = ({ activeMenu, children }) => {
               <p className="text-gray-600 mb-6 text-sm">
                 {newTokensData.message}
               </p>
-              <button 
+              <button
                 onClick={() => {
                   setNewTokensData(null);
                   window.location.reload(); // Quick refresh to update the token balance globally

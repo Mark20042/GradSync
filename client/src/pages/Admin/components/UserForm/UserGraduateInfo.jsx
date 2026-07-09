@@ -10,8 +10,8 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                         {/* Graduate Specific */}
                         {(editingUser.role === "graduate" || editingUser.role === "jobseeker") && (
                             <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-100">
-                                    <div className="col-span-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b border-gray-100">
+                                    <div className="md:col-span-2">
                                         <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">Primary Academic Info</h3>
                                     </div>
                                     <div>
@@ -128,7 +128,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
 
-                                                <div className="grid grid-cols-2 gap-4 pr-8">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
                                                     <div>
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">School</label>
                                                         <input
@@ -181,7 +181,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                         />
                                                     </div>
-                                                    <div className="col-span-2">
+                                                    <div className="md:col-span-2">
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                                                         <input
                                                             type="text"
@@ -194,7 +194,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                                         />
                                                     </div>
-                                                    <div className="col-span-2">
+                                                    <div className="md:col-span-2">
                                                         <label className="block text-sm font-medium text-gray-700 mb-1">Activities</label>
                                                         <textarea
                                                             value={edu.activities || ""}
@@ -223,8 +223,8 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                         {(editingUser.role === "graduate" || editingUser.role === "jobseeker") && (
                             <div className="space-y-4">
                                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Professional</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
                                         <input
                                             type="text"
@@ -233,7 +233,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         />
                                     </div>
-                                    <div className="col-span-2">
+                                    <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
                                         <input
                                             type="text"
@@ -242,7 +242,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         />
                                     </div>
-                                    <div className="col-span-2">
+                                    <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio</label>
                                         <input
                                             type="text"
@@ -341,7 +341,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                 <div className="space-y-4">
                                     {editingUser.experiences && editingUser.experiences.map((exp, index) => (
                                         <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                                 <input
                                                     type="text"
                                                     value={exp.title || ""}
@@ -434,7 +434,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                 <div className="space-y-4">
                                     {editingUser.internships && editingUser.internships.map((internship, index) => (
                                         <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                                 <input
                                                     type="text"
                                                     value={internship.title || ""}
@@ -527,7 +527,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                 <div className="space-y-4">
                                     {editingUser.awards && editingUser.awards.map((award, index) => (
                                         <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                                 <input
                                                     type="text"
                                                     value={award.title || ""}
@@ -550,7 +550,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                     className="px-3 py-1 border border-gray-300 rounded text-sm"
                                                     placeholder="Issuer"
                                                 />
-                                                <div className="flex flex-col col-span-2">
+                                                <div className="flex flex-col md:col-span-2">
                                                     <label className="text-xs text-gray-500 mb-1">Date Received</label>
                                                     <input
                                                         type="month"
@@ -607,7 +607,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                 <div className="space-y-4">
                                     {editingUser.certifications && editingUser.certifications.map((cert, index) => (
                                         <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                                 <input
                                                     type="text"
                                                     value={cert.name || ""}
@@ -630,7 +630,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                     className="px-3 py-1 border border-gray-300 rounded text-sm"
                                                     placeholder="Issuer"
                                                 />
-                                                <div className="flex flex-col col-span-2">
+                                                <div className="flex flex-col md:col-span-2">
                                                     <label className="text-xs text-gray-500 mb-1">Issue Date</label>
                                                     <input
                                                         type="month"
@@ -711,7 +711,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                                 className="w-full px-3 py-1 border border-gray-300 rounded text-sm mb-2"
                                                 placeholder="Project URL"
                                             />
-                                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                                                 <div className="flex flex-col">
                                                     <label className="text-xs text-gray-500 mb-1">Start Date</label>
                                                     <input
@@ -769,7 +769,7 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                         {(editingUser.role === "graduate" || editingUser.role === "jobseeker") && (
                             <div className="border-t border-gray-100 pt-6 mt-6">
                                 <h4 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Job Preferences</h4>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Desired Job Title</label>
                                         <input
