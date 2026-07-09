@@ -89,7 +89,7 @@ const Header = () => {
               onClick={() => navigate("/docs")}
               className="cursor-pointer text-gray-300 hover:text-white transition-colors font-medium text-sm"
             >
-              Documentation
+              Demo
             </a>
           </nav>
 
