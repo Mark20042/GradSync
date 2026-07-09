@@ -248,9 +248,9 @@ const AdminUsers = () => {
                                     <td className="px-6 py-5 pl-8">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm border border-gray-100 ring-2 ring-transparent group-hover:ring-blue-100 transition-all">
-                                                {user.avatar ? (
+                                                {(user.role === 'employer' ? user.companyLogo : user.avatar) ? (
                                                     <img
-                                                        src={user.avatar}
+                                                        src={user.role === 'employer' ? user.companyLogo : user.avatar}
                                                         alt={user.fullName}
                                                         className="w-full h-full object-cover"
                                                         loading="lazy"
@@ -442,8 +442,8 @@ const AdminUsers = () => {
                     <div className="space-y-8">
                         <div className="flex items-center gap-6 p-6 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100">
                             <div className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center overflow-hidden border-4 border-white">
-                                {viewingUser.avatar ? (
-                                    <img src={viewingUser.avatar} alt={viewingUser.fullName} className="w-full h-full object-cover" />
+                                {(viewingUser.role === 'employer' ? viewingUser.companyLogo : viewingUser.avatar) ? (
+                                    <img src={viewingUser.role === 'employer' ? viewingUser.companyLogo : viewingUser.avatar} alt={viewingUser.fullName} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-3xl text-gray-400 font-bold">{viewingUser.fullName.charAt(0)}</span>
                                 )}
