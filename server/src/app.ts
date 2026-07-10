@@ -26,6 +26,7 @@ import adminRoutes from "@/routes/admin.route.js";
 import generationRoutes from "@/routes/generation.route.js";
 import terminationReviewRoutes from "@/routes/termination-review.route.js";
 import contractRoutes from "@/routes/contract.route.js";
+import paymentRoutes from "@/routes/payment.route.js";
 
 // middlewares import
 import { errorHandler } from "@/middlewares/errorHandler.js";
@@ -83,7 +84,11 @@ const apiLimiter = rateLimit({
 });
 
 // ─── Parser Middleware ───────────────────────────────────────────────────
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    (req as any).rawBody = buf;
+  }
+}));
 app.use(cookieParser());
 
 // ─── Health Check ────────────────────────────────────────────────────────
@@ -125,6 +130,7 @@ apiRouter.use("/admin", adminRoutes);
 apiRouter.use("/generation", generationRoutes);
 apiRouter.use("/termination-reviews", terminationReviewRoutes);
 apiRouter.use("/contracts", contractRoutes);
+apiRouter.use("/payments", paymentRoutes);
 
 // mount api routes
 app.use("/api", apiRouter);

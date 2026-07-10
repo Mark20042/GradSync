@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Sparkles, X, Info, Shield, Zap, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../utils/axiosInstance";
 
 const TokenInfoModal = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const [selectedPackage, setSelectedPackage] = useState(15);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user?.systemSettings?.tokenPackages?.popular?.tokens) {
@@ -15,9 +17,31 @@ const TokenInfoModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  const handlePurchase = () => {
-    toast.success("Payment Gateway Integration Coming Soon!");
-    onClose();
+  const getSelectedPrice = () => {
+    const defaultPackages = { basic: { tokens: 5, price: 109 }, popular: { tokens: 15, price: 299 }, premium: { tokens: 50, price: 899 } };
+    const packages = ['basic', 'popular', 'premium'].map(pkgName => user?.systemSettings?.tokenPackages?.[pkgName] || defaultPackages[pkgName]);
+    const selected = packages.find(pkg => pkg.tokens === selectedPackage);
+    return selected ? selected.price : 0;
+  };
+
+  const handlePurchase = async () => {
+    const selectedPrice = getSelectedPrice();
+    setLoading(true);
+    try {
+      const response = await axiosInstance.post('/api/payments/create-gcash', {
+        amount: selectedPrice * 100, // PayMongo uses centavos
+        description: `Purchase ${selectedPackage} GradCoins`,
+        tokens: selectedPackage
+      });
+
+      if (response.data.success && response.data.checkoutUrl) {
+        window.location.href = response.data.checkoutUrl;
+      }
+    } catch (error) {
+      console.error("Payment Error:", error);
+      toast.error("Failed to initiate payment. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -153,10 +177,17 @@ const TokenInfoModal = ({ isOpen, onClose }) => {
         <div className="p-4 sm:p-5 bg-white border-t border-gray-100 shadow-[0_-4px_15px_rgba(0,0,0,0.03)] shrink-0">
           <button
             onClick={handlePurchase}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-lg py-3.5 sm:py-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            disabled={loading}
+            className={`w-full flex items-center justify-center gap-2 text-white font-bold text-lg py-3.5 sm:py-4 rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'}`}
           >
-            <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain drop-shadow-md" />
-            Purchase {selectedPackage} Coins
+            {loading ? (
+              <span>Preparing GCash...</span>
+            ) : (
+              <>
+                <img src="/gradcoin.svg" alt="GradCoin" className="w-8 h-8 object-contain drop-shadow-md" />
+                Purchase {selectedPackage} Coins - ₱{getSelectedPrice()}.00
+              </>
+            )}
           </button>
         </div>
       </div>

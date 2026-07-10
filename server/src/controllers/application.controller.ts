@@ -364,7 +364,8 @@ const reviewResignationRequest = async (req: AuthRequest, res: Response, next: N
             $set: {
               "experiences.$.endDate": app.resignationRequest.requestedEndDate,
               "experiences.$.current": false,
-            },
+            }
+          }
         );
       }
 
