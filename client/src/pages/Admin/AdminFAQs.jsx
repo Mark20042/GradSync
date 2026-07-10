@@ -209,7 +209,7 @@ const AdminFAQs = () => {
     return (
         <DashboardLayout activeMenu="admin-faqs">
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">FAQ Management</h1>
                     <button
                         onClick={handleAdd}
@@ -265,7 +265,7 @@ const AdminFAQs = () => {
                                                 <HelpCircle className="w-5 h-5 text-blue-600" />
                                             </div>
                                             <div className="min-w-0 pt-0.5">
-                                                <span className="font-semibold text-gray-900 block truncate text-base mb-1">
+                                                <span className="font-semibold text-gray-900 block break-words text-base mb-1">
                                                     {faq.question}
                                                 </span>
                                                 <span className="text-sm text-gray-500 block line-clamp-2 leading-relaxed">

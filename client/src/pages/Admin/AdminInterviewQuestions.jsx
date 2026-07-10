@@ -175,7 +175,7 @@ const AdminInterviewQuestions = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Candidates List */}
-          <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-200px)]">
+          <div className={`lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex-col h-[calc(100vh-200px)] ${selectedCandidate ? 'hidden lg:flex' : 'flex'}`}>
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -210,7 +210,7 @@ const AdminInterviewQuestions = () => {
           </div>
 
           {/* Interview Management */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-[calc(100vh-200px)]">
+          <div className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 flex-col h-[calc(100vh-200px)] ${!selectedCandidate ? 'hidden lg:flex' : 'flex'}`}>
             {!selectedCandidate ? (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
                 <Users className="w-16 h-16 mb-4 text-gray-300" />
@@ -218,15 +218,21 @@ const AdminInterviewQuestions = () => {
               </div>
             ) : (
               <div className="flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 pb-6 border-b border-gray-100">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{selectedCandidate.fullName}'s Interviews</h2>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                  <div className="w-full">
+                    <button 
+                      onClick={() => setSelectedCandidate(null)}
+                      className="lg:hidden mb-4 text-purple-600 hover:text-purple-800 flex items-center gap-1 font-semibold text-sm transition-colors"
+                    >
+                      &larr; Back to Candidates
+                    </button>
+                    <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedCandidate.fullName}'s Interviews</h2>
                     <p className="text-gray-500 mt-1">Review, edit, or generate new interview drafts.</p>
                   </div>
-                  <div className="flex gap-2 items-center">
+                  <div className="flex flex-wrap gap-3 items-center w-full md:w-auto mt-2 md:mt-0">
                     <button
                       onClick={() => fetchInterviewsForCandidate(selectedCandidate._id)}
-                      className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
+                      className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all shrink-0"
                       title="Refresh Interviews"
                     >
                       <RefreshCw className={`w-4 h-4 ${loadingInterviews ? 'animate-spin' : ''}`} />
@@ -234,9 +240,9 @@ const AdminInterviewQuestions = () => {
                     <button
                       onClick={handleGenerate}
                       disabled={generating}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 flex-1 sm:flex-none w-full sm:w-auto"
                     >
-                      {generating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                      {generating ? <RefreshCw className="w-4 h-4 animate-spin shrink-0" /> : <Plus className="w-4 h-4 shrink-0" />}
                       Generate Tailored Interview
                     </button>
                   </div>
@@ -253,15 +259,15 @@ const AdminInterviewQuestions = () => {
                   ) : (
                     interviews.map(a => (
                       <div key={a._id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all flex flex-col">
-                        <div className="flex justify-between items-start">
-                          <div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between items-start gap-4">
+                          <div className="w-full">
                             <div className="flex items-center gap-2">
                               <h3 className="font-bold text-lg text-gray-900">Tailored AI Interview</h3>
                             </div>
                             <p className="text-sm text-gray-500 mt-1">{a.questions?.length || 0} questions generated • Tailored to profile</p>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <div className="flex gap-2">
+                          <div className="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
+                            <div className="flex flex-wrap gap-2">
                               {a.isTaken && (
                                 <span className="text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider bg-purple-100 text-purple-700 flex items-center gap-1" title="Candidate has completed this interview">
                                   <CheckCircle className="w-3.5 h-3.5" /> Taken
@@ -277,19 +283,19 @@ const AdminInterviewQuestions = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full sm:w-auto mt-1 sm:mt-0">
 
                               {a.status !== 'generating' && (
                                 <button
                                   onClick={() => openModal(a)}
-                                  className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center gap-1"
+                                  className="flex-1 sm:flex-none text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center justify-center gap-1"
                                 >
                                   <Eye className="w-3.5 h-3.5" /> View / Edit
                                 </button>
                               )}
                               <button
                                 onClick={() => handleDeleteInterview(a._id)}
-                                className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm"
+                                className="text-sm bg-red-500 hover:bg-red-600 text-white px-4 sm:px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center justify-center shrink-0"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

@@ -125,10 +125,10 @@ const AdminInterviewScores = () => {
 
   return (
     <DashboardLayout activeMenu="admin-interview-scores">
-      <div className="min-h-screen bg-gray-100 p-10">
-        <div className="flex justify-between items-end mb-8 bg-white px-8 py-6 rounded-2xl shadow-sm">
+      <div className="min-h-screen bg-gray-100 p-4 md:p-10">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8 bg-white px-4 md:px-8 py-6 rounded-2xl shadow-sm">
           <div>
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 m-0 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 m-0 tracking-tight">
               Interview Scores
             </h1>
             <p className="text-gray-500 mt-2 text-base">
@@ -182,6 +182,7 @@ const AdminInterviewScores = () => {
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto"><div className="min-w-[800px]">
             <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr_0.8fr_0.5fr] px-6 py-4 bg-gray-50 border-b border-gray-200 text-[0.7rem] font-bold text-gray-400 uppercase tracking-widest">
               <span>Candidate</span>
               <span>Role</span>
@@ -254,6 +255,7 @@ const AdminInterviewScores = () => {
                 </div>
               </React.Fragment>
             ))}
+            </div></div>
           </div>
         )}
       </div>

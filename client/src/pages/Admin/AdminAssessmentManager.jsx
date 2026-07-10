@@ -268,7 +268,7 @@ const AdminAssessmentManager = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Candidates List */}
-          <div className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-200px)]">
+          <div className={`lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex-col h-[calc(100vh-200px)] ${selectedCandidate ? 'hidden lg:flex' : 'flex'}`}>
             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col gap-3">
               <button
                 onClick={() => setIsAutoGenerating(!isAutoGenerating)}
@@ -375,7 +375,7 @@ const AdminAssessmentManager = () => {
           </div>
 
           {/* Assessment Management */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col h-[calc(100vh-200px)]">
+          <div className={`lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 flex-col h-[calc(100vh-200px)] ${!selectedCandidate ? 'hidden lg:flex' : 'flex'}`}>
             {!selectedCandidate ? (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
                 <Users className="w-16 h-16 mb-4 text-gray-300" />
@@ -385,22 +385,29 @@ const AdminAssessmentManager = () => {
               <div className="flex flex-col h-full">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-6 border-b border-gray-100">
                   <div className="w-full">
+                    <button 
+                      onClick={() => setSelectedCandidate(null)}
+                      className="lg:hidden mb-4 text-blue-600 hover:text-blue-800 flex items-center gap-1 font-semibold text-sm transition-colors"
+                    >
+                      &larr; Back to Candidates
+                    </button>
                     <h2 className="text-2xl font-bold text-gray-900 leading-tight">{selectedCandidate.fullName}'s Assessments</h2>
                     <p className="text-gray-500 mt-1">Review, manage, or generate new assessments.</p>
                   </div>
-                  <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
-                    <button
+                  <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-stretch sm:items-center w-full lg:w-auto">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <button
                       onClick={() => fetchAssessmentsForCandidate(selectedCandidate._id)}
                       className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl transition-all mr-2"
                       title="Refresh Assessments"
                     >
                       <RefreshCw className={`w-4 h-4 ${loadingAssessments ? 'animate-spin' : ''}`} />
                     </button>
-                    {generating && <span className="text-sm text-blue-600 font-medium">{generateProgress}</span>}
+                    {generating && <span className="text-sm text-blue-600 font-medium hidden sm:inline-block">{generateProgress}</span>}
                     <select
                       value={selectedSkill}
                       onChange={(e) => setSelectedSkill(e.target.value)}
-                      className="border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                      className="border border-gray-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500 w-full sm:w-auto min-w-0"
                     >
                       <option value="all">Generate for All Skills</option>
                       {Array.from(new Set([...(selectedCandidate.verifiedSkills || []), ...(selectedCandidate.skills || [])]
@@ -413,7 +420,7 @@ const AdminAssessmentManager = () => {
                     {generating ? (
                       <button
                         onClick={handleCancelGeneration}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md flex items-center gap-2"
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                       >
                         <X className="w-4 h-4" /> Stop Polling
                       </button>
@@ -421,12 +428,14 @@ const AdminAssessmentManager = () => {
                       <button
                         onClick={handleGenerate}
                         disabled={generating}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
                       >
                         <Plus className="w-4 h-4" />
                         {selectedSkill === 'all' ? 'Generate All' : 'Generate Selected'}
                       </button>
                     )}
+                    </div>
+                    {generating && <span className="text-sm text-blue-600 font-medium sm:hidden w-full text-center mt-1">{generateProgress}</span>}
                   </div>
                 </div>
 

@@ -138,13 +138,13 @@ const AdminApplications = () => {
     return (
         <DashboardLayout activeMenu="admin-applications">
             <div className="p-6 max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">Application Management</h1>
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700 font-medium"
+                            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700 font-medium"
                         >
                             <option value="newest">Newest First</option>
                             <option value="best_match">🏆 Rank by Best Match</option>
@@ -152,7 +152,7 @@ const AdminApplications = () => {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"
+                            className="w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700"
                         >
                             <option value="All">All Statuses</option>
                             <option value="Applied">Applied</option>
@@ -167,7 +167,7 @@ const AdminApplications = () => {
                                 placeholder="Search by job, applicant, company..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-72"
+                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-72"
                             />
                         </div>
                     </div>
@@ -204,8 +204,10 @@ const AdminApplications = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <div className="font-medium text-gray-900">{app.job?.title}</div>
-                                        <div className="text-xs text-gray-500 mb-1">{app.job?.company?.companyName}</div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-medium text-gray-900 leading-tight">{app.job?.title}</span>
+                                            <span className="text-xs text-gray-500">{app.job?.company?.companyName}</span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-5">
                                         <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border w-fit ${getStatusStyle(app.status)}`}>

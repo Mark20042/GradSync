@@ -432,7 +432,7 @@ const AdminEmployerAnalytics = () => {
               <p className="text-xs text-gray-500 mb-4">Based on admin-configurable termination categories.</p>
               
               {data.terminationReasons.length > 0 ? (
-                <div className="flex-1 min-h-[250px] w-full">
+                <div className="flex-1 min-h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -450,7 +450,7 @@ const AdminEmployerAnalytics = () => {
                         ))}
                       </Pie>
                       <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                      <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '12px' }} />
+                      <Legend layout="horizontal" verticalAlign="bottom" align="center" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>

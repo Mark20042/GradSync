@@ -132,12 +132,12 @@ const AdminAssessmentReview = () => {
 
   return (
     <DashboardLayout activeMenu="admin-assessment-review">
-      <div className="min-h-screen bg-gray-100 p-10">
+      <div className="min-h-screen bg-gray-100 p-4 md:p-10">
         {/* Header */}
-        <div className="bg-white px-8 py-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex justify-between items-end">
+        <div className="bg-white px-4 md:px-8 py-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
-              <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 tracking-tight m-0">
+              <h1 className="text-2xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-gray-900 to-gray-600 tracking-tight m-0">
                 Assessment Review
               </h1>
               <p className="text-gray-500 mt-2 text-base">
@@ -157,7 +157,7 @@ const AdminAssessmentReview = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
               <Search
@@ -182,7 +182,7 @@ const AdminAssessmentReview = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white appearance-none cursor-pointer min-w-[200px]"
+                className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white appearance-none cursor-pointer md:min-w-[200px]"
               >
                 <option value="all">All Status</option>
                 <option value="approved">Approved</option>
@@ -243,7 +243,7 @@ const AdminAssessmentReview = () => {
               >
                 {/* Main Row */}
                 <div className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     {/* User Info */}
                     <div className="flex items-center gap-4 flex-1">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg">
@@ -261,7 +261,7 @@ const AdminAssessmentReview = () => {
                     </div>
 
                     {/* Assessment Info */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-wrap items-center gap-4 md:gap-6 justify-between md:justify-end w-full md:w-auto mt-4 md:mt-0">
                       <div className="text-right">
                         <p className="text-xs text-gray-400 uppercase font-semibold mb-1">
                           Skill
@@ -299,7 +299,7 @@ const AdminAssessmentReview = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 ml-6">
+                    <div className="flex items-center gap-2 mt-4 md:mt-0 w-full md:w-auto md:ml-6">
                       <button
                         onClick={() => {
                           setSelectedSubmission(submission);
