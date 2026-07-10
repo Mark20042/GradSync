@@ -9,6 +9,18 @@ export const createGCashPayment = async (req: Request, res: Response) => {
     const { amount, description, tokens } = req.body;
     const userId = (req as any).user?._id;
 
+    const role = (req as any).user?.role;
+
+    let redirectPath = "/";
+    if (role === "employer") {
+      redirectPath = "/employer-dashboard";
+    } else if (role === "jobseeker" || role === "graduate") {
+      redirectPath = "/find-jobs";
+    }
+
+    const cancelUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}${redirectPath}`;
+    const successUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}${redirectPath}?payment=success`;
+
     // Using PayMongo Checkout API for redirection support
     const options = {
       method: "POST",
@@ -26,8 +38,8 @@ export const createGCashPayment = async (req: Request, res: Response) => {
             send_email_receipt: false,
             show_description: true,
             show_line_items: true,
-            cancel_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/`,
-            success_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/?payment=success`,
+            cancel_url: cancelUrl,
+            success_url: successUrl,
             line_items: [
               {
                 amount: amount || 50000,
