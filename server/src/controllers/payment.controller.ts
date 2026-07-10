@@ -26,8 +26,8 @@ export const createGCashPayment = async (req: Request, res: Response) => {
             send_email_receipt: false,
             show_description: true,
             show_line_items: true,
-            cancel_url: "http://localhost:5173/",
-            success_url: "http://localhost:5173/?payment=success",
+            cancel_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/`,
+            success_url: `${process.env.CLIENT_URL || "http://localhost:5173"}/?payment=success`,
             line_items: [
               {
                 amount: amount || 50000,
