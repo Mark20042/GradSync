@@ -4,7 +4,7 @@ import { Mail } from "lucide-react";
 import pototImage from "../../../assets/images/potot.png";
 import kennethImage from "../../../assets/images/kenneth.jpg";
 import michaillaImage from "../../../assets/images/mikayz.png";
-import cogalImage from "../../../assets/images/dar.png";
+import cogalImage from "../../../assets/images/dara.jpg";
 
 const creators = [
   {
@@ -32,7 +32,7 @@ const creators = [
   },
   {
     name: "Mark Joseph Potot",
-    role: "Lead Full-Stack Developer",
+    role: "Full-Stack Developer",
 
     image: pototImage,
     description: "Architecting and engineering the entire platform from the ground up. Responsible for building the robust backend, crafting the dynamic frontend, and implementing all advanced AI and real-time features to bring this research vision to life.",
