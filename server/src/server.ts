@@ -30,7 +30,7 @@ const startServer = async () => {
     server.listen(PORT, () => {
       console.log("");
       console.log("═══════════════════════════════════════════");
-      console.log("  🚀 GradSync Backend (Sirbir Structure)");
+      console.log("  🚀 GradSync Backend Running");
       console.log(`  📡 Server running on port ${PORT}`);
       console.log(`  🌍 Environment: ${env.NODE_ENV}`);
       console.log(`  🏥 Health check: http://localhost:${PORT}/health`);
