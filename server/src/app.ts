@@ -94,7 +94,7 @@ app.use(cookieParser());
 // ─── Health Check ────────────────────────────────────────────────────────
 app.get("/", (_req: Request, res: Response) => {
   res.send(`
-    <h1>GradSync API</h1>
+    <h1>GradSync API Server</h1>
     <p>API is running securely. 🚀</p>
   `);
 });
