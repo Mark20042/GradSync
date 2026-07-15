@@ -100,14 +100,16 @@ const contractSchema = new Schema<IContract>(
       default: null,
       validate: {
         validator: function (this: IContract, v: Date | null): boolean {
-          // Indefinite contracts must NOT have an endDate
-          if (this.contractType === "Indefinite" && v !== null) return false;
+          // Allow end date on Indefinite contracts when ending employment
+          const isEnding = ["Contract Ended", "Resigned", "Terminated"].includes(this.status);
+          // Indefinite contracts must NOT have an endDate unless being ended
+          if (this.contractType === "Indefinite" && v !== null && !isEnding) return false;
           // If an endDate is provided, it must be after startDate
           if (v !== null && this.startDate && v <= this.startDate) return false;
           return true;
         },
         message:
-          "End date must be after start date, and Indefinite contracts cannot have an end date",
+          "End date must be after start date, and Indefinite contracts cannot have an end date unless the contract is being ended",
       },
     },
     status: {
@@ -162,9 +164,12 @@ contractSchema.index(
   { unique: true, partialFilterExpression: { status: "Accepted" } },
 );
 
-// ─── Pre-save Hook: enforce Indefinite endDate = null ────────────────────────
+// ─── Pre-save Hook: enforce Indefinite endDate = null (only for active contracts) ─
 contractSchema.pre("save", function (next) {
-  if (this.contractType === "Indefinite") {
+  // Only force null endDate for Indefinite contracts that are still active
+  // Allow endDate when the contract is being ended
+  const isEnding = ["Contract Ended", "Resigned", "Terminated"].includes(this.status);
+  if (this.contractType === "Indefinite" && !isEnding) {
     this.endDate = null;
   }
   next();

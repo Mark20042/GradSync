@@ -140,6 +140,7 @@ const updateContractStatus = async (req: AuthRequest, res: Response, next: NextF
     const terminationDate = endDate ? new Date(endDate) : new Date();
 
     contract.status = status;
+    contract.endDate = terminationDate;
     contract.workExperience.exitStatus = status;
     contract.workExperience.endDate = terminationDate;
     await contract.save();
