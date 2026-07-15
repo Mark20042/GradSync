@@ -252,6 +252,12 @@ const updateApplicationStatus = async (req: AuthRequest, res: Response, next: Ne
       }
     }
 
+    // Clear any stale resignation request when accepting an applicant
+    // so it only appears when the employee actually submits one later
+    if (status === "Accepted" && app.resignationRequest) {
+      app.set('resignationRequest', undefined);
+    }
+
     app.status = status;
     await app.save();
 
