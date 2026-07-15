@@ -443,7 +443,7 @@ const ApplicationViewer = () => {
                                     )}
 
                                     {/* Resignation Request Info */}
-                                    {application.resignationRequest && application.resignationRequest.status === 'Pending' && (
+                                    {application.status === 'Accepted' && application.resignationRequest && application.resignationRequest.status === 'Pending' && (
                                       <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between flex-wrap gap-3">
                                         <div className="flex items-center gap-2 text-sm text-amber-800">
                                           <CalendarX className="w-4 h-4 text-amber-600" />

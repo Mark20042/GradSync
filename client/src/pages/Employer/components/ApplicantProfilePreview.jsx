@@ -202,7 +202,7 @@ const ApplicantProfilePreview = ({
             </div>
           </div>
 
-          {selectedApplicant.resignationRequest && selectedApplicant.resignationRequest.status === 'Pending' && (
+          {selectedApplicant.status === 'Accepted' && selectedApplicant.resignationRequest && selectedApplicant.resignationRequest.status === 'Pending' && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between flex-wrap gap-3 shadow-sm">
               <div className="flex items-center gap-3 text-amber-800">
                 <div className="p-2 bg-amber-100 rounded-lg">

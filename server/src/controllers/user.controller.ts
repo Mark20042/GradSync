@@ -211,7 +211,7 @@ const updateProfile = async (
 
           if (employerIds.length > 0) {
             for (const app of activeApps) {
-               if (app.job && employerIds.includes((app.job as any).company.toString())) {
+               if (app.job && employerIds.includes((app.job as any).company.toString()) && ["Accepted", "Hired"].includes(app.status)) {
                   // This experience is tied to an active system job!
                   // 1. Revert the endDate in the user's experiences array
                   const userExpIndex = user.experiences.findIndex((e: any) => 
