@@ -1,8 +1,8 @@
 # <p align="center">🎓 GradSync</p>
 
 <p align="center">
-  <strong>Bridging the Gap Between Graduates and Employers with AI.</strong><br/>
-  <em>A premium, AI-powered career development ecosystem designed to streamline the transition from academic life to professional careers.</em>
+  <strong>Your Intelligent Career Ecosystem — Powered by AI.</strong><br/>
+  <em>Connecting talent with opportunity through automated skill verification, AI-driven interviews, smart job matching, and real-time collaboration — all in one seamless platform.</em>
 </p>
 
 <p align="center">
@@ -48,22 +48,22 @@
 
 | Role | Description |
 | :--- | :--- |
-| **👨‍🎓 Graduate / Jobseeker** | Browse jobs, apply with AI suitability scores, take skill assessments, practice mock interviews, build resumes, and chat with employers. |
-| **🏢 Employer** | Post jobs, review AI-ranked applicants, manage contracts, analyze recruitment analytics, and communicate with candidates via real-time chat with auto-pilot. |
-| **🛡️ Admin** | Full control over users, jobs, applications, assessments, interviews, FAQs, terminations, AI feedbacks, and system-wide analytics. |
+| ** Graduate / Jobseeker** | Browse jobs, apply with AI suitability scores, take skill assessments, practice mock interviews, build resumes, and chat with employers. |
+| ** Employer** | Post jobs, review AI-ranked applicants, manage contracts, analyze recruitment analytics, and communicate with candidates via real-time chat with auto-pilot. |
+| ** Admin** | Full control over users, jobs, applications, assessments, interviews, FAQs, terminations, AI feedbacks, and system-wide analytics. |
 
 
 ---
 
 ## ✨ Key Features
 
-### 🎯 AI-Powered Job Matching
+###  AI-Powered Job Matching
 - **Dual AI Engine**: Ollama (local, private) and Google Gemini (cloud, advanced) for suitability scoring
 - **Objective Scoring**: Skills (40 pts) + Experience (30 pts) + Education (30 pts) = 100-point scale
 - **Match Levels**: Poor → Weak → Moderate → Good → Excellent
 - **Personalized Feedback**: AI-generated analysis of candidate-job fit
 
-### 📝 Skill Assessments & Verification
+###     Skill Assessments & Verification
 - **Anti-Cheat Security System**:
   - Tab switch detection, window focus monitoring
   - Copy/paste & right-click prevention
@@ -73,19 +73,19 @@
 - **Verified Skill Badges**: Entry → Intermediate → Advanced → Expert rankings
 - **PDF Certificates**: Auto-generated and emailed upon approval
 
-### 🎤 AI Mock Interviews
+###  AI Mock Interviews
 - **Role-Based Interviews**: Pre-configured roles with custom question banks
 - **Difficulty Levels**: Easy, Medium, Hard
 - **Real-Time Evaluation**: AI scores each answer (0–100) with instant feedback
 - **Full Interview Analysis**: Overall score, strengths, areas for improvement, and summary
 - **Camera & Agreement Setup**: Professional pre-interview workflow
 
-### 💼 Smart Resume Builder
+###  Smart Resume Builder
 - **Professional PDF Templates**: Custom React-PDF components (pdfx)
 - **AI-Generated Summaries**: Automated professional summary crafting from profile data
 - **Skills & Experience Formatting**: Clean, ATS-friendly layouts
 
-### 💬 Real-Time Messaging
+###  Real-Time Messaging
 - **Socket.IO** with Redis Adapter for horizontal scaling
 - **Web Push Notifications**: PWA push support for new messages
 - **Content Moderation**: Automatic message filtering
@@ -93,23 +93,23 @@
 - **Conversation Management**: Organized by job applications
 
 
-### 📊 Analytics & Insights
+###  Analytics & Insights
 - **Employer Dashboard**: Application funnel, hire rates, retention metrics, AI-generated summaries
 - **Admin Analytics**: Platform-wide metrics, user growth, job trends
 - **In-Demand Skills Graph**: Visual skill gap analysis
 - **Recharts-Powered Charts**: Interactive data visualizations
 
-### 🛡️ Contract & Termination Management
+###  Contract & Termination Management
 - **Employment Contracts**: Digital contract creation and tracking
 - **Termination Reviews**: Structured termination reason tracking with admin oversight
 - **Rating System**: Mutual employer-jobseeker rating with reviews
 
-### 🔔 Notifications System
+###  Notifications System
 - **In-App Notifications**: Real-time notification dropdown
 - **Email Notifications**: Verification, approval, rejection, interview results, password reset
 - **Push Notifications**: Web Push API for PWA users
 
-### 👑 Admin Control Panel
+###  Admin Control Panel
 - User management (create, edit, verify, suspend)
 - Job & application oversight
 - Assessment question bank & review
@@ -117,7 +117,7 @@
 - FAQ & employer settings management
 - Feature feedback & AI resource center
 
-### 🏠 Public Landing Page
+###  Public Landing Page
 - Hero section with animated Lottie graphics
 - Feature showcases, How It Works flow
 - Public job listings with search
