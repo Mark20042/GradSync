@@ -21,6 +21,9 @@
   <img src="https://img.shields.io/badge/Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white" alt="Heroku" />
 </p>
 
+<p align="center">
+  <img src="./screenshots/landing-page.png" alt="GradSync Landing Page" width="800" />
+</p>
 
 ---
 
