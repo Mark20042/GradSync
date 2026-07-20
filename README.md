@@ -1,6 +1,10 @@
 # <p align="center">🎓 GradSync</p>
 
 <p align="center">
+  <img src="./screenshots/landing-page.png" alt="GradSync Landing Page" width="800" />
+</p>
+
+<p align="center">
   <strong>Your Intelligent Career Ecosystem — Powered by AI.</strong><br/>
   <em>Connecting talent with opportunity through automated skill verification, AI-driven interviews, smart job matching, and real-time collaboration — all in one seamless platform.</em>
 </p>
@@ -21,9 +25,6 @@
   <img src="https://img.shields.io/badge/Heroku-430098?style=for-the-badge&logo=heroku&logoColor=white" alt="Heroku" />
 </p>
 
-<p align="center">
-  <img src="./screenshots/landing-page.png" alt="GradSync Landing Page" width="800" />
-</p>
 
 ---
 
