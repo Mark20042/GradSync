@@ -48,9 +48,9 @@
 
 | Role | Description |
 | :--- | :--- |
-| ** Graduate / Jobseeker** | Browse jobs, apply with AI suitability scores, take skill assessments, practice mock interviews, build resumes, and chat with employers. |
-| ** Employer** | Post jobs, review AI-ranked applicants, manage contracts, analyze recruitment analytics, and communicate with candidates via real-time chat with auto-pilot. |
-| ** Admin** | Full control over users, jobs, applications, assessments, interviews, FAQs, terminations, AI feedbacks, and system-wide analytics. |
+| **Graduate / Jobseeker** | Browse jobs, apply with AI suitability scores, take skill assessments, practice mock interviews, build resumes, and chat with employers. |
+| **Employer** | Post jobs, review AI-ranked applicants, manage contracts, analyze recruitment analytics, and communicate with candidates via real-time chat with auto-pilot. |
+| **Admin** | Full control over users, jobs, applications, assessments, interviews, FAQs, terminations, AI feedbacks, and system-wide analytics. |
 
 
 ---
