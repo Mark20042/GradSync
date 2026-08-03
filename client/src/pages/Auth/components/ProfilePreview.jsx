@@ -53,7 +53,7 @@ const ProfilePreview = ({ userData, formData }) => {
       school: formData.university,
       degree: formData.degree,
       startDate: formData.universityStartYear || "",
-      endDate: `${formData.graduationMonth ? formData.graduationMonth + " " : ""}${formData.graduationYear}`,
+      endDate: formData.graduationDate || "",
       location: formData.universityAddress || "",
       activities: "",
     });
@@ -95,8 +95,8 @@ const ProfilePreview = ({ userData, formData }) => {
           </p>
           <p className="text-gray-500 text-sm mb-4">
             {formData.university || "University"}{" "}
-            {formData.graduationYear
-              ? `• Class of ${formData.graduationYear}`
+            {formData.graduationDate
+              ? `• Class of ${formData.graduationDate}`
               : ""}
             {formData.universityAddress && (
               <span className="block mt-1 text-xs text-gray-400">

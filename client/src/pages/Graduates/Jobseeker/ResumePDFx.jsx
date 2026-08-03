@@ -202,7 +202,7 @@ const ResumePDFx = ({ user }) => {
 
 
                 {/* University Info (standalone fields) */}
-                {(user.university || user.universityStartYear || user.graduationYear) && (
+                {(user.university || user.universityStartYear || user.graduationDate) && (
                     <Section spacing="lg">
                         <Heading level={2} transform="uppercase">
                             Primary Education
@@ -215,11 +215,11 @@ const ResumePDFx = ({ user }) => {
                             {user.degree && (
                                 <PDFText style={companyStyle}>{user.degree}{user.major ? ` in ${user.major}` : ""}</PDFText>
                             )}
-                            {(user.universityStartYear || user.graduationYear) && (
+                            {(user.universityStartYear || user.graduationDate) && (
                                 <PDFText style={dateStyle}>
                                     {user.universityStartYear ? formatMonthYear(user.universityStartYear) : ""}
-                                    {user.universityStartYear && user.graduationYear ? " – " : ""}
-                                    {user.graduationYear ? `Class of ${user.graduationYear}` : ""}
+                                    {user.universityStartYear && user.graduationDate ? " – " : ""}
+                                    {user.graduationDate ? `Class of ${formatMonthYear(user.graduationDate)}` : ""}
                                 </PDFText>
                             )}
                         </View>

@@ -104,7 +104,7 @@ export interface IUser extends Document {
   degree?: string;
   university?: string;
   universityAddress?: string;
-  graduationYear?: number | null;
+  graduationDate?: string;
   universityStartYear?: string;
 
   major?: string;

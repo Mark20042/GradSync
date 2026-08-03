@@ -21,8 +21,7 @@ const SetupProfileGrad = () => {
 
   const [formData, setFormData] = useState({
     university: "",
-    graduationYear: "",
-    graduationMonth: "",
+    graduationDate: "",
     universityStartYear: "",
     portfolio: "",
     linkedin: "",
@@ -84,8 +83,8 @@ const SetupProfileGrad = () => {
           errors.universityAddress = "University address is required";
         if (!formData.universityStartYear?.trim())
           errors.universityStartYear = "University start date is required";
-        if (!formData.graduationYear?.trim())
-          errors.graduationYear = "Graduation year is required";
+        if (!formData.graduationDate?.trim())
+          errors.graduationDate = "Graduation date is required";
         if (!formData.degree?.trim()) errors.degree = "Degree is required";
         break;
       // Add cases for other steps with required fields
@@ -149,7 +148,7 @@ const SetupProfileGrad = () => {
           school: formData.university,
           degree: formData.degree || "",
           major: formData.major || "",
-          endDate: `${formData.graduationMonth ? formData.graduationMonth + " " : ""}${formData.graduationYear}` || "",
+          endDate: formData.graduationDate || "",
           startDate: formData.universityStartYear || "",
           location: formData.universityAddress || "",
           activities: "",

@@ -115,7 +115,7 @@ const AdminUsers = () => {
             universityAddress: "",
             degree: "",
             major: "",
-            graduationYear: "",
+            graduationDate: "",
             universityStartYear: "",
             linkedin: "",
             github: "",

@@ -76,10 +76,10 @@ const updateProfile = async (
         body.universityAddress !== undefined
           ? body.universityAddress
           : user.universityAddress;
-      user.graduationYear =
-        body.graduationYear !== undefined
-          ? body.graduationYear
-          : user.graduationYear;
+      user.graduationDate =
+        body.graduationDate !== undefined
+          ? body.graduationDate
+          : user.graduationDate;
       user.universityStartYear =
         body.universityStartYear !== undefined
           ? body.universityStartYear
@@ -161,7 +161,7 @@ const updateProfile = async (
       if (user.role === "graduate") {
         user.isProfileComplete = Boolean(
           user.university &&
-          user.graduationYear &&
+          user.graduationDate &&
           user.degree &&
           user.skills &&
           user.skills.length > 0,

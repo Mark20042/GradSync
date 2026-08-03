@@ -326,7 +326,7 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
       user.university = body.university || user.university;
       user.degree = body.degree || user.degree;
       user.major = body.major || user.major;
-      user.graduationYear = body.graduationYear || user.graduationYear;
+      user.graduationDate = body.graduationDate || user.graduationDate;
       user.universityStartYear = body.universityStartYear || user.universityStartYear;
       user.linkedin = body.linkedin || user.linkedin;
       user.github = body.github || user.github;
@@ -642,7 +642,7 @@ export const createUser = async (req: any, res: Response, next: NextFunction) =>
 
     if ((role === "graduate" || role === "jobseeker") && !userData.degree) userData.degree = "Not Specified";
     if (role === "employer" && !userData.companyName) userData.companyName = "Not Specified";
-    if (role === "employer") ["degree","university","major","graduationYear","universityStartYear","jobPreferences","skills","experiences","internships","education","awards","certifications","projects","languages"].forEach(f => delete userData[f]);
+    if (role === "employer") ["degree","university","major","graduationDate","universityStartYear","jobPreferences","skills","experiences","internships","education","awards","certifications","projects","languages"].forEach(f => delete userData[f]);
 
     // Apply initial AI Tokens based on system settings
     if (userData.aiTokens === undefined) {
