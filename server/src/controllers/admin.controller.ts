@@ -324,6 +324,7 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
 
     if (user.role === "graduate" || user.role === "jobseeker") {
       if (body.university !== undefined) user.university = body.university;
+      if (body.universityAddress !== undefined) user.universityAddress = body.universityAddress;
       if (body.degree !== undefined) user.degree = body.degree;
       if (body.major !== undefined) user.major = body.major;
       if (body.graduationDate !== undefined) user.graduationDate = body.graduationDate;
