@@ -89,6 +89,24 @@ const UserGraduateInfo = ({ editingUser, setEditingUser, degreeSearchTerm, setDe
                                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                         />
                                     </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                                        <input
+                                            type="month"
+                                            value={editingUser.universityStartYear || ""}
+                                            onChange={(e) => setEditingUser({ ...editingUser, universityStartYear: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Date</label>
+                                        <input
+                                            type="month"
+                                            value={editingUser.graduationDate || ""}
+                                            onChange={(e) => setEditingUser({ ...editingUser, graduationDate: e.target.value })}
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center justify-between">
