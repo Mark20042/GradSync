@@ -156,7 +156,7 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
       {/* University Start Date */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          University Start Date
+          University Start Date *
         </label>
         <div className="relative">
           <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -165,9 +165,16 @@ const BasicInfoStep = ({ formData, setFormData, validationErrors }) => {
             name="universityStartYear"
             value={formData.universityStartYear || ""}
             onChange={handleChange}
-            className="w-full pl-11 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full pl-11 pr-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${validationErrors.universityStartYear ? "border-red-500" : "border-gray-300"
+              }`}
+            required
           />
         </div>
+        {validationErrors.universityStartYear && (
+          <p className="text-red-500 text-xs mt-1">
+            {validationErrors.universityStartYear}
+          </p>
+        )}
       </div>
 
       {/* Degree */}

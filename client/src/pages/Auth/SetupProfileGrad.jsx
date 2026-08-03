@@ -80,6 +80,10 @@ const SetupProfileGrad = () => {
       case 1: // Basic Info
         if (!formData.university?.trim())
           errors.university = "University is required";
+        if (!formData.universityAddress?.trim())
+          errors.universityAddress = "University address is required";
+        if (!formData.universityStartYear?.trim())
+          errors.universityStartYear = "University start date is required";
         if (!formData.graduationYear?.trim())
           errors.graduationYear = "Graduation year is required";
         if (!formData.degree?.trim()) errors.degree = "Degree is required";
