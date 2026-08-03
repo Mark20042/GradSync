@@ -118,7 +118,7 @@ const EducationSection = ({ user, editing, editData, setEditData }) => {
                                     {user.university}
                                 </h4>
                                 <p className="text-blue-600 font-medium">
-                                    {user.degree}{user.major ? ` in ${user.major}` : ""}
+                                    {user.degree}{user.major ? `  Major in ${user.major}` : ""}
                                 </p>
                                 <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                                     <Calendar className="w-3.5 h-3.5" />
