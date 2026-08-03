@@ -323,14 +323,14 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
     }
 
     if (user.role === "graduate" || user.role === "jobseeker") {
-      user.university = body.university || user.university;
-      user.degree = body.degree || user.degree;
-      user.major = body.major || user.major;
-      user.graduationDate = body.graduationDate || user.graduationDate;
-      user.universityStartYear = body.universityStartYear || user.universityStartYear;
-      user.linkedin = body.linkedin || user.linkedin;
-      user.github = body.github || user.github;
-      user.portfolio = body.portfolio || user.portfolio;
+      if (body.university !== undefined) user.university = body.university;
+      if (body.degree !== undefined) user.degree = body.degree;
+      if (body.major !== undefined) user.major = body.major;
+      if (body.graduationDate !== undefined) user.graduationDate = body.graduationDate;
+      if (body.universityStartYear !== undefined) user.universityStartYear = body.universityStartYear;
+      if (body.linkedin !== undefined) user.linkedin = body.linkedin;
+      if (body.github !== undefined) user.github = body.github;
+      if (body.portfolio !== undefined) user.portfolio = body.portfolio;
       if (body.jobPreferences) user.jobPreferences = { ...user.jobPreferences, ...body.jobPreferences };
       if (body.skills) user.skills = body.skills;
       if (body.experiences) user.experiences = body.experiences;
@@ -339,6 +339,7 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
       if (body.awards) user.awards = body.awards;
       if (body.certifications) user.certifications = body.certifications;
       if (body.projects) user.projects = body.projects;
+      if (body.education) user.education = body.education;
     }
     if (user.role === "employer") {
       if (body.companyName !== undefined) user.companyName = body.companyName;
