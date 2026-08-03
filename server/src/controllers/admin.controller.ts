@@ -341,6 +341,41 @@ export const updateUser = async (req: any, res: Response, next: NextFunction) =>
       if (body.certifications) user.certifications = body.certifications;
       if (body.projects) user.projects = body.projects;
       if (body.education) user.education = body.education;
+
+      // Ensure Primary University is synced to the education array (like SetupProfileGrad)
+      if (user.university) {
+        if (!user.education) user.education = [];
+        
+        // Try to find the existing primary education entry
+        const primaryIndex = user.education.findIndex(
+          (e: any) => e.isPrimary || e.school === user.university
+        );
+
+        const primaryEduData: any = {
+          school: user.university,
+          degree: user.degree || "",
+          major: user.major || "",
+          location: user.universityAddress || "",
+          activities: primaryIndex !== -1 ? user.education[primaryIndex].activities || "" : "",
+          isPrimary: true,
+        };
+
+        if (user.universityStartYear && !isNaN(new Date(user.universityStartYear).getTime())) {
+          primaryEduData.startDate = new Date(user.universityStartYear);
+        }
+        
+        if (user.graduationDate && !isNaN(new Date(user.graduationDate).getTime())) {
+          primaryEduData.endDate = new Date(user.graduationDate);
+        }
+
+        if (primaryIndex === -1) {
+          // Add to beginning if it doesn't exist
+          user.education.unshift(primaryEduData);
+        } else {
+          // Update existing entry
+          user.education[primaryIndex] = primaryEduData;
+        }
+      }
     }
     if (user.role === "employer") {
       if (body.companyName !== undefined) user.companyName = body.companyName;
