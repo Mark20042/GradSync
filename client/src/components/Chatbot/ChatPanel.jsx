@@ -39,8 +39,8 @@ const ChatPanel = ({ onClose, chat, role }) => {
       exit={{ opacity: 0, y: 16, scale: 0.97 }}
       transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
       className="
-        fixed z-[70] flex flex-col overflow-hidden bg-[#f7fafe]
-        bottom-20 right-4 w-[calc(100vw-2rem)] h-[min(600px,calc(100vh-7rem))]
+        fixed z-[210] flex flex-col overflow-hidden bg-[#f7fafe]
+        bottom-[6.5rem] right-4 w-[calc(100vw-2rem)] h-[min(600px,calc(100vh-8rem))]
         sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[min(620px,calc(100vh-8rem))]
         rounded-2xl sm:rounded-3xl shadow-2xl shadow-gray-900/20 border border-gray-200/70
       "

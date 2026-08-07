@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, X } from "lucide-react";
 
 const ChatLauncher = ({ isOpen, onClick, showHint, onDismissHint }) => (
-  <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] flex flex-col items-end gap-3">
+  <div className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[200] flex flex-col items-end gap-3">
     <AnimatePresence>
       {showHint && !isOpen && (
         <motion.div
