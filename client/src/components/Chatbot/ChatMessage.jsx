@@ -58,6 +58,8 @@ const Inline = ({ text }) => {
         <React.Fragment key={i}>
           <a
             href={clean}
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-indigo-600 font-medium underline decoration-indigo-300 decoration-1 underline-offset-2 hover:decoration-indigo-600 break-all"
           >
             {clean}
