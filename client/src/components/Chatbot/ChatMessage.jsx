@@ -60,7 +60,7 @@ const Inline = ({ text }) => {
             href={clean}
             className="text-indigo-600 font-medium underline decoration-indigo-300 decoration-1 underline-offset-2 hover:decoration-indigo-600 break-all"
           >
-            {clean.replace(/^https?:\/\//, "")}
+            {clean}
           </a>
           {trailing}
         </React.Fragment>
