@@ -35,6 +35,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 import AdminRoute from "./routes/AdminRoute";
+import ChatWidget from "./components/Chatbot";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminJobs from "./pages/Admin/AdminJobs";
@@ -187,6 +188,7 @@ const App = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        <ChatWidget />
       </Router>
       <Toaster
         toastOptions={{

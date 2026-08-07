@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Lottie from "lottie-react";
 import hiringAnimation from "../../../assets/animations/hiring-process.json";
 
 const About = () => {
@@ -83,11 +83,10 @@ const About = () => {
             className="flex justify-center"
           >
             <div className="w-full max-w-5xl md:max-w-2xl lg:max-w-3xl xl:max-w-6xl mr-30">
-              <DotLottieReact
-                data={hiringAnimation}
-                loop
-                autoplay
-                style={{ width: "140%", height: "auto" }}
+              <Lottie
+                animationData={hiringAnimation}
+                loop={true}
+                style={{ width: "95%", height: "auto", margin: "0 auto" }}
               />
             </div>
           </motion.div>

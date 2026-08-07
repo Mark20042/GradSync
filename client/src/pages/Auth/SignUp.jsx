@@ -26,7 +26,7 @@ import uploadImage from "../../utils/uploadImage";
 import axiosInstance from "./../../utils/axiosInstance";
 import { API_PATH } from "./../../utils/apiPath";
 import { useAuth } from "../../context/AuthContext";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Lottie from "lottie-react";
 import registerAnimation from "../../assets/animations/signup.json";
 import RegisterErrorModal from "./components/RegisterErrorModal";
 import RegisterSuccessModal from "./components/RegisterSuccessModal";
@@ -362,11 +362,10 @@ const SignUp = () => {
           className="hidden lg:flex w-full lg:w-2/5 justify-center items-center"
         >
           <div className="w-full max-w-sm xl:max-w-lg">
-            <DotLottieReact
-              data={registerAnimation}
-              loop
-              autoplay
-              className="w-full h-auto"
+            <Lottie
+              animationData={registerAnimation}
+              loop={true}
+              style={{ width: "90%", height: "auto", margin: "0 auto" }}
             />
           </div>
         </motion.div>

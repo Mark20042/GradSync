@@ -4,7 +4,7 @@ import { Search, ArrowRight, Star, PlayCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./../../../context/AuthContext";
 import HeroCards from "./HeroCards";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Lottie from "lottie-react";
 import jobportalAnimation from "../../../assets/animations/jobportal.json";
 
 const fadeUp = {
@@ -161,11 +161,10 @@ const Hero = () => {
             className="flex-2 flex justify-center lg:justify-end w-full"
           >
             <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
-              <DotLottieReact
-                data={jobportalAnimation}
-                loop
-                autoplay
-                className="w-full h-auto"
+              <Lottie
+                animationData={jobportalAnimation}
+                loop={true}
+                style={{ width: "85%", height: "auto", margin: "0 auto" }}
               />
             </div>
           </motion.div>

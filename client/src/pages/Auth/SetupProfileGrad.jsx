@@ -280,7 +280,6 @@ const SetupProfileGrad = () => {
         <div className="flex flex-col lg:flex-row gap-8 mt-8">
           <ProfilePreview userData={userData} formData={formData} />
           <motion.div
-            key={currentStep} // Add key for animation on step change
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}

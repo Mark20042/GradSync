@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Lottie from "lottie-react";
 import loginAnimation from "../../assets/animations/login.json";
 
 const ForgotPassword = () => {
@@ -200,11 +200,10 @@ const ForgotPassword = () => {
         {/* Left Side - Lottie Animation */}
         <div className="w-full md:w-1/2 flex justify-center">
           <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96">
-            <DotLottieReact
-              data={loginAnimation}
-              loop
-              autoplay
-              style={{ width: "100%", height: "100%" }}
+            <Lottie
+              animationData={loginAnimation}
+              loop={true}
+              style={{ width: "85%", height: "85%", margin: "0 auto" }}
             />
           </div>
         </div>
