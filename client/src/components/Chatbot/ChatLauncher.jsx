@@ -46,7 +46,7 @@ const ChatLauncher = ({ isOpen, onClick, showHint, onDismissHint }) => (
           className="flex items-center justify-center gap-3 h-full"
         >
           {isOpen ? (
-           <div className="relative w-[44px] h-[44px] flex-shrink-0  rounded-full flex items-center justify-center shadow-sm">
+           <div className="relative w-[44px] h-[44px] flex-shrink-0  rounded-full flex items-center justify-center ">
                 <img
                   src="/qubi.svg?v=4"
                   alt="Qubi"
