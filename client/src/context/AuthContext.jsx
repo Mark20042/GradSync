@@ -22,34 +22,32 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  // With cookie-based JWT, we verify auth by calling GET /api/auth/me
-  // If the cookie is valid, the server returns user data
-  // If the cookie is expired/missing, it returns 401
+  
   const checkAuthStatus = async () => {
     try {
-      // First check if we have cached user data in localStorage
+    
       const storedUser = localStorage.getItem("user");
 
       if (storedUser) {
-        // We have cached data — set it immediately for fast UI render
+      
         const userData = JSON.parse(storedUser);
         setUser(userData);
         setAuthenticated(true);
       }
 
-      // Then verify with the server (cookie will be sent automatically)
+     
       const response = await axiosInstance.get(API_PATH.AUTH.GET_PROFILE);
       const serverUser = response.data;
 
-      // Update with fresh data from server
+    
       localStorage.setItem("user", JSON.stringify(serverUser));
       setUser(serverUser);
       setAuthenticated(true);
       
-      // Initialize Push Notifications
+     
       subscribeToPushNotifications();
     } catch (error) {
-      // Cookie is invalid/expired — clear everything
+     
       console.error("Auth check failed:", error?.response?.status || error.message);
       localStorage.removeItem("user");
       setUser(null);
@@ -59,18 +57,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // After login, the server sets the httpOnly cookie automatically
-  // We just need to save user data for the UI
+  
   const login = (userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     setAuthenticated(true);
     
-    // Initialize Push Notifications
+   
     subscribeToPushNotifications();
   };
 
-  // Call the server to clear the cookie, then clean up local state
+
   const logout = async () => {
     try {
       await axiosInstance.post("/api/auth/logout");
