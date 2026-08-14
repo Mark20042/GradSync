@@ -41,37 +41,38 @@ class GeminiService {
     return GeminiService.instance;
   }
 
+  // handles the extraction of json data from gemini
   private extractJSON(content: string): string {
-    // 1. Remove thinking blocks
+   
     let cleaned = content.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '').trim();
     
-    // 2. Find markdown JSON blocks
+    
     const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (match && match[1]) {
       cleaned = match[1].trim();
     }
     
-    // 3. Find the first brace
+   
     const firstBrace = cleaned.indexOf('{');
     if (firstBrace === -1) return cleaned;
     
-    // 4. Find the largest valid JSON object by iterating backwards from the last brace
+    
     for (let i = cleaned.lastIndexOf('}'); i >= firstBrace; i--) {
         if (cleaned[i] === '}') {
             const attempt = cleaned.substring(firstBrace, i + 1);
             try {
                 JSON.parse(attempt);
-                return attempt; // Successfully parsed!
+                return attempt; 
             } catch (e) {
-                // Ignore and continue searching backwards
+                
             }
         }
     }
     
-    return cleaned; // Fallback
+    return cleaned; 
   }
 
-  // ─── Job Suitability Analysis ──────────────────────────────────────────
+ 
 
   async analyzeJobSuitability(
     userProfile: UserProfileForAI,

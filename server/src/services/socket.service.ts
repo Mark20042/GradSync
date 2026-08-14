@@ -37,35 +37,37 @@ export const initializeSocket = (server: HTTPServer): void => {
   io.on('connection', (socket) => {
     console.log(`📡 User connected to Socket.IO: ${socket.id}`);
 
-    // 1. User joins a room with their own User ID
+      // joins the room
     socket.on('joinRoom', (userId: string) => {
       socket.join(userId);
       console.log(`↳ User ${userId} joined room: ${userId}`);
     });
 
-    // 2. Listen for a new message
+   
+    // sends the message to the recipient
     socket.on('sendMessage', async ({ conversationId, senderId, recipientId, content }) => {
       try {
         const validation = isMessageClean(content);
         if (!validation.clean) {
-          // Send error specifically back to the sender
+         
           return socket.emit('messageError', { message: validation.reason });
         }
-        // Save the new message to the database
+       
+        // store the message in the database
         const newMessage = new Message({ conversationId, sender: senderId, content });
         const savedMessage = await newMessage.save();
 
-        // Update the conversation's 'lastMessage' for UI previews
+       
         const updatedConversation = await Conversation.findByIdAndUpdate(
           conversationId,
           { lastMessage: { text: content, sender: senderId, sentAt: new Date() } },
           { new: true }
         ).populate('job', 'title');
 
-        // Populate sender info before emitting
+        
         const populatedMessage = await Message.findById(savedMessage._id).populate('sender', 'fullName avatar role');
 
-        // Send push notification directly instead of saving a Notification DB record
+        
         const sender = await User.findById(senderId).select('fullName');
         if (sender) {
           const jobTitle = (updatedConversation?.job as any)?.title;
@@ -73,7 +75,7 @@ export const initializeSocket = (server: HTTPServer): void => {
             ? `${sender.fullName || 'Someone'} sent you a message regarding the ${jobTitle} position`
             : `${sender.fullName || 'Someone'} sent you a message`;
 
-          // Trigger Web Push directly
+         // handles notification when message has been sent
           try {
             const recipient = await User.findById(recipientId).select('pushSubscription');
             if (recipient?.pushSubscription && env.VAPID_PUBLIC_KEY) {
@@ -96,13 +98,13 @@ export const initializeSocket = (server: HTTPServer): void => {
           }
         }
 
-        // Emit the message to the recipient's room
+        // tells the recipient that a new message has been received
         io.to(recipientId).emit('receiveMessage', populatedMessage);
 
-        // Emit confirmation back to the sender
+        // tells the sender that the message has been sent
         io.to(senderId).emit('messageSent', populatedMessage);
 
-        // Check for Auto-Reply (Employer Auto-Pilot)
+        // handles auto-reply from employer
         await checkAndSendAutoReply(recipientId, senderId, content, conversationId, io);
 
       } catch (error) {

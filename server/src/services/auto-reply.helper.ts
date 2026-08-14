@@ -18,11 +18,9 @@ export const checkAndSendAutoReply = async (
   io: SocketIOServer
 ): Promise<void> => {
   try {
-    // 1. Check if recipient has settings
+   
     const settings = await EmployerSettings.findOne({ user: recipientId });
-    if (!settings) return; // No settings, assume online or no auto-reply needed
-
-    // 2. Check for FAQ match FIRST (FAQs should work 24/7)
+    if (!settings) return; 
     const faqs = await JobFAQ.find({ employer: recipientId });
     let autoReplyContent: string | null = null;
     let isFaqMatch = false;
@@ -54,7 +52,7 @@ export const checkAndSendAutoReply = async (
       }
     }
 
-    // 3. If no FAQ match, check if "offline" for generic auto-reply
+  
     if (!isFaqMatch) {
       const timeZone = 'Asia/Manila';
       const now = new Date();
@@ -65,7 +63,7 @@ export const checkAndSendAutoReply = async (
       const todayHours = settings.businessHours?.[dayName as keyof typeof settings.businessHours];
       let isOffline = true;
 
-      // Type-cast to any to get around the dynamic indexing on Mongoose Document
+      
       const hours = todayHours as unknown as { isOpen: boolean; start: string; end: string };
 
       if (hours) {
@@ -83,10 +81,10 @@ export const checkAndSendAutoReply = async (
 
     if (!autoReplyContent) return;
 
-    // 4. Send Auto-Reply
+    
     const autoReply = new Message({
       conversationId,
-      sender: recipientId, // Sent BY the employer (auto)
+      sender: recipientId, 
       content: `[Auto-Reply] ${autoReplyContent}`,
     });
     const savedReply = await autoReply.save();

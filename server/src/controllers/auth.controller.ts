@@ -94,7 +94,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
         else if (isEmployer) aiTokens = settings.initialTokens.employer;
         else if (isGraduate) aiTokens = settings.initialTokens.graduate;
       } else {
-        // Fallbacks if not set
+        // set tokens
         if (isJobSeeker) aiTokens = 5;
         else if (isEmployer) aiTokens = 5;
         else if (isGraduate) aiTokens = 5;
@@ -435,15 +435,14 @@ const setupProfileGrad = async (
       { new: true },
     ).select("-password");
 
-    // Auto-generate AI questions in the background (interview first, then assessments)
+    // generate assessments and interview questions
     const skillsArray = Array.isArray(skills) ? skills : (typeof skills === 'string' ? skills.split(',') : []);
     const allSkills = Array.from(new Set(
       skillsArray.map((s: any) => typeof s === 'object' ? (s.name || s.skill || JSON.stringify(s)) : s)
         .filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
     )) as string[];
 
-    // Queue this user — interview questions generated FIRST (based on desired job title),
-    // then assessments for each skill. Multiple users are processed one at a time.
+    // queue for auto generation
     autoGenerateForUser(req.user._id.toString(), allSkills);
 
     res.status(StatusCodes.OK).json(user);

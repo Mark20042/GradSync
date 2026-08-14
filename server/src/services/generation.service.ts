@@ -14,17 +14,17 @@ const isGemini = () => {
   return true;
 };
 
-// ─── Global Rate-Limited Queue ──────────────────────────────────────────────
-// Ensures only ONE AI call runs at a time, with configurable delay between calls.
-// This prevents concurrent requests from blowing through Gemini's free-tier RPM/RPD limits.
+//  Queue for AI generation to prevent overloading the server
 class AIQueue {
   private queue: (() => Promise<void>)[] = [];
   private running = false;
   private delayMs: number;
 
+  //  delay to prevent overloading the server
   constructor(delayMs = 15000) {
-    this.delayMs = delayMs; // 15s default = ~4 RPM, safely under 5 RPM limit
+    this.delayMs = delayMs;
   }
+
 
   enqueue<T>(fn: () => Promise<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
@@ -48,8 +48,8 @@ class AIQueue {
       const task = this.queue.shift()!;
       try {
         await task();
-      } catch (_) { /* errors handled by individual promises */ }
-      // Wait between requests to respect rate limits
+      } catch (_) {}
+      
       if (this.queue.length > 0) {
         await this.sleep(this.delayMs);
       }
@@ -63,12 +63,12 @@ class AIQueue {
   }
 }
 
-// Use 5s delay for Gemini/Gemma free tier (15 RPM for Gemma), 1s for Ollama (local, no limits)
+// 5s delay for ai generation
 const aiQueue = new AIQueue(5000);
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// ─── JSON Repair Utilities ──────────────────────────────────────────────────
+// repairs json when fetched
 const repairJson = (raw: string): string => {
   let s = raw;
   s = s.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]+/g, '');
@@ -78,44 +78,44 @@ const repairJson = (raw: string): string => {
 };
 
 const safeParse = (content: string): any => {
-  // Strip markdown code blocks if present (```json ... ``` or ``` ... ```)
+  
   let cleaned = content.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
 
-  // Log first 500 chars for debugging
+  
   console.log(`[safeParse] Raw response preview (${cleaned.length} chars): ${cleaned.substring(0, 500)}...`);
 
-  // Try to find JSON object
+ 
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
 
-  // Also check for bare arrays
+ 
   const firstBracket = cleaned.indexOf('[');
   const lastBracket = cleaned.lastIndexOf(']');
 
-  // Attempt 1: Parse as JSON object { "questions": [...] }
+  
   if (firstBrace !== -1 && lastBrace !== -1) {
     let jsonStr = cleaned.substring(firstBrace, lastBrace + 1);
 
-    try { return JSON.parse(jsonStr); } catch (_) { /* fall through */ }
-    try { return JSON.parse(repairJson(jsonStr)); } catch (_) { /* fall through */ }
+    try { return JSON.parse(jsonStr); } catch (_) { }
+    try { return JSON.parse(repairJson(jsonStr)); } catch (_) { }
   }
 
-  // Attempt 2: Parse as bare JSON array [ { ... }, { ... } ]
+
   if (firstBracket !== -1 && lastBracket !== -1) {
     let arrStr = cleaned.substring(firstBracket, lastBracket + 1);
 
     try {
       const arr = JSON.parse(arrStr);
       if (Array.isArray(arr) && arr.length > 0) return { questions: arr };
-    } catch (_) { /* fall through */ }
+    } catch (_) { }
 
     try {
       const arr = JSON.parse(repairJson(arrStr));
       if (Array.isArray(arr) && arr.length > 0) return { questions: arr };
-    } catch (_) { /* fall through */ }
+    } catch (_) { }
   }
 
-  // Attempt 3: If parsed but key isn't "questions", find any array value
+  // If parsed but key isn't "questions", find any array value
   if (firstBrace !== -1 && lastBrace !== -1) {
     let jsonStr = cleaned.substring(firstBrace, lastBrace + 1);
     try {
@@ -126,10 +126,10 @@ const safeParse = (content: string): any => {
           return { questions: obj[key] };
         }
       }
-    } catch (_) { /* fall through */ }
+    } catch (_) { }
   }
 
-  // Attempt 4: Regex extraction of individual question objects (last resort)
+  // Regex extraction of individual question objects (last resort)
   try {
     const questionRegex = /\{[^{}]*"questionText"\s*:\s*"[^"]*"[^{}]*\}/g;
     const matches = cleaned.match(questionRegex);
@@ -142,14 +142,13 @@ const safeParse = (content: string): any => {
         return { questions };
       }
     }
-  } catch (_) { /* fall through */ }
+  } catch (_) {}
 
   console.log(`[safeParse] All parse attempts failed. Full response:\n${cleaned.substring(0, 2000)}`);
   return null;
 };
 
-// ─── Rate-limited AI Call ────────────────────────────────────────────────────
-// Wraps a single AI model.invoke() with rate limiting and 429 retry logic.
+// rate limited invoke
 const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promise<string> => {
   for (let attempt = 0; attempt < retries; attempt++) {
     const limitService = getAILimitService();
@@ -159,16 +158,15 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
       const response = await model.invoke(prompt);
       let content = response.content;
 
-      // Handle Gemma "thinking" model response format:
-      // content = [{"type":"thinking","thinking":"..."}, {"type":"text","text":"...actual JSON..."}]
+     // handles gemma gemini thinking
       if (Array.isArray(content)) {
-        // Find the "text" block and extract its text value
+        
         const textBlock = content.find((block: any) => block.type === 'text' && block.text);
         if (textBlock) {
           console.log(`[rateLimitedInvoke] Extracted text block from thinking model response`);
           return textBlock.text;
         }
-        // If no text block found, try to stringify the whole thing
+       
         return JSON.stringify(content);
       }
 
@@ -176,7 +174,7 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
     } catch (error: any) {
       const errorMsg = error?.message || '';
 
-      // Handle 429 rate limit errors — parse retry delay from Google's error
+    
       if (errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('Too Many Requests')) {
         const retryMatch = errorMsg.match(/retry\s+in\s+([\d.]+)s/i);
         const waitSeconds = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) + 5 : 60;
@@ -185,7 +183,7 @@ const rateLimitedInvoke = async (model: any, prompt: string, retries = 3): Promi
         continue;
       }
 
-      // Non-rate-limit error — throw immediately
+    
       throw error;
     } finally {
       limitService.releaseSlot();
@@ -198,7 +196,7 @@ export const generateAssessment = async (skill: string, candidateId: string, awa
   const model = getModel();
   const useQueue = isGemini();
 
-  // Check if an assessment for this skill already exists to prevent duplicates
+ 
   const existingAssessment = await Assessment.findOne({
     candidateId,
     skill: skill.toLowerCase()
@@ -209,7 +207,7 @@ export const generateAssessment = async (skill: string, candidateId: string, awa
     return existingAssessment;
   }
 
-  // Create the assessment immediately in 'generating' status
+  // create the assessment immediately in 'generating' status
   const assessment = new Assessment({
     candidateId,
     skill: skill.toLowerCase(),
@@ -270,10 +268,10 @@ Do NOT use comments inside the JSON. Escape special characters in strings.
 
           let content: string;
           if (useQueue) {
-            // Queue ensures sequential execution with delays for Gemini
+            
             content = await aiQueue.enqueue(() => rateLimitedInvoke(model, prompt));
           } else {
-            // Ollama is local — no rate limits, call directly
+           
             content = await rateLimitedInvoke(model, prompt, 1);
           }
 
@@ -302,18 +300,17 @@ Do NOT use comments inside the JSON. Escape special characters in strings.
     console.log(`[${skill}] ═══ Assessment complete. Total questions: ${assessment.questions.length} ═══`);
   };
 
-  // If awaitChunks is true, wait for completion (used by batch generation)
+ 
   if (awaitChunks) {
     await generateChunks();
   } else {
-    // Fire and forget — runs in background
+    
     generateChunks().catch(err => console.error("Background chunk generation failed:", err));
   }
   return assessment;
 };
 
-// ─── Batch Assessment Generation (Sequential) ───────────────────────────────
-// Processes all skills one at a time: skill 1 finishes completely, then skill 2, etc.
+// batch assessment generation (sequential)
 export const generateAllAssessments = async (skills: string[], candidateId: string) => {
   const results: any[] = [];
 
@@ -335,7 +332,7 @@ export const generateAllAssessments = async (skills: string[], candidateId: stri
   return results;
 };
 
-// ─── Interview Generation ────────────────────────────────────────────────────
+// interview generation
 export const generateInterviewDraft = async (candidateId: string) => {
   const model = getModel();
   const useQueue = isGemini();
@@ -405,7 +402,7 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
     } catch (error) {
       console.error(`[Interview] ✗ Attempt ${attempts} failed:`, error instanceof Error ? error.message : String(error));
       if (attempts === maxRetries) {
-        // If max retries reached, delete the generating draft and throw error
+       
         await InterviewDraft.findByIdAndDelete(interviewDraft._id);
         throw new Error('Failed to generate interview draft after 3 attempts.');
       }
@@ -413,7 +410,7 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
     }
   }
 
-  // 2. Update draft with generated questions and status "approved"
+
   interviewDraft.questions = parsed.questions;
   interviewDraft.status = 'approved';
   await interviewDraft.save();
@@ -422,9 +419,7 @@ Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
   return interviewDraft;
 };
 
-// ─── Global User Queue ──────────────────────────────────────────────────────
-// Ensures auto-generation for multiple users is processed ONE user at a time.
-// When many users sign up simultaneously, they are queued and handled sequentially.
+// global user queue based on who signed up first
 class UserQueue {
   private queue: (() => Promise<void>)[] = [];
   private running = false;
@@ -453,16 +448,12 @@ class UserQueue {
 
 const userQueue = new UserQueue();
 
-// ─── Auto-Generation on Signup ───────────────────────────────────────────────
-// Called when a user completes profile setup. Processes:
-//   1. Interview questions FIRST (based on desired job title)
-//   2. Then assessments for each skill (sequentially)
-// All queued so multiple signups don't overwhelm the API.
+// auto generate 
 export const autoGenerateForUser = (candidateId: string, skills: string[]) => {
   userQueue.enqueue(async () => {
     console.log(`\n[AutoGen] ╔═══ Starting auto-generation for user ${candidateId} ═══╗`);
 
-    // Step 1: Generate interview questions FIRST
+    
     try {
       console.log(`[AutoGen] Step 1/2: Generating interview questions...`);
       await generateInterviewDraft(candidateId);
@@ -471,7 +462,7 @@ export const autoGenerateForUser = (candidateId: string, skills: string[]) => {
       console.error(`[AutoGen] ✗ Interview generation failed:`, err);
     }
 
-    // Step 2: Generate assessments for each skill sequentially
+    
     if (skills.length > 0) {
       console.log(`[AutoGen] Step 2/2: Generating assessments for ${skills.length} skills...`);
       await generateAllAssessments(skills, candidateId);
@@ -481,8 +472,7 @@ export const autoGenerateForUser = (candidateId: string, skills: string[]) => {
   });
 };
 
-// ─── Auto-Generate Missing Assessments ──────────────────────────────────────
-// Enqueues ONLY the missing skills for a user, usually triggered on profile edit
+// auto generate missing assessments
 export const autoGenerateMissingForUser = (candidateId: string, missingSkills: string[]) => {
   if (missingSkills.length === 0) return;
 

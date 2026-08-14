@@ -34,7 +34,7 @@ export const checkSuitability = async (
     const { jobId } = req.body as SuitabilityRequestBody;
     const userId = req.user._id;
 
-    // 1. Fetch User Profile
+   
     const user = await User.findById(userId).select(
       'degree major skills experiences education verifiedSkills aiTokens'
     );
@@ -51,14 +51,14 @@ export const checkSuitability = async (
       return;
     }
 
-    // 2. Fetch Job Details
+  
     const job = await Job.findById(jobId).select('title description requirements qualifications skills');
     if (!job) {
       res.status(404).json({ message: 'Job not found' });
       return;
     }
 
-    // 3. Call AI Service
+   
     const aiService = getAIService();
     const result = await aiService.analyzeJobSuitability(
       user as unknown as UserProfileForAI,
@@ -135,7 +135,7 @@ export const scanForMatches = async (
   try {
     const userId = req.user._id;
 
-    // 1. Fetch User Profile (including job preferences)
+
     const user = await User.findById(userId).select(
       'degree major skills experiences education jobPreferences lastScanDate verifiedSkills aiTokens'
     );
@@ -153,18 +153,17 @@ export const scanForMatches = async (
       return;
     }
 
-    // 2. Determine the date to scan from (only new jobs since last scan)
+  
     const scanFromDate = user.lastScanDate
       ? new Date(user.lastScanDate)
-      : new Date(Date.now() - 24 * 60 * 60 * 1000); // Default: last 24 hours
+      : new Date(Date.now() - 24 * 60 * 60 * 1000); 
 
-    // 3. Build job query based on user preferences
     const jobQuery: Record<string, unknown> = {
       createdAt: { $gt: scanFromDate },
       isClosed: { $ne: true },
     };
 
-    // Filter by job preferences if available
+   
     if (user.jobPreferences) {
       if (user.jobPreferences.preferredLocation) {
         jobQuery['location'] = {
@@ -183,7 +182,7 @@ export const scanForMatches = async (
       }
     }
 
-    // 4. Fetch matching jobs
+  
     const recentJobs = await Job.find(jobQuery)
       .populate('company', 'companyName')
       .sort({ createdAt: -1 })
@@ -191,7 +190,7 @@ export const scanForMatches = async (
 
     let matchesFound = 0;
 
-    // 5. Analyze each job
+  
     for (const job of recentJobs) {
       try {
         const aiService = getAIService();
@@ -200,7 +199,7 @@ export const scanForMatches = async (
           job
         );
 
-        // 6. If score >= 80, create notification
+       
         if (analysis.score >= 80) {
           const companyObj = job.company as { companyName?: string } | undefined;
           const companyName = companyObj?.companyName ?? 'a company';
@@ -216,11 +215,11 @@ export const scanForMatches = async (
         }
       } catch (err) {
         console.error(`Error analyzing job ${String(job._id)}:`, err);
-        // Continue to next job
+        
       }
     }
 
-    // 7. Update user's lastScanDate and deduct token
+   
     user.lastScanDate = new Date();
     user.aiTokens = (user.aiTokens || 0) - cost;
     await user.save();
@@ -251,7 +250,7 @@ export const checkCandidateSuitability = async (
   try {
     const { jobId, candidateId } = req.body as CandidateSuitabilityRequestBody;
 
-    // 1. Fetch Candidate Profile (wait, Employer is checking, Employer pays)
+   
     const employer = await User.findById(req.user._id).select('aiTokens');
     if (!employer) {
       res.status(404).json({ message: 'Employer not found' });
@@ -274,14 +273,14 @@ export const checkCandidateSuitability = async (
       return;
     }
 
-    // 2. Fetch Job Details
+   
     const job = await Job.findById(jobId).select('title description requirements qualifications skills');
     if (!job) {
       res.status(404).json({ message: 'Job not found' });
       return;
     }
 
-    // 3. Call AI Service
+   
     const aiService = getAIService();
     const result = await aiService.analyzeJobSuitability(
       user as unknown as UserProfileForAI,
