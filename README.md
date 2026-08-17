@@ -94,9 +94,6 @@
 - **Web Push Notifications**: PWA push support for new messages
 - **Content Moderation**: Automatic message filtering
 - **Employer Auto-Pilot**: Automated reply system for common inquiries
-- **Conversation Management**: Organized by job applications
-
-
 ###  Analytics & Insights
 - **Employer Dashboard**: Application funnel, hire rates, retention metrics, AI-generated summaries
 - **Admin Analytics**: Platform-wide metrics, user growth, job trends
