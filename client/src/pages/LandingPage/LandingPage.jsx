@@ -9,6 +9,7 @@ import About from "./components/About";
 import Creators from "./components/Creators";
 import Contact from "./components/Contact";
 import InDemandSkillsGraph from "../../components/InDemandSkillsGraph";
+import Footer from "./components/Footer";
 
 const LandingPage = () => {
   return (
@@ -27,6 +28,7 @@ const LandingPage = () => {
       <About />
       <Creators />
       <Contact />
+      <Footer />
     </div>
   );
 };

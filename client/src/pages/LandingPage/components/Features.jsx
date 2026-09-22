@@ -23,7 +23,7 @@ const Features = () => {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
             Tools That Help{" "}
             <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Graduates & Companies Grow
+              Jobseekers / Graduates & Companies Grow
             </span>
           </h2>
           <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto px-2">
@@ -44,7 +44,7 @@ const Features = () => {
           >
             <div className="text-center mb-8 sm:mb-12">
               <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
-                For Graduates
+                For Graduates & Jobseekers 
               </h3>
               <div className="w-20 sm:w-24 h-1 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto rounded-full"></div>
             </div>

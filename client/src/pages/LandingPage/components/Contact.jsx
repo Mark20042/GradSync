@@ -123,27 +123,7 @@ const Contact = () => {
           ))}
         </div>
 
-        {/* Contact CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          viewport={{ once: false, amount: 0.3 }}
-          className="mt-12 text-center bg-white rounded-2xl shadow-lg p-8"
-        >
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">
-            Still have questions?
-          </h3>
-          <p className="text-gray-600 mb-6">
-            We’re here to help! Reach out to our support team.
-          </p>
-          <a
-            href="mailto:support@gradsync.tech"
-            className="inline-block px-8 py-3 bg-purple-600 text-white font-semibold rounded-xl shadow-lg hover:bg-purple-700 transition-colors"
-          >
-            Contact Support
-          </a>
-        </motion.div>
+        
       </div>
     </section>
   );

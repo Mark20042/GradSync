@@ -15,36 +15,77 @@ import {
   Video,
   Zap,
   ClipboardList,
+  Sparkles,
+  Brain,
+  Bot,
+  TrendingUp,
+  MapPin,
 } from "lucide-react";
 
 export const jobSeekerFeatures = [
   {
-    icon: Search,
-    title: "Smart Job Matching",
+    icon: Sparkles,
+    title: "AI Job Matching",
     description:
-      "Get personalized job suggestions based on your skills and degree program.",
+      "Get personalized, AI-driven job suggestions tailored to your specific skills and degree program.",
+  },
+  {
+    icon: Brain,
+    title: "AI Suitability Analysis",
+    description:
+      "Instantly check your match score for any job, complete with actionable insights and recommended skill improvements.",
   },
   {
     icon: FileText,
-    title: "Built-in Resume Maker",
+    title: "ATS-Friendly Resume Builder",
     description:
-      "Quickly generate professional resumes with customizable templates.",
+      "Generate clean, properly formatted resumes optimized to pass Applicant Tracking Systems.",
+  },
+  {
+    icon: Video,
+    title: "AI Mock Interviews",
+    description:
+      "Practice and perfect your interview skills with interactive AI-powered mock interviews.",
+  },
+  {
+    icon: ClipboardList,
+    title: "Skill Assessments",
+    description:
+      "Validate your expertise through targeted assessments based on your core skills.",
   },
   {
     icon: MessageCircle,
     title: "Secure Chat",
     description:
       "Talk directly with recruiters for interviews and job updates.",
-  },
-  {
-    icon: Award,
-    title: "Skills & Achievements",
-    description:
-      "Showcase verified skills, projects, and awards to stand out to employers.",
-  },
+  }
 ];
 
 export const employerFeatures = [
+  {
+    icon: Brain,
+    title: "AI Candidate Analysis",
+    description:
+      "Instantly analyze and evaluate applicant details to find the best fit for your job postings.",
+  },
+  {
+    icon: Bot,
+    title: "Auto-reply FAQs",
+    description:
+      "Automate initial candidate communication with smart auto-replies for frequently asked questions.",
+  },
+  {
+    icon: Briefcase,
+    title: "Job Management",
+    description:
+      "Easily post, edit, track applicants, and manage active or closed jobs all from one centralized dashboard.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Employment Analytics",
+    description:
+      "Deep dive into advanced analytics covering your hiring funnel, retention, and recruitment health.",
+  },
   {
     icon: Users,
     title: "Graduate Profiles",
@@ -52,22 +93,10 @@ export const employerFeatures = [
       "Access auto-generated, updated graduate profiles organized by degree program.",
   },
   {
-    icon: BarChart3,
-    title: "Recruitment Insights",
+    icon: MapPin,
+    title: "Company Mapping",
     description:
-      "View analytics on job postings, candidate engagement, and hiring results.",
-  },
-  {
-    icon: Shield,
-    title: "Data Privacy",
-    description:
-      "All profiles and communications are protected with secure access.",
-  },
-  {
-    icon: Clock,
-    title: "Faster Hiring",
-    description:
-      "Save time with skill-based candidate search and instant matching.",
+      "Showcase your brand and pinpoint your exact office location on an interactive map to attract local talent.",
   },
 ];
 export const NAVIGATION_MENU = [
