@@ -409,7 +409,7 @@ const InterviewRoom = () => {
   const askQuestion = (text, onComplete) => {
     window.speechSynthesis.cancel();
     stopListening();
-    setTimeLeft(60);
+    setTimeLeft(90);
 
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
