@@ -101,7 +101,7 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
     );
 
     if (isFailed) {
-      await sendAssessmentRejectionEmail(userEmail, userName, `Interview - ${roleName || "General"}`, rejectionReason);
+      await sendAssessmentRejectionEmail(userEmail, userName, `Interview - ${roleNameForDisplay}`, rejectionReason);
       res.status(StatusCodes.OK).json({
         message: "Interview submitted.",
         status: "rejected",
@@ -120,7 +120,7 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
         const aiService = getGeminiService();
         console.log(`🧠 Background evaluation started for user: ${userName} (${roleName})`);
         const bulkResult = await aiService.evaluateFullInterview(
-          roleName || "General",
+          roleNameForDisplay,
           answers.map((a: any) => ({
             questionId: String(a.questionId), questionText: a.questionText,
             idealAnswer: idealMap[String(a.questionId)] || a.idealAnswer || "", candidateAnswer: a.candidateAnswer
@@ -143,7 +143,7 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
         };
         await Interview.findByIdAndUpdate(interview._id, { $set: { answers: evaluated, aiScore: bulkResult.overallScore, aiFeedback, status: "evaluated" } });
         console.log(`✅ Background evaluation complete for ${userName}`);
-        await sendInterviewResultEmail(userEmail, userName, roleName || "General", bulkResult.overallScore, bulkResult.summary);
+        await sendInterviewResultEmail(userEmail, userName, roleNameForDisplay, bulkResult.overallScore, bulkResult.summary);
       } catch (err: any) {
         console.error("❌ Background evaluation failed:", err.message);
         await Interview.findByIdAndUpdate(interview._id, { $set: { status: "failed" } });
