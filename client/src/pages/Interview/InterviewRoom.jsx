@@ -62,6 +62,10 @@ const InterviewRoom = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
+  // Timer state
+  const [timeLeft, setTimeLeft] = useState(60);
+  const nextQuestionRef = useRef(null);
+
   // Integrity tracking
   const [violations, setViolations] = useState([]);
 
@@ -146,6 +150,29 @@ const InterviewRoom = () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [hasStarted, isSubmitted, recordViolation]);
+
+  useEffect(() => {
+    let timer;
+    if (isListening) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setTimeout(() => {
+              if (nextQuestionRef.current) {
+                nextQuestionRef.current();
+              }
+            }, 0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isListening]);
   // Start listening with Deepgram
   const startListening = useCallback(async () => {
     try {
@@ -382,6 +409,7 @@ const InterviewRoom = () => {
   const askQuestion = (text, onComplete) => {
     window.speechSynthesis.cancel();
     stopListening();
+    setTimeLeft(60);
 
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
@@ -479,6 +507,11 @@ const InterviewRoom = () => {
       handleEndInterview();
     }
   };
+
+  useEffect(() => {
+    nextQuestionRef.current = nextQuestion;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextQuestion]);
 
   const repeatQuestion = () => {
     askQuestion(questions[currentQIndex].question);
@@ -656,6 +689,31 @@ const InterviewRoom = () => {
           {!camActive && (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
               <VideoOff className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400" />
+            </div>
+          )}
+
+          {/* New overlay for "Wait before speaking" */}
+          {isSpeaking && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-20 transition-all duration-300">
+              <div className="bg-white/95 px-6 py-4 sm:px-8 sm:py-6 rounded-2xl flex flex-col items-center gap-3 text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-300 border border-white/20">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center mb-1">
+                  <Volume2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800 text-lg sm:text-xl">Interviewer is speaking</p>
+                  <p className="text-sm sm:text-base text-slate-500 font-medium mt-1">Please wait for your turn to answer</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Timer Display */}
+          {(isListening && timeLeft > 0) && (
+            <div className="absolute top-3 sm:top-5 left-3 sm:left-5 bg-black/75 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl font-bold text-sm sm:text-base text-white flex items-center gap-2 shadow-lg z-20 border border-white/10">
+              <Clock className={`w-4 h-4 sm:w-5 sm:h-5 ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`} />
+              <span className={`tracking-wider ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : ''}`}>
+                00:{timeLeft.toString().padStart(2, '0')}
+              </span>
             </div>
           )}
 
