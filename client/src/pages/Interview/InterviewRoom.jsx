@@ -695,13 +695,13 @@ const InterviewRoom = () => {
           {/* New overlay for "Wait before speaking" */}
           {isSpeaking && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-20 transition-all duration-300">
-              <div className="bg-white/95 px-6 py-4 sm:px-8 sm:py-6 rounded-2xl flex flex-col items-center gap-3 text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-300 border border-white/20">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center mb-1">
-                  <Volume2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />
+              <div className="bg-white/95 px-4 py-3 sm:px-8 sm:py-6 rounded-xl sm:rounded-2xl flex flex-col items-center gap-2 sm:gap-3 text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-300 border border-white/20 w-[85%] max-w-sm sm:max-w-md">
+                <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center mb-0.5 sm:mb-1">
+                  <Volume2 className="w-5 h-5 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-lg sm:text-xl">Interviewer is speaking</p>
-                  <p className="text-sm sm:text-base text-slate-500 font-medium mt-1">Please wait for your turn to answer</p>
+                  <p className="font-bold text-slate-800 text-base sm:text-xl">Interviewer is speaking</p>
+                  <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">Please wait for your turn to answer</p>
                 </div>
               </div>
             </div>
@@ -712,7 +712,7 @@ const InterviewRoom = () => {
             <div className="absolute top-3 sm:top-5 left-3 sm:left-5 bg-black/75 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl font-bold text-sm sm:text-base text-white flex items-center gap-2 shadow-lg z-20 border border-white/10">
               <Clock className={`w-4 h-4 sm:w-5 sm:h-5 ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`} />
               <span className={`tracking-wider ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : ''}`}>
-                00:{timeLeft.toString().padStart(2, '0')}
+                {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
             </div>
           )}
