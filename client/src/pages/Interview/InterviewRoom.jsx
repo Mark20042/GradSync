@@ -171,6 +171,7 @@ const InterviewRoom = () => {
       deepgramSocketRef.current = socket;
 
       socket.onopen = () => {
+       
         isListeningRef.current = true;
         setIsListening(true);
 
@@ -178,7 +179,19 @@ const InterviewRoom = () => {
         if (stream) {
           // Extract only the audio track from the webcam stream for Deepgram
           const audioStream = new MediaStream(stream.getAudioTracks());
-          const mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm' });
+          
+          let mimeType = 'audio/webm';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+              mimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+              mimeType = 'audio/ogg';
+            } else {
+              mimeType = ''; // let browser choose default
+            }
+          }
+          
+          const mediaRecorder = new MediaRecorder(audioStream, mimeType ? { mimeType } : undefined);
           mediaRecorderRef.current = mediaRecorder;
 
           mediaRecorder.addEventListener('dataavailable', (event) => {
@@ -187,13 +200,13 @@ const InterviewRoom = () => {
             }
           });
 
-          mediaRecorder.start(250); // Send chunks every 250ms
+          mediaRecorder.start(1000); // Send chunks every 1000ms (1 second) for better decoding
         }
       };
 
       socket.onmessage = (message) => {
         const received = JSON.parse(message.data);
-        const transcript = received.channel?.alternatives[0]?.transcript;
+        const transcript = received.channel?.alternatives?.[0]?.transcript;
 
         if (transcript) {
           if (received.is_final) {
