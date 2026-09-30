@@ -76,6 +76,8 @@ const InterviewRoom = () => {
   const mediaRecorderRef = useRef(null);
   const isListeningRef = useRef(false);
   const transcriptAccumulatorRef = useRef(""); // Accumulates transcript across recognition restarts
+  const utteranceIdRef = useRef(0);
+  const listenAttemptRef = useRef(0);
 
   // Integrity listeners
   const recordViolation = useCallback((type) => {
@@ -175,6 +177,9 @@ const InterviewRoom = () => {
   }, [isListening]);
   // Start listening with Deepgram
   const startListening = useCallback(async () => {
+    listenAttemptRef.current += 1;
+    const currentAttempt = listenAttemptRef.current;
+
     try {
       if (deepgramSocketRef.current) {
         deepgramSocketRef.current.close();
@@ -188,6 +193,9 @@ const InterviewRoom = () => {
 
       //  Fetch short-lived token from our backend
       const res = await axiosInstance.get("/api/interviews/deepgram-token");
+      
+      if (listenAttemptRef.current !== currentAttempt) return;
+
       const token = res.data.token;
 
       //  Open WebSocket (language=en uses the global english model which perfectly handles all accents)
@@ -266,6 +274,7 @@ const InterviewRoom = () => {
 
   // Stop listening
   const stopListening = useCallback(() => {
+    listenAttemptRef.current += 1; // invalidate any pending startListening requests
     isListeningRef.current = false;
     setIsListening(false);
 
@@ -407,6 +416,9 @@ const InterviewRoom = () => {
   };
 
   const askQuestion = (text, onComplete) => {
+    utteranceIdRef.current += 1;
+    const currentId = utteranceIdRef.current;
+
     window.speechSynthesis.cancel();
     stopListening();
     setTimeLeft(90);
@@ -444,11 +456,13 @@ const InterviewRoom = () => {
     utterance.rate = 0.95;
 
     utterance.onstart = () => {
+      if (utteranceIdRef.current !== currentId) return;
       setIsSpeaking(true);
       if (lottieRef.current) lottieRef.current.play();
     };
 
     utterance.onend = () => {
+      if (utteranceIdRef.current !== currentId) return;
       setIsSpeaking(false);
       if (lottieRef.current) lottieRef.current.pause();
       if (onComplete) {
@@ -460,6 +474,7 @@ const InterviewRoom = () => {
     };
 
     utterance.onerror = () => {
+      if (utteranceIdRef.current !== currentId) return;
       setIsSpeaking(false);
       if (lottieRef.current) lottieRef.current.pause();
       if (onComplete) {
@@ -695,13 +710,13 @@ const InterviewRoom = () => {
           {/* New overlay for "Wait before speaking" */}
           {isSpeaking && (
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-20 transition-all duration-300">
-              <div className="bg-white/95 px-4 py-3 sm:px-8 sm:py-6 rounded-xl sm:rounded-2xl flex flex-col items-center gap-2 sm:gap-3 text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-300 border border-white/20 w-[85%] max-w-sm sm:max-w-md">
-                <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-blue-100 flex items-center justify-center mb-0.5 sm:mb-1">
-                  <Volume2 className="w-5 h-5 sm:w-8 sm:h-8 text-blue-600 animate-pulse" />
+              <div className="bg-white/95 px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-xl flex flex-col items-center gap-1.5 sm:gap-2 text-center shadow-2xl transform scale-100 animate-in fade-in zoom-in duration-300 border border-white/20 w-[85%] max-w-[260px] sm:max-w-xs">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center mb-0.5">
+                  <Volume2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 animate-pulse" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-base sm:text-xl">Interviewer is speaking</p>
-                  <p className="text-xs sm:text-base text-slate-500 font-medium mt-0.5 sm:mt-1">Please wait for your turn to answer</p>
+                  <p className="font-bold text-slate-800 text-sm sm:text-base">Interviewer is speaking</p>
+                  <p className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">Please wait for your turn to answer</p>
                 </div>
               </div>
             </div>
