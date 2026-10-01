@@ -26,12 +26,24 @@ export const getAssessmentRejectionEmailTemplate = (
     : reason;
     
   const paragraphText = isScoreFailure
-    ? `Thank you for completing your evaluation for **${assessmentTitle}**. Unfortunately, you did not achieve the required passing score to approve your submission at this time.`
+    ? `Thank you for completing your evaluation for **${assessmentTitle}**. Unfortunately, you did not achieve the required passing score to approve your submission at this time. You scored **${score !== undefined ? Math.round(score) : 0}%**, while the passing score is **${passingScore !== undefined ? passingScore : 80}%**.`
     : `Thank you for completing your evaluation. Our administrators have finished reviewing your recent submission for **${assessmentTitle}**. Unfortunately, we were unable to approve your submission at this time.`;
 
   const encouragementText = isScoreFailure
     ? `Don't worry! You are fully welcome and encouraged to retake the test once you have brushed up on your skills and feel ready.`
     : `Don't worry! Non-approvals are very common and can happen due to minor security flags (like clicking out of the browser tab or window blur). You are fully welcome and encouraged to retake the test once you are ready!`;
+
+  const reasonBoxHtml = isScoreFailure ? '' : `
+                    <!-- Premium Reason Box -->
+                    <div style="background-color:${boxBg};border:1px solid ${boxBorder};border-radius:18px;padding:24px;margin-bottom:32px;">
+                      <span style="display:block;font-size:11px;font-weight:700;color:${boxLabelColor};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                        Reason for non-approval
+                      </span>
+                      <span style="font-size:15px;font-weight:600;color:${boxTextColor};line-height:1.5;display:block;">
+                        ${reasonContent}
+                      </span>
+                    </div>
+  `;
 
   return `
     <!DOCTYPE html>
@@ -75,15 +87,7 @@ export const getAssessmentRejectionEmailTemplate = (
                       ${paragraphText}
                     </p>
 
-                    <!-- Premium Reason Box -->
-                    <div style="background-color:${boxBg};border:1px solid ${boxBorder};border-radius:18px;padding:24px;margin-bottom:32px;">
-                      <span style="display:block;font-size:11px;font-weight:700;color:${boxLabelColor};text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
-                        Reason for non-approval
-                      </span>
-                      <span style="font-size:15px;font-weight:600;color:${boxTextColor};line-height:1.5;display:block;">
-                        ${reasonContent}
-                      </span>
-                    </div>
+${reasonBoxHtml}
 
                     <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
                       ${encouragementText}

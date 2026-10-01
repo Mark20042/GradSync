@@ -258,13 +258,9 @@ const AssessmentTaking = () => {
       setResult(res.data);
       setIsSubmitted(true);
 
+      toast.success("Assessment submitted successfully!");
+
       if (res.data.passed) {
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-        });
-        toast.success("Congratulations! You passed!");
         // Send certificate and result via email (API call placeholder)
         try {
           await axiosInstance.post("/api/assessments/send-certificate", {
@@ -275,8 +271,6 @@ const AssessmentTaking = () => {
           // Optionally show a toast or log error
           console.error("Failed to send certificate email", err);
         }
-      } else {
-        toast.error("Assessment completed. Better luck next time!");
       }
 
       window.dispatchEvent(new CustomEvent("openFeedbackModal", {
