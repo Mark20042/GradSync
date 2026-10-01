@@ -596,11 +596,15 @@ const AssessmentTaking = () => {
               <button
                 onClick={() => handleSubmit(false)}
                 disabled={
-                  Object.keys(answers).length < assessment.questions.length
+                  Object.keys(answers).length < assessment.questions.length || isSubmitting
                 }
                 className="w-full sm:w-auto px-4 md:px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-colors bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                Submit Assessment <CheckCircle size={16} />
+                {isSubmitting ? (
+                  <>Submitting... <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div></>
+                ) : (
+                  <>Submit Assessment <CheckCircle size={16} /></>
+                )}
               </button>
             ) : (
               <button
