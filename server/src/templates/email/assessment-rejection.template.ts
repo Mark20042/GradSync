@@ -22,12 +22,12 @@ export const getAssessmentRejectionEmailTemplate = (
   const boxTextColor = isScoreFailure ? '#7F1D1D' : '#78350F';
 
   const reasonContent = isScoreFailure && score !== undefined && passingScore !== undefined
-    ? `You scored ${Math.round(score)}%. The passing threshold is ${passingScore}%.`
+    ? `You scored ${Math.round(score)}%. The passing score is ${passingScore}%.`
     : reason;
     
   const paragraphText = isScoreFailure
-    ? `Thank you for completing your skill assessment for **${assessmentTitle}**. Unfortunately, you did not achieve the required passing score to approve your submission at this time.`
-    : `Thank you for completing your skill assessment. Our administrators have finished reviewing your recent submission for **${assessmentTitle}**. Unfortunately, we were unable to approve your submission at this time.`;
+    ? `Thank you for completing your evaluation for **${assessmentTitle}**. Unfortunately, you did not achieve the required passing score to approve your submission at this time.`
+    : `Thank you for completing your evaluation. Our administrators have finished reviewing your recent submission for **${assessmentTitle}**. Unfortunately, we were unable to approve your submission at this time.`;
 
   const encouragementText = isScoreFailure
     ? `Don't worry! You are fully welcome and encouraged to retake the test once you have brushed up on your skills and feel ready.`
