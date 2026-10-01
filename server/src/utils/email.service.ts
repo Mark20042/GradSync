@@ -362,6 +362,8 @@ export const sendAssessmentRejectionEmail = async (
   userName: string,
   assessmentTitle: string,
   reason: string,
+  score?: number,
+  passingScore?: number
 ): Promise<boolean> => {
   try {
     const supportEmail = "support@gradsync.tech";
@@ -378,6 +380,8 @@ export const sendAssessmentRejectionEmail = async (
           assessmentTitle,
           reason,
           supportEmail,
+          score,
+          passingScore
         ),
         category: "Assessment Review",
       });
@@ -395,6 +399,8 @@ export const sendAssessmentRejectionEmail = async (
         assessmentTitle,
         reason,
         supportEmail,
+        score,
+        passingScore
       ),
     };
     const trans = getTransporter();

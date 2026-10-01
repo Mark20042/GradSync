@@ -227,6 +227,8 @@ const submit = async (req: AuthRequest, res: Response, next: NextFunction) => {
           user.fullName || "Job Seeker",
           assessment?.title || assessment?.skill || "Assessment",
           rejectionReason || "Did not pass the assessment.",
+          score,
+          assessment?.passingScore
         );
       }
     }
