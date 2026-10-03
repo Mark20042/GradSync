@@ -234,8 +234,8 @@ export const generateAssessment = async (skill: string, candidateId: string, awa
       const isProgramming = techKeywords.some(kw => skill.toLowerCase().includes(kw));
 
       const codeSnippetInstruction = isProgramming
-        ? 'For technical questions, include short code snippets where relevant. Use the "codeSnippet" field for this.'
-        : 'Do NOT include code snippets. Leave the "codeSnippet" field as an empty string for all questions. This skill is not programming-related.';
+        ? 'For technical questions, include short code snippets where relevant. Use the "codeSnippet" field for this. Focus on evaluating deep technical programming and IT knowledge.'
+        : 'Do NOT include code snippets. Leave the "codeSnippet" field as an empty string. This skill is a general soft skill or non-technical competency. Absolutely NO programming, IT, or coding-related questions (e.g. no regex, no code syntax, no software bugs) should be generated, even if you are a technical assessor. Focus purely on general, real-world workplace applications of this skill.';
 
       // 1 call per category, 10 questions each = 50 questions total per skill
       const prompt = `You are an expert technical assessor. Generate exactly 10 assessment questions for the skill "${skill}" under the "${category}" category.
