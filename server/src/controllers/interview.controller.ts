@@ -137,13 +137,16 @@ const evaluate = async (req: AuthRequest, res: Response, next: NextFunction) => 
             feedback: ev.feedback || "No feedback provided."
           };
         });
+        const totalScore = evaluated.reduce((sum, ev) => sum + ev.score, 0);
+        const calculatedAvgScore = evaluated.length > 0 ? Math.round(totalScore / evaluated.length) : 0;
+
         const aiFeedback = {
-          overallScore: bulkResult.overallScore, totalQuestions: answers.length,
+          overallScore: calculatedAvgScore, totalQuestions: answers.length,
           strengths: bulkResult.strengths, areasForImprovement: bulkResult.areasForImprovement, summary: bulkResult.summary
         };
-        await Interview.findByIdAndUpdate(interview._id, { $set: { answers: evaluated, aiScore: bulkResult.overallScore, aiFeedback, status: "evaluated" } });
+        await Interview.findByIdAndUpdate(interview._id, { $set: { answers: evaluated, aiScore: calculatedAvgScore, aiFeedback, status: "evaluated" } });
         console.log(`✅ Background evaluation complete for ${userName}`);
-        await sendInterviewResultEmail(userEmail, userName, roleNameForDisplay, bulkResult.overallScore, bulkResult.summary);
+        await sendInterviewResultEmail(userEmail, userName, roleNameForDisplay, calculatedAvgScore, bulkResult.summary);
       } catch (err: any) {
         console.error("❌ Background evaluation failed:", err.message);
         await Interview.findByIdAndUpdate(interview._id, { $set: { status: "failed" } });
