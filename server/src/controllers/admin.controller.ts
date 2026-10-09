@@ -132,11 +132,44 @@ export const deleteApplication = async (req: any, res: Response, next: NextFunct
   } catch (error) { next(error); }
 };
 
-export const getAllUsers = async (_req: any, res: Response, next: NextFunction) => {
+export const getAllUsers = async (req: any, res: Response, next: NextFunction) => {
   try { 
-    const users = await User.aggregate([
-      { $match: { isAdmin: { $ne: true } } },
-      { $sort: { createdAt: -1 } },
+    const page = parseInt(req.query.page);
+    const limit = parseInt(req.query.limit);
+    const skip = (page && limit) ? (page - 1) * limit : 0;
+    
+    const search = req.query.search;
+    const role = req.query.role;
+    const status = req.query.status;
+
+    const matchStage: any = { isAdmin: { $ne: true } };
+
+    if (search) {
+      matchStage.$or = [
+        { fullName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    if (role && role !== "all") {
+      matchStage.role = role;
+    }
+
+    if (status && status !== "all") {
+      matchStage.verified = status === "verified";
+    }
+
+    let aggregatePipeline: any[] = [
+      { $match: matchStage },
+      { $sort: { createdAt: -1 } }
+    ];
+
+    if (page && limit) {
+      aggregatePipeline.push({ $skip: skip });
+      aggregatePipeline.push({ $limit: limit });
+    }
+
+    aggregatePipeline = aggregatePipeline.concat([
       {
         $lookup: {
           from: "assessments",
@@ -162,8 +195,20 @@ export const getAllUsers = async (_req: any, res: Response, next: NextFunction) 
       },
       { $project: { password: 0, assessments: 0 } } // Exclude password and heavy assessments array
     ]);
-    // Append system settings to the response if needed, or create a separate endpoint
-    res.json(users);
+
+    const users = await User.aggregate(aggregatePipeline);
+    
+    if (page && limit) {
+      const totalUsers = await User.countDocuments(matchStage);
+      res.json({
+        users,
+        totalUsers,
+        totalPages: Math.ceil(totalUsers / limit),
+        currentPage: page
+      });
+    } else {
+      res.json(users);
+    }
   }
   catch (error) { next(error); }
 };
@@ -270,6 +315,11 @@ export const deleteUser = async (req: any, res: Response, next: NextFunction) =>
     await Conversation.deleteMany({ _id: { $in: conversationIds } });
 
     await FeatureFeedback.deleteMany({ user: userId });
+
+    if (req.query.reject === 'true') {
+      const { sendVerificationFailedEmail } = await import('@/utils/email.service.js');
+      await sendVerificationFailedEmail(user.email, user.fullName, user.role);
+    }
 
     await user.deleteOne();
     res.json({ message: "User and all associated data removed" });

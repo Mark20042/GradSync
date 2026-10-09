@@ -12,7 +12,7 @@ const CompanyShowcase = () => {
         const response = await axiosInstance.get(
           API_PATH.USERS.GET_ALL_EMPLOYERS
         );
-        const validCompanies = response.data.filter((c) => c.companyName);
+        const validCompanies = response.data.filter((c) => c.companyName && c.verified);
         setCompanies(validCompanies);
       } catch (error) {
         console.error("Error fetching companies:", error);

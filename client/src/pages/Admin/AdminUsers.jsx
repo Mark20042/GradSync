@@ -3,7 +3,7 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPath";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle, BrainCircuit, Briefcase } from "lucide-react";
+import { Trash2, Search, Shield, Edit, Eye, EyeOff, Plus, X, FileText, CheckCircle, AlertCircle, BrainCircuit, Briefcase, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminModal from "./components/AdminModal";
 import UserBasicInfo from "./components/UserForm/UserBasicInfo";
@@ -16,6 +16,9 @@ const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const limit = 10;
 
     const [editingUser, setEditingUser] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -30,6 +33,12 @@ const AdminUsers = () => {
     const [selectedPermitUrl, setSelectedPermitUrl] = useState(null);
     const [userToDelete, setUserToDelete] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [userToVerify, setUserToVerify] = useState(null);
+    const [showVerifyModal, setShowVerifyModal] = useState(false);
+    const [userToReject, setUserToReject] = useState(null);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [userToUnverify, setUserToUnverify] = useState(null);
+    const [showUnverifyModal, setShowUnverifyModal] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
     const [degreeSearchTerm, setDegreeSearchTerm] = useState("");
@@ -62,17 +71,67 @@ const AdminUsers = () => {
             clearInterval(interval);
             document.removeEventListener("visibilitychange", handleVisibility);
         };
-    }, []);
+    }, [currentPage, searchTerm]);
 
     const fetchUsers = async () => {
         try {
-            const response = await axiosInstance.get(API_PATH.ADMIN.USERS);
-            setUsers(response.data);
+            const response = await axiosInstance.get(`${API_PATH.ADMIN.USERS}?page=${currentPage}&limit=${limit}&search=${searchTerm}`);
+            if (response.data.users) {
+                setUsers(response.data.users);
+                setTotalPages(response.data.totalPages);
+            } else {
+                setUsers(response.data);
+            }
         } catch (error) {
             console.error("Error fetching users:", error);
             toast.error("Failed to fetch users");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const executeVerify = async () => {
+        if (!userToVerify) return;
+        try {
+            await axiosInstance.put(API_PATH.ADMIN.UPDATE_USER(userToVerify), { verified: true });
+            setUsers(users.map(u => u._id === userToVerify ? { ...u, verified: true } : u));
+            toast.success("User verified successfully");
+            setShowViewModal(false);
+            setShowVerifyModal(false);
+            setUserToVerify(null);
+        } catch (error) {
+            console.error("Error verifying user:", error);
+            toast.error("Failed to verify user");
+        }
+    };
+
+    const executeReject = async () => {
+        if (!userToReject) return;
+        try {
+            await axiosInstance.delete(`${API_PATH.ADMIN.DELETE_USER(userToReject)}?reject=true`);
+            setUsers(users.filter((user) => user._id !== userToReject));
+            toast.success("User rejected and deleted successfully");
+            setShowViewModal(false);
+            setShowRejectModal(false);
+            setUserToReject(null);
+        } catch (error) {
+            console.error("Error rejecting user:", error);
+            toast.error("Failed to reject user");
+        }
+    };
+
+    const executeUnverify = async () => {
+        if (!userToUnverify) return;
+        try {
+            await axiosInstance.put(API_PATH.ADMIN.UPDATE_USER(userToUnverify), { verified: false });
+            setUsers(users.map(u => u._id === userToUnverify ? { ...u, verified: false } : u));
+            toast.success("User unverified successfully");
+            setShowViewModal(false);
+            setShowUnverifyModal(false);
+            setUserToUnverify(null);
+        } catch (error) {
+            console.error("Error unverifying user:", error);
+            toast.error("Failed to unverify user");
         }
     };
 
@@ -219,7 +278,7 @@ const AdminUsers = () => {
                                 type="text"
                                 placeholder="Search users..."
                                 value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                                 className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
                             />
                         </div>
@@ -233,6 +292,31 @@ const AdminUsers = () => {
                     </div>
                 </div>
 
+                                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex justify-between items-center gap-4 mb-6 p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span className="text-sm text-gray-500">
+                            Showing page <span className="font-medium text-gray-900">{currentPage}</span> of <span className="font-medium text-gray-900">{totalPages}</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto admin-table-responsive">
                     <table className="w-full text-left">
@@ -242,6 +326,8 @@ const AdminUsers = () => {
                                 <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider">Role</th>
                                 <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider">Joined</th>
+                                <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider text-center">Verification</th>
+                                <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider text-center">Documents</th>
                                 <th className="px-6 py-5 font-semibold text-gray-400 text-xs uppercase tracking-wider text-center pr-8">Actions</th>
                             </tr>
                         </thead>
@@ -310,6 +396,54 @@ const AdminUsers = () => {
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            {!user.verified ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => { setUserToVerify(user._id); setShowVerifyModal(true); }}
+                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all duration-200 hover:scale-110"
+                                                        title="Verify User"
+                                                    >
+                                                        <CheckCircle className="w-5 h-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setUserToReject(user._id); setShowRejectModal(true); }}
+                                                        className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-all duration-200 hover:scale-110"
+                                                        title="Reject User"
+                                                    >
+                                                        <XCircle className="w-5 h-5" />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                                                                <button
+                                                    onClick={() => { setUserToUnverify(user._id); setShowUnverifyModal(true); }}
+                                                    className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-all duration-200 hover:scale-110"
+                                                    title="Unverify User"
+                                                >
+                                                    <XCircle className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            {(user.businessPermit || user.tor) ? (
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedPermitUrl(user.businessPermit || user.tor);
+                                                        setShowPermitModal(true);
+                                                    }}
+                                                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200 hover:scale-110"
+                                                    title="View Document"
+                                                >
+                                                    <FileText className="w-5 h-5" />
+                                                </button>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">-</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex justify-center gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleView(user)}
                                                 className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all duration-200 hover:scale-110"
@@ -324,7 +458,7 @@ const AdminUsers = () => {
                                             >
                                                 <Edit className="w-5 h-5" />
                                             </button>
-                                            {(user.role === "graduate" || user.role === "jobseeker") && (
+                                            {(user.role === 'graduate' || user.role === 'jobseeker') && (
                                                 <button
                                                     onClick={() => handleViewSavedJobs(user)}
                                                     className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-200 hover:scale-110"
@@ -354,6 +488,8 @@ const AdminUsers = () => {
                 </div>
                 </div>
             </div>
+            
+
 
             {/* Edit User Modal */}
             <AdminModal
@@ -832,6 +968,74 @@ const AdminUsers = () => {
                                     </div>
                                 </div>
 
+                                {/* TOR */}
+                                {viewingUser.role === "graduate" && (
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <span className="w-1 h-6 bg-teal-600 rounded-full"></span>
+                                            Transcript of Records (TOR)
+                                        </h4>
+                                        <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                            {viewingUser.tor ? (
+                                                <div className="space-y-3">
+                                                    {viewingUser.tor.toLowerCase().endsWith('.pdf') ? (
+                                                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                                            <FileText className="w-12 h-12 text-red-500" />
+                                                            <div>
+                                                                <p className="font-medium text-gray-900">PDF Document</p>
+                                                                <p className="text-sm text-gray-500">Click below to view</p>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div
+                                                            className="relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200"
+                                                            onClick={() => {
+                                                                setSelectedPermitUrl(viewingUser.tor);
+                                                                setShowPermitModal(true);
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={viewingUser.tor}
+                                                                alt="TOR"
+                                                                className="w-full h-48 object-cover"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                <span className="text-white font-medium flex items-center gap-2">
+                                                                    <Eye className="w-5 h-5" />
+                                                                    Click to Expand
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {/* Action Buttons */}
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedPermitUrl(viewingUser.tor);
+                                                                setShowPermitModal(true);
+                                                            }}
+                                                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 transition-colors font-medium"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                            View Full Size
+                                                        </button>
+                                                        <a
+                                                            href={viewingUser.tor}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                                                        >
+                                                            Open in New Tab
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <p className="text-gray-500 italic">No TOR uploaded</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Job Preferences */}
                                 <div>
                                     <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -893,6 +1097,22 @@ const AdminUsers = () => {
                         )}
                     </div>
                 )}
+                        {viewingUser && !viewingUser.verified && (
+                            <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end gap-4">
+                                <button
+                                    onClick={() => { setUserToReject(viewingUser._id); setShowRejectModal(true); }}
+                                    className="px-6 py-2.5 bg-red-50 text-red-600 font-bold rounded-lg hover:bg-red-100 transition-colors"
+                                >
+                                    Reject User
+                                </button>
+                                <button
+                                    onClick={() => { setUserToVerify(viewingUser._id); setShowVerifyModal(true); }}
+                                    className="px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                                >
+                                    Verify User
+                                </button>
+                            </div>
+                        )}
             </AdminModal >
 
             {/* Business Permit Preview Modal */}
@@ -901,7 +1121,7 @@ const AdminUsers = () => {
                     <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="text-lg font-semibold text-gray-900">
-                                Business Permit Document
+                                Verification Document
                             </h3>
                             <button
                                 onClick={() => {
@@ -918,12 +1138,12 @@ const AdminUsers = () => {
                                 <iframe
                                     src={selectedPermitUrl}
                                     className="w-full h-[60vh] border-0 rounded-lg"
-                                    title="Business Permit PDF"
+                                    title="Verification Document PDF"
                                 />
                             ) : (
                                 <img
                                     src={selectedPermitUrl}
-                                    alt="Business Permit"
+                                    alt="Verification Document"
                                     className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
                                 />
                             )}
@@ -950,6 +1170,96 @@ const AdminUsers = () => {
                     </div>
                 </div>
             )}
+                        {/* Verify Confirmation Modal */}
+            {showVerifyModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <CheckCircle className="w-8 h-8 text-green-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Verify User</h3>
+                        <p className="text-gray-500 mb-6">Are you sure you want to verify this user? They will gain access to verified features.</p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => {
+                                    setShowVerifyModal(false);
+                                    setUserToVerify(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeVerify}
+                                className="flex-1 px-4 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200"
+                            >
+                                Verify
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Reject Confirmation Modal */}
+            {showRejectModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <XCircle className="w-8 h-8 text-orange-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Reject User</h3>
+                        <p className="text-gray-500 mb-6">Are you sure you want to reject this user? Their account will be permanently deleted and they will be notified.</p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => {
+                                    setShowRejectModal(false);
+                                    setUserToReject(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeReject}
+                                className="flex-1 px-4 py-2.5 bg-orange-600 text-white font-semibold rounded-xl hover:bg-orange-700 transition-colors shadow-lg shadow-orange-200"
+                            >
+                                Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Unverify Confirmation Modal */}
+            {showUnverifyModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden p-6 text-center transform transition-all">
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <XCircle className="w-8 h-8 text-yellow-600" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Unverify User</h3>
+                        <p className="text-gray-500 mb-6">Are you sure you want to unverify this user? They will lose access to verified features and be hidden from the public trusted lists.</p>
+                        <div className="flex gap-3 w-full">
+                            <button
+                                onClick={() => {
+                                    setShowUnverifyModal(false);
+                                    setUserToUnverify(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={executeUnverify}
+                                className="flex-1 px-4 py-2.5 bg-yellow-600 text-white font-semibold rounded-xl hover:bg-yellow-700 transition-colors shadow-lg shadow-yellow-200"
+                            >
+                                Unverify
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">

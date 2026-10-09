@@ -401,7 +401,7 @@ const getEmployers = async (
   try {
     const employers = await User.find({ role: "employer" })
       .select(
-        "companyName companyLogo companyDescription email website address",
+        "companyName companyLogo companyDescription email website address verified",
       )
       .sort({ createdAt: -1 });
     res.status(StatusCodes.OK).json(employers);

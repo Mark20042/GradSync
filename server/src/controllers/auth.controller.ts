@@ -15,7 +15,6 @@ import {
   deleteFromCloudinary,
   getPublicIdFromUrl,
 } from "@/services/cloudinary.service.js";
-import { verifyDocument } from "@/utils/ocr.service.js";
 import {
   sendVerificationSuccessEmail,
   sendVerificationFailedEmail,
@@ -28,15 +27,6 @@ import path from "path";
 import os from "os";
 import bcrypt from "bcrypt";
 
-/**
- * Helper: write buffer to a temp file for OCR processing
- * (OCR service needs a file path, not a buffer)
- */
-const bufferToTempFile = (buffer: Buffer, originalname: string): string => {
-  const tempPath = path.join(os.tmpdir(), `ocr-${Date.now()}-${originalname}`);
-  fs.writeFileSync(tempPath, buffer);
-  return tempPath;
-};
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -130,111 +120,6 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     });
     await user.save();
 
-    // Background OCR Processing
-    const runBackgroundVerification = async () => {
-      if (isJobSeeker) return;
-      try {
-        let ocrResult = { verified: false, message: "No document uploaded." };
-
-        if (
-          isEmployer &&
-          (req as any).files &&
-          (req as any).files.businessPermit
-        ) {
-          const file = (req as any).files.businessPermit[0];
-          const tempPath = bufferToTempFile(file.buffer, file.originalname);
-          console.log(
-            `🔍 Running OCR verification on Business Permit for ${fullName}... (${file.originalname})`,
-          );
-          ocrResult = await verifyDocument(tempPath, "businessPermit");
-          fs.unlinkSync(tempPath); // cleanup temp file
-        } else if (
-          !isEmployer &&
-          (req as any).files &&
-          (req as any).files.tor
-        ) {
-          const file = (req as any).files.tor[0];
-          const tempPath = bufferToTempFile(file.buffer, file.originalname);
-          console.log(
-            `🔍 Running OCR verification on TOR for ${fullName}... (${file.originalname})`,
-          );
-          ocrResult = await verifyDocument(tempPath, "tor");
-          fs.unlinkSync(tempPath);
-        }
-
-        console.log(`📄 OCR Result for ${fullName}:`, ocrResult);
-
-        if (ocrResult.verified) {
-          user.verified = true;
-          user.verificationStatus = "verified";
-          user.verificationMessage = ocrResult.message;
-
-          // Automatically delete documents from Cloudinary after verification
-          const cleanups: Promise<void>[] = [];
-          if (torUrl) {
-            const pid = getPublicIdFromUrl(torUrl);
-            if (pid) cleanups.push(deleteFromCloudinary(pid, "image"));
-          }
-          if (businessPermitUrl) {
-            const pid = getPublicIdFromUrl(businessPermitUrl);
-            if (pid) cleanups.push(deleteFromCloudinary(pid, "image"));
-          }
-          await Promise.allSettled(cleanups);
-
-          // Remove the references from the database
-          user.tor = "";
-          user.businessPermit = "";
-
-          await (user as any).save();
-          sendVerificationSuccessEmail(
-            user.email,
-            user.fullName,
-            user.role,
-          ).catch((err) => console.error(err));
-        } else {
-          console.log(`🗑️ OCR Failed. Deleting unverified user: ${user.email}`);
-          // Delete ALL uploaded files from Cloudinary
-          const cleanups: Promise<void>[] = [];
-          if (avatarUrl) {
-            const pid = getPublicIdFromUrl(avatarUrl);
-            if (pid) {
-              cleanups.push(deleteFromCloudinary(pid, "image"));
-              console.log(`🧹 Deleting avatar from Cloudinary: ${pid}`);
-            }
-          }
-          if (torUrl) {
-            const pid = getPublicIdFromUrl(torUrl);
-            if (pid) {
-              cleanups.push(deleteFromCloudinary(pid, "image"));
-              console.log(`🧹 Deleting TOR from Cloudinary: ${pid}`);
-            }
-          }
-          if (businessPermitUrl) {
-            const pid = getPublicIdFromUrl(businessPermitUrl);
-            if (pid) {
-              cleanups.push(deleteFromCloudinary(pid, "image"));
-              console.log(
-                `🧹 Deleting Business Permit from Cloudinary: ${pid}`,
-              );
-            }
-          }
-          await Promise.allSettled(cleanups);
-          await User.findByIdAndDelete(user._id);
-          console.log(
-            `✅ User ${user.email} and all Cloudinary files deleted.`,
-          );
-          sendVerificationFailedEmail(
-            user.email,
-            user.fullName,
-            user.role,
-          ).catch((err) => console.error(err));
-        }
-      } catch (err: any) {
-        console.error("Background verification error:", err.message);
-      }
-    };
-
-    runBackgroundVerification();
 
     if (isJobSeeker) {
       generateTokens(user, res);

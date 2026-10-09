@@ -744,7 +744,7 @@ const SignUp = () => {
                           PDF or Image (Max 10MB)
                         </span>
                         <span className="text-xs text-blue-500 mt-1 text-center font-medium px-2">
-                          Note: We will automatically delete this document from our database once verified.
+                          Note: This document will be securely kept for manual verification.
                         </span>
                         <input
                           type="file"
@@ -833,7 +833,7 @@ const SignUp = () => {
                           PDF or Image (Max 10MB)
                         </span>
                         <span className="text-xs text-blue-500 mt-1 text-center font-medium px-2">
-                          Note: We will automatically delete this document from our database once verified.
+                          Note: This document will be securely kept for manual verification.
                         </span>
                         <input
                           type="file"
