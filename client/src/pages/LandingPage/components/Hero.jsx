@@ -46,7 +46,7 @@ const Hero = () => {
               className="text-2xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]"
             >
               Success is closer than you think with {"  "}
-              <span className="text-transparent bg-clip-text bg-red-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                 GradSync.
               </span>
             </motion.h1>
