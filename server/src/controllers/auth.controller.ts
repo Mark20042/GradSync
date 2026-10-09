@@ -287,9 +287,18 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 
     let isProfileComplete: boolean = user.isProfileComplete || true;
     if (user.role === "graduate") {
-      isProfileComplete = !!(user.university && user.university.trim() !== "");
+      isProfileComplete = Boolean(
+        user.university &&
+        user.graduationDate &&
+        user.degree &&
+        user.skills &&
+        user.skills.length > 0
+      );
     } else if (user.role === "jobseeker") {
-      isProfileComplete = user.isProfileComplete || false;
+      isProfileComplete = Boolean(
+        user.skills &&
+        user.skills.length > 0 
+      );
     }
 
     res.status(StatusCodes.OK).json({

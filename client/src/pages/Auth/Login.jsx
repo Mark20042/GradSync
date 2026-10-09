@@ -239,7 +239,11 @@ const Login = () => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} style={
+            
+            {
+              MediaQuery: "(min-width: 786px)",
+              display:"none"}}  className=" space-y-6">
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

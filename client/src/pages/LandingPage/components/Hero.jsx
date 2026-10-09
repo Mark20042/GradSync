@@ -46,7 +46,7 @@ const Hero = () => {
               className="text-2xl sm:text-5xl md:text-6xl font-bold text-gray-900 tracking-tight leading-[1.1]"
             >
               Success is closer than you think with {"  "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="text-transparent bg-clip-text bg-red-500">
                 GradSync.
               </span>
             </motion.h1>
@@ -86,7 +86,7 @@ const Hero = () => {
                     }
                   }
                 }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-xl shadow-gray-900/20 font-semibold text-lg"
+                className="hidden w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-xl shadow-gray-900/20 font-semibold text-lg"
               >
                 <Search className="w-5 h-5" />
                 <span>Find Jobs</span>
