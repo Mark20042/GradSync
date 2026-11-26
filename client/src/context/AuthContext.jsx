@@ -22,6 +22,17 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
+  // Re-send the push subscription when the device comes back online: the
+  // browser can rotate the endpoint while offline, and the server keeps the
+  // old one (and drops it on the next 410) until the app re-syncs it.
+  useEffect(() => {
+    const handleOnline = () => {
+      if (localStorage.getItem("user")) subscribeToPushNotifications();
+    };
+    window.addEventListener("online", handleOnline);
+    return () => window.removeEventListener("online", handleOnline);
+  }, []);
+
   
   const checkAuthStatus = async () => {
     try {

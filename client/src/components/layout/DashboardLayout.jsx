@@ -98,7 +98,10 @@ const DashboardLayout = ({ activeMenu, children }) => {
   useEffect(() => {
     if (user && !user.isAdmin) {
       const socket = io(BASE_URL);
-      socket.emit("joinRoom", user._id);
+      // A reconnect gets a new socket id with no room membership, so the join
+      // has to happen on every connect and not only on the first one.
+      // Without this, notifications stop after a network drop until a reload.
+      socket.on("connect", () => socket.emit("joinRoom", user._id));
 
       socket.on("receiveNotification", (notification) => {
         setUnreadCount(prev => prev + 1);

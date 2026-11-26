@@ -57,7 +57,10 @@ const Navbar = () => {
   useEffect(() => {
     if (user && isAuthenticated) {
       const socket = io(BASE_URL);
-      socket.emit("joinRoom", user._id);
+      // Rejoin on every (re)connect: a new connection has a new socket id and
+      // no room membership, which is what killed notifications after a
+      // network drop until the page was fully reloaded.
+      socket.on("connect", () => socket.emit("joinRoom", user._id));
 
       socket.on("receiveNotification", (notification) => {
         setUnreadCount(prev => prev + 1);

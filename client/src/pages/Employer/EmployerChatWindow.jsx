@@ -82,7 +82,9 @@ const EmployerChatWindow = ({ conversation, onBack }) => {
     if (!user) return;
     const newSocket = io(BASE_URL);
     setSocket(newSocket);
-    newSocket.emit("joinRoom", user._id);
+    // Rejoin on every reconnect so live messages keep arriving after the
+    // device goes offline and comes back.
+    newSocket.on("connect", () => newSocket.emit("joinRoom", user._id));
     newSocket.on("receiveMessage", (message) => {
       const fixedMessage = fixLegacyUrls(message);
       if (fixedMessage.conversationId === conversationId) {

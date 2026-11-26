@@ -26,7 +26,12 @@ export const subscribeToPushNotifications = async () => {
     const registration = await navigator.serviceWorker.register('/service-worker.js');
     console.log('Service Worker registered!');
 
-    const permission = await Notification.requestPermission();
+    // Only prompt when the permission was never decided. Asking again on loads
+    // and on background events (online/visibility) gets auto-denied.
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
     if (permission !== 'granted') {
       console.warn('Push notification permission denied');
       return;
@@ -38,12 +43,17 @@ export const subscribeToPushNotifications = async () => {
         return;
     }
 
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
-    });
+    // Reuse the current subscription when one exists. Subscribing only when
+    // there is none, then always re-posting it, is what re-syncs the server
+    // after the browser rotated the endpoint while the device was offline.
+    let subscription = await registration.pushManager.getSubscription();
 
-    console.log('Push subscription successful:', subscription);
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+      });
+    }
 
     // Send the subscription to our backend
     await axiosInstance.post(API_PATH.NOTIFICATIONS.PUSH_SUBSCRIBE, {
