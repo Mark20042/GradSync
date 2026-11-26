@@ -20,12 +20,18 @@ export default defineConfig({
     nodePolyfills(),
     VitePWA({
       registerType: "autoUpdate",
+      // Only one service worker can own scope "/". Registering a second script
+      // at the same scope replaces the first one and takes its push
+      // subscription with it, so /sw.js (workbox) kept winning over
+      // /service-worker.js and every push landed on a worker with no push
+      // handler. The push handlers are now imported into this single worker.
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
       includeAssets: ["3dgradsynnclogo.png", "gradsynclogoapp.png"],
       workbox: {
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024, // Increase limit to 12MB
+        importScripts: ["/service-worker.js"],
       },
       manifest: {
         name: "GradSync",

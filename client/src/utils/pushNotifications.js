@@ -23,8 +23,15 @@ export const subscribeToPushNotifications = async () => {
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/service-worker.js');
-    console.log('Service Worker registered!');
+    // `/sw.js` is the generated worker and it is the only registration allowed
+    // at scope "/": it imports the push handlers from /service-worker.js.
+    // Registering that file directly used to replace this worker (and drop the
+    // subscription with it) or be replaced by it, so push stopped arriving.
+    // The generated worker does not exist in dev, where the plain handler file
+    // is the only worker.
+    const swUrl = import.meta.env.DEV ? '/service-worker.js' : '/sw.js';
+    const registration = await navigator.serviceWorker.register(swUrl);
+    console.log('Service Worker registered!', swUrl);
 
     // Only prompt when the permission was never decided. Asking again on loads
     // and on background events (online/visibility) gets auto-denied.
