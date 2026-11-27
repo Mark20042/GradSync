@@ -6,14 +6,16 @@ import {
 } from 'recharts';
 import { Briefcase, Activity, BarChart2, Hexagon, TrendingUp, Star } from 'lucide-react';
 import { CATEGORIES } from '../utils/data';
+import { MOCK_TRENDS_DATA } from '../utils/mockTrendsData';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#f59e0b', '#eab308', '#84cc16'];
 
-const InDemandSkillsGraph = ({ compact = false }) => {
+const InDemandSkillsGraph = ({ compact = false, useSampleFallback = false }) => {
   const categories = CATEGORIES;
   const [skillsData, setSkillsData] = useState([]);
   const [topJobs, setTopJobs] = useState([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
+  const [isSampleData, setIsSampleData] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]?.label || null);
 
 
@@ -22,18 +24,39 @@ const InDemandSkillsGraph = ({ compact = false }) => {
     if (selectedCategory) {
       fetchSkills(selectedCategory);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, useSampleFallback]);
 
 
 
   const fetchSkills = async (category) => {
     setLoadingSkills(true);
+    const sample = MOCK_TRENDS_DATA[category];
     try {
       const res = await axiosInstance.get(`/api/analytics/public/in-demand-skills?category=${encodeURIComponent(category)}`);
-      setSkillsData((res.data.data || []).slice(0, 5));
-      setTopJobs(res.data.topJobs || []);
+      const apiSkills = (res.data.data || []).slice(0, 5);
+      const apiJobs = res.data.topJobs || [];
+      const needsSample = useSampleFallback && sample && (apiSkills.length === 0 || apiJobs.length === 0);
+
+      if (needsSample) {
+        setSkillsData(apiSkills.length > 0 ? apiSkills : sample.skills);
+        setTopJobs(apiJobs.length > 0 ? apiJobs : sample.roles);
+        setIsSampleData(true);
+      } else {
+        setSkillsData(apiSkills);
+        setTopJobs(apiJobs);
+        setIsSampleData(false);
+      }
     } catch (err) {
       console.error("Failed to fetch in-demand skills", err);
+      if (useSampleFallback && sample) {
+        setSkillsData(sample.skills);
+        setTopJobs(sample.roles);
+        setIsSampleData(true);
+      } else {
+        setSkillsData([]);
+        setTopJobs([]);
+        setIsSampleData(false);
+      }
     } finally {
       setLoadingSkills(false);
     }
@@ -52,6 +75,11 @@ const InDemandSkillsGraph = ({ compact = false }) => {
             Select an industry below to discover the top skills employers are actively hiring for right now.
             Data is based on successfully hired candidates.
           </p>
+          {isSampleData && (
+            <p className="inline-flex items-center gap-2 mt-4 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full px-3 py-1">
+              Sample data shown for preview
+            </p>
+          )}
         </div>
       </div>
 

@@ -20,7 +20,7 @@ const LandingPage = () => {
 
       <CompanyShowcase />
       <HowItWorks />
-      <InDemandSkillsGraph />
+      <InDemandSkillsGraph useSampleFallback />
       <Features />
       <PublicJobSection />
 
