@@ -27,6 +27,10 @@ import path from "path";
 import os from "os";
 import bcrypt from "bcrypt";
 
+// TEMP: TOR (Transcript of Records) validation is disabled for testing.
+// While false: a TOR upload is not required and graduate accounts are auto-verified on signup.
+// Set back to true to restore the normal TOR review flow.
+const TOR_VALIDATION_ENABLED = false;
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -96,6 +100,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       else if (isGraduate) aiTokens = 5;
     }
 
+    const autoVerifyGraduate = isGraduate && !TOR_VALIDATION_ENABLED;
+    const isVerifiedNow = isJobSeeker || autoVerifyGraduate;
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -113,9 +120,13 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       companyLogo: isEmployer ? avatarUrl : "",
       tor: torUrl,
       businessPermit: businessPermitUrl,
-      verified: isJobSeeker ? true : false,
-      verificationStatus: isJobSeeker ? "verified" : "pending",
-      verificationMessage: isJobSeeker ? "Job Seeker account created successfully." : "Your document is currently being reviewed.",
+      verified: isVerifiedNow,
+      verificationStatus: isVerifiedNow ? "verified" : "pending",
+      verificationMessage: isJobSeeker
+        ? "Job Seeker account created successfully."
+        : autoVerifyGraduate
+          ? "Graduate account created successfully. TOR validation is temporarily disabled."
+          : "Your document is currently being reviewed.",
       aiTokens,
     });
     await user.save();
@@ -142,9 +153,11 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      verified: false,
-      verificationPending: true,
-      message: "Registration successful. Please wait for an email to get verified.",
+      verified: isVerifiedNow,
+      verificationPending: !isVerifiedNow,
+      message: autoVerifyGraduate
+        ? "Registration successful. TOR validation is temporarily disabled, so you can log in right away."
+        : "Registration successful. Please wait for an email to get verified.",
     });
   } catch (error) {
     next(error);

@@ -136,7 +136,8 @@ const SignUp = () => {
 
     if (formData.role === "graduate") {
       errors.degree = !formData.degree ? "Please select your degree." : "";
-      if (!formData.tor) errors.tor = "Transcript of Records is required.";
+      // TEMP: TOR validation disabled for testing. Restore the line below to require it again.
+      // if (!formData.tor) errors.tor = "Transcript of Records is required.";
     }
     if (formData.role === "employer") {
       errors.companyName = !formData.companyName.trim()
@@ -729,7 +730,7 @@ const SignUp = () => {
                     {/* TOR Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Upload Transcript of Records (TOR) *
+                        Upload Transcript of Records (TOR) — optional for now
                       </label>
                       <label className="cursor-pointer flex flex-col items-center justify-center px-4 py-5 sm:py-6 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl border-2 border-dashed border-gray-300 hover:border-blue-500 transition w-full group">
                         <div className="p-2 sm:p-3 bg-white rounded-full shadow-sm mb-2 group-hover:scale-110 transition-transform">
